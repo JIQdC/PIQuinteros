@@ -25,3 +25,4 @@ for n in range(1,N):
     L=li+n*dl
 
 print("Longitud total de cable: ",L,"m")
+print("Longitud de retardo en cable: ",dl,"m")
