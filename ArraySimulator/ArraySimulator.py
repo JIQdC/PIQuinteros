@@ -1,3 +1,11 @@
+##Simulador de array utilizando cable coaxil
+##José Quinteros
+##Teleco IB
+##12/08/2019
+
+#Script para obtener las longitudes de cable necesarias para simular el comportamiento
+#de un array de sensores que reciben una onda que se propaga en aire.
+
 import numpy as np 
 
 #constantes
@@ -5,8 +13,8 @@ c=299792458 #velocidad de la luz
 MHz=1E6
 
 #parámetros iniciales
-f=150*MHz                #frecuencia de la onda propagante
-theta=np.radians(15)    #ángulo en radianes
+f=150*MHz               #frecuencia de la onda propagante
+theta=np.radians(30)    #ángulo en radianes
 vp=0.66*c               #velocidad de propagación (como fracción de c)
 N=16                    #cantidad de sensores
 d=0.5*c/f               #separación entre sensores (como fracción de long de onda en aire)
