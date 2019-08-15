@@ -1,7 +1,7 @@
 ##Funciones para array rectangular
 ##José Quinteros
 ##Teleco IB
-##12/08/2019
+##15/08/2019
 
 #Declaración de clase y funciones de aplicación de un array rectangular de NxM elementos.
 
@@ -46,12 +46,18 @@ class rectArray:
 
         #tomo una distancia muy grande como posición radial de la fuente. La medida de comparación
         #que tengo es la separación entre sensores, entonces...
-        r=100000*self.d
+        r=10*self.d
 
-        #escribo las coordenadas de la fuente en cartesianas
+        #escribo las coordenadas de la fuente en cartesianas (también es la dirección de la normal
+        #del plano)
         fx=r*np.sin(theta)*np.cos(phi)
         fy=r*np.sin(theta)*np.sin(phi)
         fz=r*np.cos(phi)
+
+        #para expresar el plano como fx x + fy y + fz z + d = 0, necesito d. Si ubico el punto de
+        #referencia en la punta del vector normal, d = -|N|^2
+        norma = np.sqrt(fx**2 + fy**2 + fz**2)
+        d = -norma**2
 
         #velocidad de la luz
         c=299792458
@@ -61,11 +67,12 @@ class rectArray:
         k=0     #índice para el array de retardos
         for i in range(0,self.N):
             for j in range(0,self.M):
-                dist=np.sqrt((fx-self.pos[i,j,0])**2+(fy-self.pos[i,j,1])**2+fz**2)   #la distancia se calcula en cartesianas
-                timeDelays[k,0]=dist/c                                      #t=d/c
-                timeDelays[k,1]=i                                           #seteo índice x
-                timeDelays[k,2]=j                                           #seteo índice y
-                k=k+1                                                       #aumento índice del array de retardos
+                #dist=np.sqrt((fx-self.pos[i,j,0])**2+(fy-self.pos[i,j,1])**2+fz**2)   #cálculo de distancia en cartesianas
+                dist=np.abs(fx*self.pos[i,j,0]+fy*self.pos[i,j,1]+d)/norma             #fórmula de distancia punto plano
+                timeDelays[k,0]=dist/c                                                 #t=d/c
+                timeDelays[k,1]=i                                                      #seteo índice x
+                timeDelays[k,2]=j                                                      #seteo índice y
+                k=k+1                                                                  #aumento índice del array de retardos
 
         #bajo todo el array de tiempos al menor tiempo
         timeDelays[:,0]=timeDelays[:,0]-np.min(timeDelays[:,0])

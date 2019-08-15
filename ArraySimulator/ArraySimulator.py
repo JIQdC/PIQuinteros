@@ -1,10 +1,10 @@
-##Simulador de array utilizando cable coaxil
+##Simulador de array rectangular utilizando cable coaxil
 ##José Quinteros
 ##Teleco IB
-##12/08/2019
+##15/08/2019
 
 #Script para obtener las longitudes de cable necesarias para simular el comportamiento
-#de un array de sensores que reciben una onda que se propaga en aire.
+#de un array rectangular de sensores que reciben una onda que se propaga en aire.
 
 import numpy as np 
 from matplotlib import pyplot as plt
@@ -29,8 +29,8 @@ array.createArray(d,N,M)            #cargo sus coordenadas
 print(array.d)
 tau=array.calcTimeDelay(theta,phi)  #calculo los retardos y los almaceno en un vector
 
-#opcional: grafico el array para ver que esté bien ubicado
-""" plt.figure(1)
+""" #opcional: grafico el array para ver que esté bien ubicado
+plt.figure(1)
 for i in range(0,np.size(array.pos[0,:,0])):
     plt.scatter(array.pos[:,i,0],array.pos[:,i,1])
 plt.show(1) """
@@ -45,5 +45,6 @@ for n in range(0,(N*M)):
     L=L+li+tau[n,0]*vp
 
 print("Longitud de onda en el cable: ",wavelength,"m")
+for n in range(1,(N*M)):
+    print("Retardo ",n,":",(tau[n-1,0]-tau[n,0])*1E9,"ns")
 print("Longitud total de cable: ",L,"m")
-#print("Longitud de retardo en cable: ",dl,"m")
