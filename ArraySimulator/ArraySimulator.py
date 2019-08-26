@@ -1,7 +1,7 @@
 ##Simulador de array rectangular utilizando cable coaxil
 ##José Quinteros
 ##Teleco IB
-##15/08/2019
+##25/08/2019
 
 #Script para obtener las longitudes de cable necesarias para simular el comportamiento
 #de un array rectangular de sensores que reciben una onda que se propaga en aire.
@@ -19,14 +19,13 @@ f=150*MHz               #frecuencia de la onda propagante
 theta=np.radians(30)    #ángulo theta
 phi=0                   #ángulo phi (referido al eje x)
 vp=0.66*c               #velocidad de propagación (como fracción de c)
-N=16                    #cantidad de sensores en x
+N=16                        #cantidad de sensores en x
 M=1                     #cantidad de sensores en y
 d=0.5*c/f               #separación entre sensores (como fracción de long de onda en aire)
 
 #array rectangular
 array=rectArray()                   #creo un objeto tipo array rectangular
 array.createArray(d,N,M)            #cargo sus coordenadas
-print(array.d)
 tau=array.calcTimeDelay(theta,phi)  #calculo los retardos y los almaceno en un vector
 
 """ #opcional: grafico el array para ver que esté bien ubicado
@@ -37,7 +36,7 @@ plt.show(1) """
 
 #parámetros del cable
 wavelength=vp/f         #longitud de onda en el cable
-li=0.2                  #longitud inicial (base de todos los tramos de cable)
+li=0                  #longitud inicial (base de todos los tramos de cable)
 
 #ahora sumamos los NxM tramos de cable, cada uno agregando un dl=tau[n,0]*vp
 L=0                     #longitud de cable total

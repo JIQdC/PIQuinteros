@@ -1,7 +1,7 @@
 ##Funciones para array rectangular
 ##José Quinteros
 ##Teleco IB
-##15/08/2019
+##25/08/2019
 
 #Declaración de clase y funciones de aplicación de un array rectangular de NxM elementos.
 
@@ -34,47 +34,43 @@ class rectArray:
             self.pos[:,j,1]=j*self.d - (M-1)*0.5*d        
 
     def calcTimeDelay(self,theta,phi):
-        ## esta función calcula el tiempo de viaje desde un punto fuente muy lejano, con
-        ## coordenadas esféricas theta, phi (cambiar a azimut y elevación), hasta cada uno de los sensores
-        ## del array. Retorna un array en el que se listan todos los retardos de cada uno
-        ## de los elementos, junto con sus posiciones, ordenado por los retardos de menor a mayor.
+        ## esta función calcula el tiempo de viaje desde un plano alejado del origen, que simula un frente de
+        ## onda, con normal de dirección en coordenadas esféricas theta, phi (cambiar a azimut y elevación),
+        ## hasta cada uno de los sensores del array. Retorna un array en el que se listan todos los retardos 
+        ## de cada uno de los elementos, junto con sus posiciones, ordenado por los retardos de menor a mayor.
 
         #array 2D (retardo, coordenada x, coordenada y) para almacenar el resultado
         timeDelays = np.empty([self.N*self.M,3])
 
-        #considerar que puedo descibir también un plano y tomar distancia punto plano
+        #pongo el plano a una distancia de 100d del origen (bien lejos, por las dudas)
+        r=100*self.d
 
-        #tomo una distancia muy grande como posición radial de la fuente. La medida de comparación
-        #que tengo es la separación entre sensores, entonces...
-        r=10*self.d
-
-        #escribo las coordenadas de la fuente en cartesianas (también es la dirección de la normal
-        #del plano)
+        #el vector N = (fx, fy, fz) tiene la dirección de la normal del plano, y se corresponde con el vector
+        #posición de un punto alejado 100d del origen
         fx=r*np.sin(theta)*np.cos(phi)
         fy=r*np.sin(theta)*np.sin(phi)
-        fz=r*np.cos(phi)
+        fz=r*np.cos(theta)
 
-        #para expresar el plano como fx x + fy y + fz z + d = 0, necesito d. Si ubico el punto de
-        #referencia en la punta del vector normal, d = -|N|^2
+        #para expresar el plano como fx x + fy y + fz z + p = 0, necesito p. Como quiero que el plano quede a 
+        #100d del origen, pido que el punto (fx, fy, fz) pertenezca al plano. Luego, p = -|N|^2
         norma = np.sqrt(fx**2 + fy**2 + fz**2)
-        d = -norma**2
+        p = -(norma**2)
 
         #velocidad de la luz
         c=299792458
 
-        #tomo la distancia de cada uno de los elementos al punto fuente, y los almaceno en el array junto 
+        #tomo la distancia de cada uno de los elementos al plano, y los almaceno en el array junto 
         #con sus posiciones en el array pos[:,:]
         k=0     #índice para el array de retardos
         for i in range(0,self.N):
             for j in range(0,self.M):
-                #dist=np.sqrt((fx-self.pos[i,j,0])**2+(fy-self.pos[i,j,1])**2+fz**2)   #cálculo de distancia en cartesianas
-                dist=np.abs(fx*self.pos[i,j,0]+fy*self.pos[i,j,1]+d)/norma             #fórmula de distancia punto plano
+                dist=np.abs(fx*self.pos[i,j,0]+fy*self.pos[i,j,1]+fz*0+p)/norma        #fórmula de distancia punto plano
                 timeDelays[k,0]=dist/c                                                 #t=d/c
                 timeDelays[k,1]=i                                                      #seteo índice x
                 timeDelays[k,2]=j                                                      #seteo índice y
                 k=k+1                                                                  #aumento índice del array de retardos
 
-        #bajo todo el array de tiempos al menor tiempo
+        #dejo todo el array relativo al menor retardo
         timeDelays[:,0]=timeDelays[:,0]-np.min(timeDelays[:,0])
         #ordeno por los retardos
         timeDelays[timeDelays[:,0].argsort()]
