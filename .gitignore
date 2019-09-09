@@ -1,2 +1,3 @@
 .vscode/settings.json
 ArraySimulator/__pycache__/RectArray.cpython-36.pyc
+ArraySimulator/CircArray.py

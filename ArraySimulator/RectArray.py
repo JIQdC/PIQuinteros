@@ -1,7 +1,7 @@
 ##Funciones para array rectangular
 ##José Quinteros
 ##Teleco IB
-##25/08/2019
+##08/09/2019
 
 #Declaración de clase y funciones de aplicación de un array rectangular de NxM elementos.
 
@@ -36,11 +36,11 @@ class rectArray:
     def calcTimeDelay(self,theta,phi):
         ## esta función calcula el tiempo de viaje desde un plano alejado del origen, que simula un frente de
         ## onda, con normal de dirección en coordenadas esféricas theta, phi (cambiar a azimut y elevación),
-        ## hasta cada uno de los sensores del array. Retorna un array en el que se listan todos los retardos 
-        ## de cada uno de los elementos, junto con sus posiciones, ordenado por los retardos de menor a mayor.
+        ## hasta cada uno de los sensores del array. Retorna un array 3D en el que se almacenan los valores de 
+        ## los retardos de cada uno de los sensores, en la posición de la grilla que les corresponde.
 
-        #array 2D (retardo, coordenada x, coordenada y) para almacenar el resultado
-        timeDelays = np.empty([self.N*self.M,3])
+        #array 3D (coordenada x, coordenada y,retardo) para almacenar el resultado
+        timeDelays = np.zeros([self.N,self.M,1])
 
         #pongo el plano a una distancia de 100d del origen (bien lejos, por las dudas)
         r=100*self.d
@@ -59,21 +59,15 @@ class rectArray:
         #velocidad de la luz
         c=299792458
 
-        #tomo la distancia de cada uno de los elementos al plano, y los almaceno en el array junto 
-        #con sus posiciones en el array pos[:,:]
-        k=0     #índice para el array de retardos
+        #tomo la distancia de cada uno de los elementos al plano, y los almaceno en el array en la posición
+        #que le corresponda en la grilla
         for i in range(0,self.N):
             for j in range(0,self.M):
                 dist=np.abs(fx*self.pos[i,j,0]+fy*self.pos[i,j,1]+fz*0+p)/norma        #fórmula de distancia punto plano
-                timeDelays[k,0]=dist/c                                                 #t=d/c
-                timeDelays[k,1]=i                                                      #seteo índice x
-                timeDelays[k,2]=j                                                      #seteo índice y
-                k=k+1                                                                  #aumento índice del array de retardos
+                timeDelays[i,j,0]=dist/c                                                 #t=d/c
 
         #dejo todo el array relativo al menor retardo
-        timeDelays[:,0]=timeDelays[:,0]-np.min(timeDelays[:,0])
-        #ordeno por los retardos
-        timeDelays[timeDelays[:,0].argsort()]
+        timeDelays[:,:,0]=timeDelays[:,:,0]-np.min(timeDelays[:,:,0])
 
         #retorno el array de retardos
         return timeDelays
