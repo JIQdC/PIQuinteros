@@ -30,6 +30,7 @@ entity ADC_model is
         rst_n: in std_logic;
         d_in: in std_logic_vector((N-1) downto 0);
         usr_ready: out std_logic; --flag que indica si ya se enganchó con adc_FCO
+        usr_done: out std_logic; --flag que indica si ya se capturó el dato
         adc_DCO: out std_logic;
         adc_FCO: out std_logic;
         adc_D: out std_logic
@@ -128,11 +129,15 @@ begin
     --flag que indica cuándo se enganchó con adc_FCO
     process(state_reg)
     begin
+        usr_done <= '0';
+        usr_ready <= '1';
         case state_reg is
             when idle =>
                 usr_ready <= '0';
+            when capture =>
+                usr_done <= '1';
             when others =>
-                usr_ready <= '1';
+            --
         end case;
     end process;
 
