@@ -7,11 +7,11 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Modelo del conversor AD9249
+-- Description: Núcleo del ADC
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2019-10-21
+-- Revision: 2019-10-29
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------

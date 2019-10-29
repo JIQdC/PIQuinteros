@@ -7,11 +7,11 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Contador de N bits
+-- Description: Conmutador entre palabra de unos y palabra de ceros
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2019-10-21
+-- Revision: 2019-10-29
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
