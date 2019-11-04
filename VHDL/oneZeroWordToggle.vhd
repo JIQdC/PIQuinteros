@@ -41,7 +41,7 @@ architecture arch of oneZeroWordToggle is
 
 begin
     --state register
-    process(clk,rst_n,usr_done)
+    process(clk,rst_n,usr_ready)
     begin
         if (rst_n='0' or usr_ready='0') then
             d_reg <= zerosNbits;
