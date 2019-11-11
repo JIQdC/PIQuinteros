@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2019-11-04
+-- Revision: 2019-11-11
 -- Additional Comments: Este modelo DEBE SER SINTETIZABLE!!
 -- 
 ----------------------------------------------------------------------------------
@@ -25,7 +25,6 @@ entity deserializer is
         N: integer := 14 --cantidad de bits del ADC
     );
     port(
-        --rst_n: in std_logic;
         d_in: in std_logic_vector(1 downto 0);
         d_clk_in: in std_logic;
         d_frame: in std_logic;
@@ -36,31 +35,30 @@ end deserializer;
 
 architecture arch of deserializer is
 
-    --registro de estado
-	type state_type is (capture,done);
-    signal state_reg,state_next: state_type;
-
     signal d_reg, d_next: std_logic_vector((N-1) downto 0) := (others => '0');
+    signal f_reg, f_next: std_logic;
 
     begin
 
-        process(d_clk_in, d_frame)
+        process(d_clk_in)
         begin
-            if(rising_edge(d_frame)) then
+            if(rising_edge(d_clk_in)) then
                 d_reg <= d_next;
-                state_reg <= done;
-                d_out <= d_reg;
-                d_valid <= '1';
-            elsif(rising_edge(d_clk_in)) then
-                d_out <= (others => '0');
-                d_valid <= '0';
-                d_reg <= d_next;
+                f_reg <= f_next;
             end if;
         end process;
 
-        process(d_clk_in,d_in)
+        process(d_reg,f_reg,d_in,d_frame)
         begin
             d_next <= d_reg((N-3) downto 0) & d_in(0) & d_in(1);
+            f_next <= d_frame;
+            if(f_reg = '0' and d_frame = '1') then --rising edge del frame
+                d_out <= d_reg;
+                d_valid <= '1';
+            else
+                d_out <= (others => '0');
+                d_valid <= '0';
+            end if;
         end process;
    
 end arch; -- arch
