@@ -104,8 +104,8 @@ entity pin_control is
         led_red_o       : out std_logic;
         led_green_o     : out std_logic;
         hdmi_en_o       : out std_logic;
-        spi_tristate_o  : out std_logic
-        
+		spi_tristate_o  : out std_logic;
+		tp8_o			: out std_logic        
 	);
 end pin_control;
 
@@ -423,7 +423,8 @@ begin
 			datain1_r	    <= user_inputs1_i;
 			datain2_r	    <= user_inputs2_i;
             vadj_en_o       <= dataaux_r(0);
-            led_green_o     <= dataaux_r(0); -- Led shows VAdj ENA status 
+			led_green_o     <= dataaux_r(0); -- Led shows VAdj ENA status 
+			tp8_o			<= dataaux_r(3);
             spi_tristate_o  <= dataaux_r(1);
             hdmi_en_o       <= dataaux_r(2);
             user_outputs1_o <= dataout1_r;
