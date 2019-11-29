@@ -35,7 +35,7 @@ entity ADCmodel_wrapper is
         N: integer := 14;
         T_SAMPLE : time := 14 ns;       --período de muestreo del ADC
         T_DELAY : time := 2.3 ns;       --tiempo de propagación entre muestreo y dato
-        T_SIM_LIMIT : time := 10 us;    --tiempo límite de simulación
+        T_SIM_LIMIT : time := 10 sec;    --tiempo límite de simulación
         T_CLK_PERIOD : time := 1 ns     --período del clock usado para los generadores de secuencias 
         );
     port(
