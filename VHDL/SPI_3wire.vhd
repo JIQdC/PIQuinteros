@@ -45,8 +45,6 @@ architecture arch of SPI_3wire is
     
 begin
 
-    --TSB: OBUFT
-    --port map(I => proc_mosi, O => adc_sdio, T => tristate_en);
     adc_sdio <= p_inout;
     p_inout <= proc_mosi when (tristate_en = '0') else 'Z';
 
@@ -54,6 +52,5 @@ begin
     adc_ss1 <= proc_ss1;
     adc_ss2 <= proc_ss2;
     proc_miso <= p_inout;
-
    
 end arch; -- arch
