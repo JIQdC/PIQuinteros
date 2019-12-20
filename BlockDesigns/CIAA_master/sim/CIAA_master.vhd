@@ -1,7 +1,7 @@
 --Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2019.1 (lin64) Build 2552052 Fri May 24 14:47:09 MDT 2019
---Date        : Fri Nov 29 17:38:44 2019
+--Date        : Fri Dec 20 08:58:59 2019
 --Host        : jiqdc-ubuntu running 64-bit Ubuntu 18.04.3 LTS
 --Command     : generate_target CIAA_master.bd
 --Design      : CIAA_master
@@ -590,18 +590,22 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 entity CIAA_master is
   port (
-    adc_sclk_0 : out STD_LOGIC;
-    adc_sdio_0 : inout STD_LOGIC;
-    adc_ss1_0 : out STD_LOGIC;
-    adc_ss2_0 : out STD_LOGIC;
-    hdmi_en_o_0 : out STD_LOGIC;
-    led_green_o_0 : out STD_LOGIC;
-    led_red_o_0 : out STD_LOGIC;
-    tp8_o_0 : out STD_LOGIC;
-    vadj_en_o_0 : out STD_LOGIC
+    FIXED_IO_mio : inout STD_LOGIC_VECTOR ( 53 downto 0 );
+    FIXED_IO_ps_clk : inout STD_LOGIC;
+    FIXED_IO_ps_porb : inout STD_LOGIC;
+    FIXED_IO_ps_srstb : inout STD_LOGIC;
+    adc_sclk_o : out STD_LOGIC;
+    adc_sdio_io : inout STD_LOGIC;
+    adc_ss1_o : out STD_LOGIC;
+    adc_ss2_o : out STD_LOGIC;
+    hdmi_en_o : out STD_LOGIC;
+    led_green_o : out STD_LOGIC;
+    led_red_o : out STD_LOGIC;
+    tp8_o : out STD_LOGIC;
+    vadj_en_o : out STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of CIAA_master : entity is "CIAA_master,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=CIAA_master,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=7,numReposBlks=5,numNonXlnxBlks=0,numHierBlks=2,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=2,numPkgbdBlks=0,bdsource=USER,da_clkrst_cnt=1,synth_mode=Global}";
+  attribute CORE_GENERATION_INFO of CIAA_master : entity is "CIAA_master,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=CIAA_master,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=7,numReposBlks=5,numNonXlnxBlks=0,numHierBlks=2,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=2,numPkgbdBlks=0,bdsource=USER,synth_mode=OOC_per_IP}";
   attribute HW_HANDOFF : string;
   attribute HW_HANDOFF of CIAA_master : entity is "CIAA_master.hwdef";
 end CIAA_master;
@@ -738,7 +742,7 @@ architecture STRUCTURE of CIAA_master is
   );
   end component CIAA_master_processing_system7_0_0;
   signal ACLK_1 : STD_LOGIC;
-  signal Net1 : STD_LOGIC;
+  signal Net : STD_LOGIC;
   signal SPI_3wire_0_adc_sclk : STD_LOGIC;
   signal SPI_3wire_0_adc_ss1 : STD_LOGIC;
   signal SPI_3wire_0_adc_ss2 : STD_LOGIC;
@@ -762,14 +766,18 @@ architecture STRUCTURE of CIAA_master is
   signal axi_interconnect_0_M00_AXI_WREADY : STD_LOGIC;
   signal axi_interconnect_0_M00_AXI_WSTRB : STD_LOGIC_VECTOR ( 3 downto 0 );
   signal axi_interconnect_0_M00_AXI_WVALID : STD_LOGIC;
-  signal pin_control_0_hdmi_en_o : STD_LOGIC;
-  signal pin_control_0_led_green_o : STD_LOGIC;
-  signal pin_control_0_led_red_o : STD_LOGIC;
   signal pin_control_0_spi_tristate_o : STD_LOGIC;
-  signal pin_control_0_tp8_o : STD_LOGIC;
-  signal pin_control_0_vadj_en_o : STD_LOGIC;
+  signal pin_control_1_hdmi_en_o : STD_LOGIC;
+  signal pin_control_1_led_green_o : STD_LOGIC;
+  signal pin_control_1_led_red_o : STD_LOGIC;
+  signal pin_control_1_tp8_o : STD_LOGIC;
+  signal pin_control_1_vadj_en_o : STD_LOGIC;
   signal proc_sys_reset_0_interconnect_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
   signal processing_system7_0_FCLK_RESET0_N : STD_LOGIC;
+  signal processing_system7_0_FIXED_IO_MIO : STD_LOGIC_VECTOR ( 53 downto 0 );
+  signal processing_system7_0_FIXED_IO_PS_CLK : STD_LOGIC;
+  signal processing_system7_0_FIXED_IO_PS_PORB : STD_LOGIC;
+  signal processing_system7_0_FIXED_IO_PS_SRSTB : STD_LOGIC;
   signal processing_system7_0_M_AXI_GP0_ARADDR : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal processing_system7_0_M_AXI_GP0_ARBURST : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal processing_system7_0_M_AXI_GP0_ARCACHE : STD_LOGIC_VECTOR ( 3 downto 0 );
@@ -819,9 +827,6 @@ architecture STRUCTURE of CIAA_master is
   signal NLW_proc_sys_reset_0_peripheral_aresetn_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
   signal NLW_proc_sys_reset_0_peripheral_reset_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
   signal NLW_processing_system7_0_FCLK_RESET1_N_UNCONNECTED : STD_LOGIC;
-  signal NLW_processing_system7_0_PS_CLK_UNCONNECTED : STD_LOGIC;
-  signal NLW_processing_system7_0_PS_PORB_UNCONNECTED : STD_LOGIC;
-  signal NLW_processing_system7_0_PS_SRSTB_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_SPI0_MISO_O_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_SPI0_MISO_T_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_SPI0_MOSI_T_UNCONNECTED : STD_LOGIC;
@@ -829,21 +834,27 @@ architecture STRUCTURE of CIAA_master is
   signal NLW_processing_system7_0_SPI0_SS_O_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_SPI0_SS_T_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_USB0_VBUS_PWRSELECT_UNCONNECTED : STD_LOGIC;
-  signal NLW_processing_system7_0_MIO_UNCONNECTED : STD_LOGIC_VECTOR ( 53 downto 0 );
   signal NLW_processing_system7_0_USB0_PORT_INDCTL_UNCONNECTED : STD_LOGIC_VECTOR ( 1 downto 0 );
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of FIXED_IO_ps_clk : signal is "xilinx.com:display_processing_system7:fixedio:1.0 FIXED_IO PS_CLK";
+  attribute X_INTERFACE_INFO of FIXED_IO_ps_porb : signal is "xilinx.com:display_processing_system7:fixedio:1.0 FIXED_IO PS_PORB";
+  attribute X_INTERFACE_INFO of FIXED_IO_ps_srstb : signal is "xilinx.com:display_processing_system7:fixedio:1.0 FIXED_IO PS_SRSTB";
+  attribute X_INTERFACE_INFO of FIXED_IO_mio : signal is "xilinx.com:display_processing_system7:fixedio:1.0 FIXED_IO MIO";
+  attribute X_INTERFACE_PARAMETER : string;
+  attribute X_INTERFACE_PARAMETER of FIXED_IO_mio : signal is "XIL_INTERFACENAME FIXED_IO, CAN_DEBUG false";
 begin
-  adc_sclk_0 <= SPI_3wire_0_adc_sclk;
-  adc_ss1_0 <= SPI_3wire_0_adc_ss1;
-  adc_ss2_0 <= SPI_3wire_0_adc_ss2;
-  hdmi_en_o_0 <= pin_control_0_hdmi_en_o;
-  led_green_o_0 <= pin_control_0_led_green_o;
-  led_red_o_0 <= pin_control_0_led_red_o;
-  tp8_o_0 <= pin_control_0_tp8_o;
-  vadj_en_o_0 <= pin_control_0_vadj_en_o;
+  adc_sclk_o <= SPI_3wire_0_adc_sclk;
+  adc_ss1_o <= SPI_3wire_0_adc_ss1;
+  adc_ss2_o <= SPI_3wire_0_adc_ss2;
+  hdmi_en_o <= pin_control_1_hdmi_en_o;
+  led_green_o <= pin_control_1_led_green_o;
+  led_red_o <= pin_control_1_led_red_o;
+  tp8_o <= pin_control_1_tp8_o;
+  vadj_en_o <= pin_control_1_vadj_en_o;
 SPI_3wire_0: component CIAA_master_SPI_3wire_0_0
      port map (
       adc_sclk => SPI_3wire_0_adc_sclk,
-      adc_sdio => adc_sdio_0,
+      adc_sdio => adc_sdio_io,
       adc_ss1 => SPI_3wire_0_adc_ss1,
       adc_ss2 => SPI_3wire_0_adc_ss2,
       proc_miso => SPI_3wire_0_proc_miso,
@@ -942,16 +953,16 @@ pin_control_0: component CIAA_master_pin_control_0_0
       S_AXI_WREADY => axi_interconnect_0_M00_AXI_WREADY,
       S_AXI_WSTRB(3 downto 0) => axi_interconnect_0_M00_AXI_WSTRB(3 downto 0),
       S_AXI_WVALID => axi_interconnect_0_M00_AXI_WVALID,
-      hdmi_en_o => pin_control_0_hdmi_en_o,
-      led_green_o => pin_control_0_led_green_o,
-      led_red_o => pin_control_0_led_red_o,
+      hdmi_en_o => pin_control_1_hdmi_en_o,
+      led_green_o => pin_control_1_led_green_o,
+      led_red_o => pin_control_1_led_red_o,
       spi_tristate_o => pin_control_0_spi_tristate_o,
-      tp8_o => pin_control_0_tp8_o,
+      tp8_o => pin_control_1_tp8_o,
       user_inputs1_i(31 downto 0) => B"00000001000000010000000100000001",
       user_inputs2_i(31 downto 0) => B"00000010000000100000001000000010",
       user_outputs1_o(31 downto 0) => NLW_pin_control_0_user_outputs1_o_UNCONNECTED(31 downto 0),
       user_outputs2_o(31 downto 0) => NLW_pin_control_0_user_outputs2_o_UNCONNECTED(31 downto 0),
-      vadj_en_o => pin_control_0_vadj_en_o
+      vadj_en_o => pin_control_1_vadj_en_o
     );
 proc_sys_reset_0: component CIAA_master_proc_sys_reset_0_0
      port map (
@@ -971,7 +982,7 @@ processing_system7_0: component CIAA_master_processing_system7_0_0
       FCLK_CLK0 => ACLK_1,
       FCLK_RESET0_N => processing_system7_0_FCLK_RESET0_N,
       FCLK_RESET1_N => NLW_processing_system7_0_FCLK_RESET1_N_UNCONNECTED,
-      MIO(53 downto 0) => NLW_processing_system7_0_MIO_UNCONNECTED(53 downto 0),
+      MIO(53 downto 0) => FIXED_IO_mio(53 downto 0),
       M_AXI_GP0_ACLK => ACLK_1,
       M_AXI_GP0_ARADDR(31 downto 0) => processing_system7_0_M_AXI_GP0_ARADDR(31 downto 0),
       M_AXI_GP0_ARBURST(1 downto 0) => processing_system7_0_M_AXI_GP0_ARBURST(1 downto 0),
@@ -1011,9 +1022,9 @@ processing_system7_0: component CIAA_master_processing_system7_0_0
       M_AXI_GP0_WREADY => processing_system7_0_M_AXI_GP0_WREADY,
       M_AXI_GP0_WSTRB(3 downto 0) => processing_system7_0_M_AXI_GP0_WSTRB(3 downto 0),
       M_AXI_GP0_WVALID => processing_system7_0_M_AXI_GP0_WVALID,
-      PS_CLK => NLW_processing_system7_0_PS_CLK_UNCONNECTED,
-      PS_PORB => NLW_processing_system7_0_PS_PORB_UNCONNECTED,
-      PS_SRSTB => NLW_processing_system7_0_PS_SRSTB_UNCONNECTED,
+      PS_CLK => FIXED_IO_ps_clk,
+      PS_PORB => FIXED_IO_ps_porb,
+      PS_SRSTB => FIXED_IO_ps_srstb,
       SPI0_MISO_I => SPI_3wire_0_proc_miso,
       SPI0_MISO_O => NLW_processing_system7_0_SPI0_MISO_O_UNCONNECTED,
       SPI0_MISO_T => NLW_processing_system7_0_SPI0_MISO_T_UNCONNECTED,

@@ -1,10 +1,10 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x83A12E3983A12E39",
+      "boundary_crc": "0x4A6D9A6E78A00FC9",
       "device": "xc7z030fbg676-2",
       "name": "CIAA_master",
-      "synth_flow_mode": "None",
+      "synth_flow_mode": "Hierarchical",
       "tool_version": "2019.1",
       "validated": "true"
     },
@@ -19,32 +19,44 @@
       "proc_sys_reset_0": "",
       "processing_system7_0": ""
     },
+    "interface_ports": {
+      "FIXED_IO": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:display_processing_system7:fixedio_rtl:1.0",
+        "parameters": {
+          "CAN_DEBUG": {
+            "value": "false",
+            "value_src": "default"
+          }
+        }
+      }
+    },
     "ports": {
-      "adc_sclk_0": {
+      "adc_sclk_o": {
         "direction": "O"
       },
-      "adc_sdio_0": {
+      "adc_sdio_io": {
         "direction": "IO"
       },
-      "adc_ss1_0": {
+      "adc_ss1_o": {
         "direction": "O"
       },
-      "adc_ss2_0": {
+      "adc_ss2_o": {
         "direction": "O"
       },
-      "hdmi_en_o_0": {
+      "hdmi_en_o": {
         "direction": "O"
       },
-      "led_green_o_0": {
+      "led_green_o": {
         "direction": "O"
       },
-      "led_red_o_0": {
+      "led_red_o": {
         "direction": "O"
       },
-      "tp8_o_0": {
+      "tp8_o": {
         "direction": "O"
       },
-      "vadj_en_o_0": {
+      "vadj_en_o": {
         "direction": "O"
       }
     },
@@ -216,16 +228,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_pc": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_pc": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -246,16 +258,16 @@
           }
         },
         "interface_nets": {
-          "s00_couplers_to_axi_interconnect_0": {
-            "interface_ports": [
-              "M00_AXI",
-              "s00_couplers/M_AXI"
-            ]
-          },
           "axi_interconnect_0_to_s00_couplers": {
             "interface_ports": [
               "S00_AXI",
               "s00_couplers/S_AXI"
+            ]
+          },
+          "s00_couplers_to_axi_interconnect_0": {
+            "interface_ports": [
+              "M00_AXI",
+              "s00_couplers/M_AXI"
             ]
           }
         },
@@ -664,7 +676,7 @@
             "value": "50"
           },
           "PCW_ACT_UART_PERIPHERAL_FREQMHZ": {
-            "value": "10"
+            "value": "97"
           },
           "PCW_ACT_USB0_PERIPHERAL_FREQMHZ": {
             "value": "60"
@@ -940,7 +952,7 @@
             "value": "1"
           },
           "PCW_EN_SPI1": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_TRACE": {
             "value": "0"
@@ -952,10 +964,10 @@
             "value": "0"
           },
           "PCW_EN_UART0": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_UART1": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_USB0": {
             "value": "1"
@@ -1410,6 +1422,42 @@
           "PCW_MIO_45_SLEW": {
             "value": "fast"
           },
+          "PCW_MIO_46_IOTYPE": {
+            "value": "LVCMOS 1.8V"
+          },
+          "PCW_MIO_46_PULLUP": {
+            "value": "enabled"
+          },
+          "PCW_MIO_46_SLEW": {
+            "value": "slow"
+          },
+          "PCW_MIO_47_IOTYPE": {
+            "value": "LVCMOS 1.8V"
+          },
+          "PCW_MIO_47_PULLUP": {
+            "value": "enabled"
+          },
+          "PCW_MIO_47_SLEW": {
+            "value": "slow"
+          },
+          "PCW_MIO_48_IOTYPE": {
+            "value": "LVCMOS 1.8V"
+          },
+          "PCW_MIO_48_PULLUP": {
+            "value": "enabled"
+          },
+          "PCW_MIO_48_SLEW": {
+            "value": "slow"
+          },
+          "PCW_MIO_49_IOTYPE": {
+            "value": "LVCMOS 1.8V"
+          },
+          "PCW_MIO_49_PULLUP": {
+            "value": "enabled"
+          },
+          "PCW_MIO_49_SLEW": {
+            "value": "slow"
+          },
           "PCW_MIO_4_IOTYPE": {
             "value": "LVCMOS 3.3V"
           },
@@ -1465,13 +1513,16 @@
             "value": "54"
           },
           "PCW_MIO_TREE_PERIPHERALS": {
-            "value": "unassigned#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#unassigned#unassigned#unassigned#unassigned#unassigned#I2C 1#I2C 1#I2C 0#I2C 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#Enet 0#Enet 0"
+            "value": "unassigned#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#unassigned#UART 1#UART 1#UART 0#UART 0#I2C 1#I2C 1#I2C 0#I2C 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SPI 1#SPI 1#SPI 1#SPI 1#unassigned#unassigned#Enet 0#Enet 0"
           },
           "PCW_MIO_TREE_SIGNALS": {
-            "value": "unassigned#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_sclk#unassigned#unassigned#unassigned#unassigned#unassigned#scl#sda#scl#sda#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#data[4]#dir#stp#nxt#data[0]#data[1]#data[2]#data[3]#clk#data[5]#data[6]#data[7]#clk#cmd#data[0]#data[1]#data[2]#data[3]#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#mdc#mdio"
+            "value": "unassigned#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_sclk#unassigned#tx#rx#rx#tx#scl#sda#scl#sda#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#data[4]#dir#stp#nxt#data[0]#data[1]#data[2]#data[3]#clk#data[5]#data[6]#data[7]#clk#cmd#data[0]#data[1]#data[2]#data[3]#mosi#miso#sclk#ss[0]#unassigned#unassigned#mdc#mdio"
           },
           "PCW_M_AXI_GP0_ENABLE_STATIC_REMAP": {
             "value": "0"
+          },
+          "PCW_M_AXI_GP0_FREQMHZ": {
+            "value": "50"
           },
           "PCW_M_AXI_GP0_ID_WIDTH": {
             "value": "12"
@@ -1746,8 +1797,23 @@
           "PCW_SPI0_SPI0_IO": {
             "value": "EMIO"
           },
-          "PCW_SPI1_PERIPHERAL_ENABLE": {
+          "PCW_SPI1_BASEADDR": {
+            "value": "0xE0007000"
+          },
+          "PCW_SPI1_GRP_SS1_ENABLE": {
             "value": "0"
+          },
+          "PCW_SPI1_GRP_SS2_ENABLE": {
+            "value": "0"
+          },
+          "PCW_SPI1_HIGHADDR": {
+            "value": "0xE0007FFF"
+          },
+          "PCW_SPI1_PERIPHERAL_ENABLE": {
+            "value": "1"
+          },
+          "PCW_SPI1_SPI1_IO": {
+            "value": "MIO 46 .. 51"
           },
           "PCW_SPI_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
@@ -1809,11 +1875,41 @@
           "PCW_TTC1_PERIPHERAL_ENABLE": {
             "value": "0"
           },
-          "PCW_UART0_PERIPHERAL_ENABLE": {
+          "PCW_UART0_BASEADDR": {
+            "value": "0xE0000000"
+          },
+          "PCW_UART0_BAUD_RATE": {
+            "value": "115200"
+          },
+          "PCW_UART0_GRP_FULL_ENABLE": {
             "value": "0"
           },
-          "PCW_UART1_PERIPHERAL_ENABLE": {
+          "PCW_UART0_HIGHADDR": {
+            "value": "0xE0000FFF"
+          },
+          "PCW_UART0_PERIPHERAL_ENABLE": {
+            "value": "1"
+          },
+          "PCW_UART0_UART0_IO": {
+            "value": "MIO 10 .. 11"
+          },
+          "PCW_UART1_BASEADDR": {
+            "value": "0xE0001000"
+          },
+          "PCW_UART1_BAUD_RATE": {
+            "value": "115200"
+          },
+          "PCW_UART1_GRP_FULL_ENABLE": {
             "value": "0"
+          },
+          "PCW_UART1_HIGHADDR": {
+            "value": "0xE0001FFF"
+          },
+          "PCW_UART1_PERIPHERAL_ENABLE": {
+            "value": "1"
+          },
+          "PCW_UART1_UART1_IO": {
+            "value": "MIO 8 .. 9"
           },
           "PCW_UART_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
@@ -1822,7 +1918,7 @@
             "value": "100"
           },
           "PCW_UART_PERIPHERAL_VALID": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_UIPARAM_ACT_DDR_FREQ_MHZ": {
             "value": "528"
@@ -2062,6 +2158,12 @@
           "axi_interconnect_0/S00_AXI"
         ]
       },
+      "processing_system7_0_FIXED_IO": {
+        "interface_ports": [
+          "FIXED_IO",
+          "processing_system7_0/FIXED_IO"
+        ]
+      },
       "axi_interconnect_0_M00_AXI": {
         "interface_ports": [
           "axi_interconnect_0/M00_AXI",
@@ -2076,33 +2178,33 @@
           "axi_interconnect_0/ACLK",
           "axi_interconnect_0/S00_ACLK",
           "axi_interconnect_0/M00_ACLK",
-          "pin_control_0/S_AXI_ACLK",
           "processing_system7_0/M_AXI_GP0_ACLK",
-          "proc_sys_reset_0/slowest_sync_clk"
+          "proc_sys_reset_0/slowest_sync_clk",
+          "pin_control_0/S_AXI_ACLK"
         ]
       },
-      "Net1": {
+      "Net": {
         "ports": [
-          "adc_sdio_0",
+          "adc_sdio_io",
           "SPI_3wire_0/adc_sdio"
         ]
       },
       "SPI_3wire_0_adc_sclk": {
         "ports": [
           "SPI_3wire_0/adc_sclk",
-          "adc_sclk_0"
+          "adc_sclk_o"
         ]
       },
       "SPI_3wire_0_adc_ss1": {
         "ports": [
           "SPI_3wire_0/adc_ss1",
-          "adc_ss1_0"
+          "adc_ss1_o"
         ]
       },
       "SPI_3wire_0_adc_ss2": {
         "ports": [
           "SPI_3wire_0/adc_ss2",
-          "adc_ss2_0"
+          "adc_ss2_o"
         ]
       },
       "SPI_3wire_0_proc_miso": {
@@ -2111,40 +2213,40 @@
           "processing_system7_0/SPI0_MISO_I"
         ]
       },
-      "pin_control_0_hdmi_en_o": {
-        "ports": [
-          "pin_control_0/hdmi_en_o",
-          "hdmi_en_o_0"
-        ]
-      },
-      "pin_control_0_led_green_o": {
-        "ports": [
-          "pin_control_0/led_green_o",
-          "led_green_o_0"
-        ]
-      },
-      "pin_control_0_led_red_o": {
-        "ports": [
-          "pin_control_0/led_red_o",
-          "led_red_o_0"
-        ]
-      },
       "pin_control_0_spi_tristate_o": {
         "ports": [
           "pin_control_0/spi_tristate_o",
           "SPI_3wire_0/tristate_en"
         ]
       },
-      "pin_control_0_tp8_o": {
+      "pin_control_1_hdmi_en_o": {
         "ports": [
-          "pin_control_0/tp8_o",
-          "tp8_o_0"
+          "pin_control_0/hdmi_en_o",
+          "hdmi_en_o"
         ]
       },
-      "pin_control_0_vadj_en_o": {
+      "pin_control_1_led_green_o": {
+        "ports": [
+          "pin_control_0/led_green_o",
+          "led_green_o"
+        ]
+      },
+      "pin_control_1_led_red_o": {
+        "ports": [
+          "pin_control_0/led_red_o",
+          "led_red_o"
+        ]
+      },
+      "pin_control_1_tp8_o": {
+        "ports": [
+          "pin_control_0/tp8_o",
+          "tp8_o"
+        ]
+      },
+      "pin_control_1_vadj_en_o": {
         "ports": [
           "pin_control_0/vadj_en_o",
-          "vadj_en_o_0"
+          "vadj_en_o"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
