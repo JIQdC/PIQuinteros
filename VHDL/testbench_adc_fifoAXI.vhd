@@ -7,11 +7,11 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Testbench para modelo de ADC, wrapper deserializador, y FIFO de salida
+-- Description: Testbench para módulo de control de ADC con interfaz AXI
 -- 
 -- Dependencies: 
 -- 
--- Revision: 2019-12-13
+-- Revision: 2019-12-20
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------

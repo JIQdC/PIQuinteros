@@ -1,3 +1,22 @@
+----------------------------------------------------------------------------------
+-- Company: IB
+-- Engineer: José Quinteros
+-- 
+-- Design Name: 
+-- Module Name:
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: Emulador de AXI master para prueba de módulo de control de ADC con interfaz AXI
+-- 
+-- Dependencies: 
+-- 
+-- Revision: 2019-12-20
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

@@ -17,7 +17,7 @@
 --                              output port to control up to 16 slaves
 -- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
 -- 16/11/2019  JIQdC	1.30	Modificación para aplicación en CIAA-ACC (pin control)
--- 13/12/2019  JIQdC	2.00	Modificación para aplicación en recepción de datos de ADC
+-- 19/12/2019  JIQdC	2.00	Modificación para aplicación en módulo de control de ADC con interfaz AXI
 -------------------------------------------------------------------------------
 
 library ieee;
