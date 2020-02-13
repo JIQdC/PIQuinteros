@@ -18,6 +18,7 @@
 -- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
 -- 16/11/2019  JIQdC	1.30	Modificación para aplicación en CIAA-ACC (pin control)
 -- 19/12/2019  JIQdC	2.00	Modificación para aplicación en módulo de control de ADC con interfaz AXI
+-- 13/02/2020  JIQdC	2.10	
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -29,10 +30,11 @@ entity adc_control_saxi is
 		-- Width of S_AXI data bus
 		C_S_AXI_DATA_WIDTH	: integer	:= 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 4;
-		-- USer constants
+		C_S_AXI_ADDR_WIDTH	: integer	:= 5;
+		-- User constants
         USER_CORE_ID_VER    : std_logic_vector(31 downto 0) := X"00020003";
-        MAX_COUNT_1MS       : integer    := 99999        
+		-- MAX_COUNT_1MS       : integer    := 99999;
+		N_ADC				: integer	 := 14	-- ADC bit resolution      
 	);
 	port (
 		-- Global Clock Signal
@@ -97,23 +99,28 @@ entity adc_control_saxi is
 		S_AXI_RREADY	: in std_logic;
         
 		-- FIFO signals
-		fifo_dout_i: in std_logic_vector(13 downto 0);
+		fifo_dout_i: in std_logic_vector((N_ADC-1) downto 0);
 		fifo_empty_i: in std_logic;
 		fifo_full_i: in std_logic;
 		fifo_ov_i: in std_logic;
 		fifo_rd_rst_busy_i: in std_logic;
 		fifo_wr_rst_busy_i: in std_logic;
-		fifo_rd_en_o: out std_logic
+		fifo_rd_en_o: out std_logic;
+
+		-- Control signals
+		deb_control_o: out std_logic_vector(3 downto 0);
+		deb_usr_w1_o, deb_usr_w2_o: out std_logic_vector((N_ADC-1) downto 0);
+		deb_select_clk_o:out std_logic
 	);
 end adc_control_saxi;
 
 architecture rtl of adc_control_saxi is
 	-- Register inputs
-	signal datain1_r, datain2_r                             : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal 	datain1_r        								: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
-	signal dataout1_r, dataout2_r                           : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	-- R/W register
-	signal datarw_r, dataaux_r                              : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal dataout0_r, dataout1_r, dataout2_r, dataout3_r   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- General purpose R/W register
+	signal datarw_r                              			: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -132,7 +139,7 @@ architecture rtl of adc_control_saxi is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 1;
+	constant OPT_MEM_ADDR_BITS : integer := 2;
 	constant IO_RESET_VALUE : std_logic_vector(31 downto 0) := X"02FAF07F";
 	------------------------------------------------
 	---- Signals for user logic register space example
@@ -245,43 +252,53 @@ begin
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
-	      datarw_r 	    <= X"000001F3";
-	      dataout1_r    <= (others => '0');
+	      datarw_r 	    <= X"000001F3";			--value on-reset for R/W register
+	      dataout0_r    <= (others => '0');
+		  dataout1_r    <= (others => '0');
 		  dataout2_r    <= (others => '0');
+		  dataout3_r    <= (others => '0');
 	    else
 	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 	      if (slv_reg_wren = '1') then
 	        case loc_addr is
-	          when b"00" =>
+	          when b"000" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 0
-					dataaux_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					dataout0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"01" =>
+	          when b"001" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 1
-					datarw_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"10" =>
+	          when b"010" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 2
-	                dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	                dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"11" =>
+	          when b"011" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 3
-	                dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	                dataout3_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	              end if;
+				end loop;
+			when b"101" =>
+	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
+	                -- Respective byte enables are asserted as per write strobes                   
+	                -- slave register 5
+	                datarw_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
 	          when others =>
@@ -391,11 +408,23 @@ begin
 				-- output the read data matching the read address.
 
 				case loc_addr is
-					when b"00" =>
-						axi_rdata <= USER_CORE_ID_VER; -- Addr0 reads Core ID and version
-					when b"01" =>
-						axi_rdata <= datarw_r;  -- R/W register
-					when b"10" =>
+					--readback of control outputs
+					when b"000" =>
+						axi_rdata <= dataout0_r;
+					when b"001" =>
+						axi_rdata <= dataout0_r;
+					when b"010" =>
+						axi_rdata <= dataout0_r;
+					when b"011" =>
+						axi_rdata <= dataout0_r;
+					--core ID and version
+					when b"100" =>
+						axi_rdata <= USER_CORE_ID_VER;
+					--General purpose R/W register
+					when b"101" =>
+						axi_rdata <= datarw_r;  
+					--FIFO data input
+					when b"110" =>
 						--assert FIFO is not empty
 						if (fifo_empty_i = '0') then
 							--read data and output read_en for data updating	
@@ -403,8 +432,8 @@ begin
 							fifo_rd_en_o <= '1';
 						end if;
 						--if FIFO is empty, nothing can be read
-					when b"11" =>
-						axi_rdata <= datain2_r; -- Read registered inputs
+					-- when b"111" =>
+					-- 	axi_rdata <= datain2_r; 
 					when others =>
 						axi_rdata  <= (others => '0');
 				  end case;
@@ -420,14 +449,18 @@ begin
 	user_inputs1_i <= zeros_readdata & fifo_dout_i;
 	-- register '11': FIFO flags
 	user_inputs2_i <= zeros_flags & fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
-	-- Register inputs
+
+	-- Register inputs and outputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
+			--FIFO input
 			datain1_r	    <= user_inputs1_i;
-			datain2_r	    <= user_inputs2_i;
-            --user_outputs1_o <= dataout1_r;
-            --user_outputs2_o <= dataout2_r;
+			--Control outputs
+			deb_select_clk_o	<= dataout0_r(0);
+			deb_control_o		<= dataout1_r(3 downto 0);
+            deb_usr_w1_o 		<= dataout2_r((N_ADC-1) downto 0);
+            deb_usr_w2_o 		<= dataout3_r((N_ADC-1) downto 0);
 		end if;
 	end process;
     
