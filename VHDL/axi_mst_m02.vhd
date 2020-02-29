@@ -104,11 +104,33 @@ architecture rtl of axi_mst_m02 is
     
 --    constant operaciones : td_access_list(0 to NUM_ACCESOS-1) :=
     constant operaciones : td_access_list := (
-       --(ACCESS_WRITE, x"00000000", x"11111111"),
-       (ACCESS_WRITE, x"00000001", x"00000000"),
-       --(ACCESS_READ,  x"00000000", x"11111111"),
-       (ACCESS_READ,  x"00000001", x"00000000")
-       ); -- Fin de las operaciones
+      -- --LECTURA DE DATOS DE CONTADOR EN DEBUG
+      -- --selecciono clk de la FPGA
+      -- (ACCESS_WRITE,  x"00000000", x"00000001"),
+      -- (ACCESS_READ,  x"00000000", x"00000001"),
+      -- --secuencia de control F para contador
+      -- (ACCESS_WRITE,  x"00000004", x"0000000f"),
+      -- (ACCESS_READ,  x"00000004", x"0000000f"),
+      -- --lectura de varios datos de FIFO
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      --LECTURA DE DATOS DE CONTADOR EN ADC
+      --selecciono clk del ADC
+      (ACCESS_WRITE,  x"00000000", x"00000000"),
+      (ACCESS_READ,  x"00000000", x"00000000"),
+      --secuencia de control D para datos de deserializador
+      (ACCESS_WRITE,  x"00000004", x"0000000d"),
+      (ACCESS_READ,  x"00000004", x"0000000d"),
+      --lectura de varios datos de FIFO
+      (ACCESS_READ,  x"00000018", x"00000001"),
+      (ACCESS_READ,  x"00000018", x"00000001"),
+      (ACCESS_READ,  x"00000018", x"00000001"),
+      (ACCESS_READ,  x"00000018", x"00000001"),
+      (ACCESS_READ,  x"00000018", x"00000001")     
+            ); -- Fin de las operaciones
 
     type td_estado is (START, INIT_ACCESO, LECTURA1, LECTURA2, ESCRITURA1, FIN_ACCESO, IDLE);
 

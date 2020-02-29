@@ -16,7 +16,7 @@
 -- 18/10/2013  GER      0.20    Added slave sel configuration input and NSSEL 
 --                              output port to control up to 16 slaves
 -- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
--- 16/11/2019  JIQdC	1.30	Modificación para aplicación en CIAA-ACC (pin control)
+-- 16/11/2019  JIQdC	1.00	Modificación para aplicación en CIAA-ACC (pin control)
 -- 19/12/2019  JIQdC	2.00	Modificación para aplicación en módulo de control de ADC con interfaz AXI
 -- 13/02/2020  JIQdC	2.10	
 -------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ end adc_control_saxi;
 
 architecture rtl of adc_control_saxi is
 	-- Register inputs
-	signal 	datain1_r        								: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal 	datain1_r, datain2_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
 	signal dataout0_r, dataout1_r, dataout2_r, dataout3_r   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- General purpose R/W register
@@ -248,19 +248,19 @@ begin
 	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
 
 	process (S_AXI_ACLK)
-	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
+	variable loc_addr_w : std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
-	      datarw_r 	    <= X"000001F3";			--value on-reset for R/W register
+	      datarw_r 	    <= IO_RESET_VALUE;		--value on-reset for R/W register
 	      dataout0_r    <= (others => '0');
 		  dataout1_r    <= (others => '0');
 		  dataout2_r    <= (others => '0');
 		  dataout3_r    <= (others => '0');
 	    else
-	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+	      loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 	      if (slv_reg_wren = '1') then
-	        case loc_addr is
+	        case loc_addr_w is
 	          when b"000" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
@@ -356,7 +356,7 @@ begin
 	  end if;                   
 	end process; 
 
-	-- Implement axi_arvalid generation
+	-- Implement axi_arvalid generation	
 	-- axi_rvalid is asserted for one S_AXI_ACLK clock cycle when both 
 	-- S_AXI_ARVALID and axi_arready are asserted. The slave registers 
 	-- data are available on the axi_rdata bus at this instance. The 
@@ -389,11 +389,11 @@ begin
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
 	-- Output register or memory read data
-	process( S_AXI_ACLK )
-	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
+	process( S_AXI_ACLK, axi_araddr )
+	variable loc_addr_r :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
-		loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+		loc_addr_r := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 		if (rising_edge (S_AXI_ACLK)) then
 			-- FIFO read_en default value
 			fifo_rd_en_o <= '0';
@@ -407,16 +407,16 @@ begin
 				-- acceptance of read address by the slave (axi_arready),
 				-- output the read data matching the read address.
 
-				case loc_addr is
+				case loc_addr_r is
 					--readback of control outputs
 					when b"000" =>
 						axi_rdata <= dataout0_r;
 					when b"001" =>
-						axi_rdata <= dataout0_r;
+						axi_rdata <= dataout1_r;
 					when b"010" =>
-						axi_rdata <= dataout0_r;
+						axi_rdata <= dataout2_r;
 					when b"011" =>
-						axi_rdata <= dataout0_r;
+						axi_rdata <= dataout3_r;
 					--core ID and version
 					when b"100" =>
 						axi_rdata <= USER_CORE_ID_VER;
@@ -432,8 +432,9 @@ begin
 							fifo_rd_en_o <= '1';
 						end if;
 						--if FIFO is empty, nothing can be read
-					-- when b"111" =>
-					-- 	axi_rdata <= datain2_r; 
+					-- FIFO flags	
+					when b"111" =>
+					 	axi_rdata <= datain2_r; 
 					when others =>
 						axi_rdata  <= (others => '0');
 				  end case;
@@ -445,9 +446,9 @@ begin
 	-- User logic
 
 	-- FIFO data formatting to fit (C_S_AXI_DATA_WIDTH-1 downto 0) length
-	-- register '10': FIFO read data
+	-- FIFO read data
 	user_inputs1_i <= zeros_readdata & fifo_dout_i;
-	-- register '11': FIFO flags
+	-- FIFO flags
 	user_inputs2_i <= zeros_flags & fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
 
 	-- Register inputs and outputs
@@ -456,6 +457,7 @@ begin
 		if rising_edge(S_AXI_ACLK) then 
 			--FIFO input
 			datain1_r	    <= user_inputs1_i;
+			datain2_r		<= user_inputs2_i;
 			--Control outputs
 			deb_select_clk_o	<= dataout0_r(0);
 			deb_control_o		<= dataout1_r(3 downto 0);

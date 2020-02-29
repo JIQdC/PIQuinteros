@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: 
 -- 
--- Revision: 2020-02-13
+-- Revision: 2020-02-28
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -24,7 +24,8 @@ entity debug_control is
     );
     port(
         clk_fpga_i: in std_logic;                               --clock de FPGA
-        clk_frame_i: in std_logic;                              --señal frame de ADC
+        frame_i: in std_logic;                                  --señal frame de ADC
+        clk_adc_i: in std_logic;                                --clock de ADC
         select_clk_i: in std_logic;                             --selector de señal de clock
         rst_i: in std_logic;                                    --reset para módulos de debug
         control_i: in std_logic_vector(3 downto 0);             --señal de control
@@ -34,7 +35,8 @@ entity debug_control is
 
         --salidas hacia FIFO
         d_out_o: out std_logic_vector((N-1) downto 0);
-        d_valid_o: out std_logic
+        wr_en_o: out std_logic;
+        wr_clk_o: out std_logic
         );
 end debug_control;
 
@@ -60,7 +62,7 @@ begin
 
     --selector de clock
     clk <=  clk_fpga_i when (select_clk_i = '1') else
-            clk_frame_i;
+            frame_i;
 
     --INSTANCIACIÓN DE COMPONENTES
 
@@ -94,11 +96,17 @@ begin
         mix_freq when control_i="1100" else                           --mixed frequency
         d_contN when control_i="1111" else                            --contador de N bits (no incluido en secuencias de fábrica)
         d_out_i when control_i="1101" else                            --señal del deserializador (no incluido en secuencias de fábrica)
-        zerosNbits;     
+        zerosNbits;  
         
-    d_valid_o <=
-        d_valid_i when control_i="1000" else
+    --multiplexo wr_en. Para los módulos de debug es directamente el clk que se esté usando        
+    wr_en_o <=
+        d_valid_i when control_i="1101" else
         '0' when control_i="0000" else
-        clk;
+        '1';
+
+    --multiplexo clk de escritura. Si los datos son del ADC (o si se usa el clk del ADC para los módulos de debug), se usa ese clk
+    wr_clk_o <=
+        clk_adc_i when (select_clk_i = '0' or control_i="1101") else
+        clk_fpga_i;
 
 end arch;
