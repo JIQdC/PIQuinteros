@@ -11,8 +11,9 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2019-11-11
+-- Revision: 2020-03-06
 -- Additional Comments: Este modelo DEBE SER SINTETIZABLE!!
+-- Corregido para 
 -- 
 ----------------------------------------------------------------------------------
 
@@ -50,7 +51,7 @@ architecture arch of deserializer is
 
         process(d_reg,f_reg,d_in,d_frame)
         begin
-            d_next <= d_reg((N-3) downto 0) & d_in(0) & d_in(1);
+            d_next <= d_in(1) & d_in(0) & d_reg((N-3) downto 0);
             f_next <= d_frame;
             if(f_reg = '0' and d_frame = '1') then --rising edge del frame
                 d_out <= d_reg;
