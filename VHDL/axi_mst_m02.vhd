@@ -118,18 +118,22 @@ architecture rtl of axi_mst_m02 is
       -- (ACCESS_READ,  x"00000018", x"00000001"),
       -- (ACCESS_READ,  x"00000018", x"00000001"),
       --LECTURA DE DATOS DE CONTADOR EN ADC
-      --selecciono clk del ADC
-      (ACCESS_WRITE,  x"00000000", x"00000000"),
-      (ACCESS_READ,  x"00000000", x"00000000"),
-      --secuencia de control D para datos de deserializador
-      (ACCESS_WRITE,  x"00000004", x"0000000d"),
-      (ACCESS_READ,  x"00000004", x"0000000d"),
-      --lectura de varios datos de FIFO
-      (ACCESS_READ,  x"00000018", x"00000001"),
-      (ACCESS_READ,  x"00000018", x"00000001"),
-      (ACCESS_READ,  x"00000018", x"00000001"),
-      (ACCESS_READ,  x"00000018", x"00000001"),
-      (ACCESS_READ,  x"00000018", x"00000001")     
+      -- --selecciono clk del ADC
+      -- (ACCESS_WRITE,  x"00000000", x"00000000"),
+      -- (ACCESS_READ,  x"00000000", x"00000000"),
+      -- --secuencia de control D para datos de deserializador
+      -- (ACCESS_WRITE,  x"00000004", x"0000000d"),
+      -- (ACCESS_READ,  x"00000004", x"0000000d"),
+      -- --lectura de varios datos de FIFO
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001")    
+      --PRUEBA DE RESET POR AXI
+      -- reseteo general
+      (ACCESS_WRITE, x"00000020", x"00000001"),
+      (ACCESS_READ, x"00000020", x"00000001")
             ); -- Fin de las operaciones
 
     type td_estado is (START, INIT_ACCESO, LECTURA1, LECTURA2, ESCRITURA1, FIN_ACCESO, IDLE);

@@ -18,9 +18,9 @@
 -- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
 -- 16/11/2019  JIQdC	1.00	Modificación para aplicación en CIAA-ACC (pin control)
 -- 19/12/2019  JIQdC	2.00	Modificación para aplicación en módulo de control de ADC con interfaz AXI
--- 13/02/2020  JIQdC	2.10	
+-- 13/02/2020  JIQdC	2.10	Modificación de mapa de memoria
+-- 07/03/2020  JIQdC	2.20	Generación de reset para FIFO y debug
 -------------------------------------------------------------------------------
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -30,11 +30,18 @@ entity adc_control_saxi is
 		-- Width of S_AXI data bus
 		C_S_AXI_DATA_WIDTH	: integer	:= 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 5;
+		C_S_AXI_ADDR_WIDTH	: integer	:= 6;
+
 		-- User constants
+		-- Core ID and version
         USER_CORE_ID_VER    : std_logic_vector(31 downto 0) := X"00020003";
-		-- MAX_COUNT_1MS       : integer    := 99999;
-		N_ADC				: integer	 := 14	-- ADC bit resolution      
+		-- ADC bit resolution
+		N_ADC				: integer	:= 14;
+		-- Reset width (in S_AXI_ACLK pulses, up to 7)
+		RESET_WIDTH			: integer	:= 4;
+		-- Reset active for outputs
+		RST_ACTIVE_DEB		: std_logic := '1';
+		RST_ACTIVE_FIFO		: std_logic	:= '1'
 	);
 	port (
 		-- Global Clock Signal
@@ -110,7 +117,11 @@ entity adc_control_saxi is
 		-- Control signals
 		deb_control_o: out std_logic_vector(3 downto 0);
 		deb_usr_w1_o, deb_usr_w2_o: out std_logic_vector((N_ADC-1) downto 0);
-		deb_select_clk_o:out std_logic
+		deb_select_clk_o:out std_logic;
+
+		-- Reset signals
+		rst_fifo_o: out std_logic;
+		rst_debug_o: out std_logic
 	);
 end adc_control_saxi;
 
@@ -121,6 +132,8 @@ architecture rtl of adc_control_saxi is
 	signal dataout0_r, dataout1_r, dataout2_r, dataout3_r   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- General purpose R/W register
 	signal datarw_r                              			: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- Reset register output
+	signal rst_select                            			: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -139,7 +152,7 @@ architecture rtl of adc_control_saxi is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 2;
+	constant OPT_MEM_ADDR_BITS : integer := 3;
 	constant IO_RESET_VALUE : std_logic_vector(31 downto 0) := X"02FAF07F";
 	------------------------------------------------
 	---- Signals for user logic register space example
@@ -151,10 +164,17 @@ architecture rtl of adc_control_saxi is
 	signal byte_index	: integer;
 	signal aw_en	    : std_logic;
 
-	-- user logic: aux signals for FIFO data formatting
+	-- user logic
+	
+	--aux signals for FIFO data formatting
 	signal user_inputs1_i, user_inputs2_i: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	signal zeros_readdata: std_logic_vector (C_S_AXI_DATA_WIDTH-14-1 downto 0) := (others => '0');
 	signal zeros_flags: std_logic_vector (C_S_AXI_DATA_WIDTH-5-1 downto 0) := (others => '0');
+
+	--signals for reset generation
+	signal rst_cont_reg: unsigned(2 downto 0) := (others => '0');
+	signal rst_rst: std_logic := '0';
+	signal rst_en: std_logic := '1';
 
 begin
 	-- I/O Connections assignments
@@ -251,17 +271,24 @@ begin
 	variable loc_addr_w : std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
+
+		-- rst_rst default value
+			rst_rst <= '0';
+
 	    if S_AXI_ARESETN = '0' then
 	      datarw_r 	    <= IO_RESET_VALUE;		--value on-reset for R/W register
 	      dataout0_r    <= (others => '0');
 		  dataout1_r    <= (others => '0');
 		  dataout2_r    <= (others => '0');
 		  dataout3_r    <= (others => '0');
+		  --trigger general reset for FIFO and debug
+		  rst_select	<= x"00000003";
+		  rst_rst		<= '1';
 	    else
 	      loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 	      if (slv_reg_wren = '1') then
 	        case loc_addr_w is
-	          when b"000" =>
+	          when b"0000" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
@@ -269,7 +296,7 @@ begin
 					dataout0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"001" =>
+	          when b"0001" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
@@ -277,7 +304,7 @@ begin
 					dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"010" =>
+	          when b"0010" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
@@ -285,7 +312,7 @@ begin
 	                dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"011" =>
+	          when b"0011" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
@@ -293,15 +320,27 @@ begin
 	                dataout3_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 				end loop;
-			when b"101" =>
+			when b"0101" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 5
 	                datarw_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
-	            end loop;
-	          when others =>
+				end loop;
+			when b"1000" =>
+				for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+					if ( S_AXI_WSTRB(byte_index) = '1' ) then
+					-- Respective byte enables are asserted as per write strobes                   
+					-- reset register
+					rst_select(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					end if;
+				end loop;
+				--check if read data is not zero
+				if(not(rst_select(1 downto 0) = "00")) then
+					rst_rst <= '1';
+				end if;
+			when others =>
 				null; -- Maintain actual values
 			  end case;
 	      end if;
@@ -395,6 +434,7 @@ begin
 		-- Address decoding for reading registers
 		loc_addr_r := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 		if (rising_edge (S_AXI_ACLK)) then
+
 			-- FIFO read_en default value
 			fifo_rd_en_o <= '0';
 			if ( S_AXI_ARESETN = '0' ) then
@@ -402,29 +442,28 @@ begin
 			else
 			if (slv_reg_rden = '1') then
 
-
 				-- When there is a valid read address (S_AXI_ARVALID) with 
 				-- acceptance of read address by the slave (axi_arready),
 				-- output the read data matching the read address.
 
 				case loc_addr_r is
 					--readback of control outputs
-					when b"000" =>
+					when b"0000" =>
 						axi_rdata <= dataout0_r;
-					when b"001" =>
+					when b"0001" =>
 						axi_rdata <= dataout1_r;
-					when b"010" =>
+					when b"0010" =>
 						axi_rdata <= dataout2_r;
-					when b"011" =>
+					when b"0011" =>
 						axi_rdata <= dataout3_r;
 					--core ID and version
-					when b"100" =>
+					when b"0100" =>
 						axi_rdata <= USER_CORE_ID_VER;
 					--General purpose R/W register
-					when b"101" =>
+					when b"0101" =>
 						axi_rdata <= datarw_r;  
 					--FIFO data input
-					when b"110" =>
+					when b"0110" =>
 						--assert FIFO is not empty
 						if (fifo_empty_i = '0') then
 							--read data and output read_en for data updating	
@@ -433,8 +472,8 @@ begin
 						end if;
 						--if FIFO is empty, nothing can be read
 					-- FIFO flags	
-					when b"111" =>
-					 	axi_rdata <= datain2_r; 
+					when b"0111" =>
+						axi_rdata <= datain2_r; 			
 					when others =>
 						axi_rdata  <= (others => '0');
 				  end case;
@@ -465,5 +504,27 @@ begin
             deb_usr_w2_o 		<= dataout3_r((N_ADC-1) downto 0);
 		end if;
 	end process;
+
+	-- Reset generation
+	process (S_AXI_ACLK, rst_rst)
+	begin
+		if(rst_rst = '1') then
+			rst_cont_reg <= (others => '0');
+			rst_en <= '1';
+		elsif rising_edge(S_AXI_ACLK) then 
+			rst_cont_reg <= rst_cont_reg + 1;
+		end if;
+
+		if(rst_cont_reg >= to_unsigned(RESET_WIDTH-1, 3)) then
+			rst_en <= '0';
+		end if;
+	end process;
+
+	-- Reset output
+	rst_debug_o <= 	RST_ACTIVE_DEB when ((rst_select(1 downto 0)="01" or rst_select(1 downto 0)="11") and rst_en = '1') else
+					not(RST_ACTIVE_DEB);
+
+	rst_fifo_o <=		RST_ACTIVE_FIFO when ((rst_select(1 downto 0)="10" or rst_select(1 downto 0)="11") and rst_en = '1') else
+					not(RST_ACTIVE_FIFO); 	
     
 end rtl;
