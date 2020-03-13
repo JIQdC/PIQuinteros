@@ -44,7 +44,7 @@ architecture arch of contNbits_debug is
 
 begin
     --state register
-    process(clk,rst_n)
+    process(clk,rst_n,d_in)
     begin
         if (rst_n='0') then
             d_reg <= d_in;

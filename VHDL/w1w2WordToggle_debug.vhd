@@ -39,7 +39,7 @@ architecture arch of w1w2WordToggle_debug is
 
 begin
     --state register
-    process(clk,rst_n)
+    process(clk,rst_n,zerosNbits)
     begin
         if (rst_n='0') then
             d_reg <= zerosNbits;

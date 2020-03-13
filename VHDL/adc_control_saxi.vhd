@@ -506,7 +506,7 @@ begin
 	end process;
 
 	-- Reset generation
-	process (S_AXI_ACLK, rst_rst)
+	process (S_AXI_ACLK, rst_rst, rst_cont_reg)
 	begin
 		if(rst_rst = '1') then
 			rst_cont_reg <= (others => '0');
