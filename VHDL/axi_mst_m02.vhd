@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity axi_mst_m02 is
     generic (
-        TEST_TARGET_SLAVE_BASE_ADDR  : std_logic_vector  := x"44A10000"
+        TEST_TARGET_SLAVE_BASE_ADDR  : std_logic_vector  := x"44A00000"
     );
     port (
         -- Señales MASTER AXI4 LITE 32 bits
@@ -131,9 +131,14 @@ architecture rtl of axi_mst_m02 is
       -- (ACCESS_READ,  x"00000018", x"00000001"),
       -- (ACCESS_READ,  x"00000018", x"00000001")    
       --PRUEBA DE RESET POR AXI
-      -- reseteo general
-      (ACCESS_WRITE, x"00000020", x"00000001"),
-      (ACCESS_READ, x"00000020", x"00000001")
+      -- -- reseteo general
+      -- (ACCESS_WRITE, x"00000020", x"00000001"),
+      -- (ACCESS_READ, x"00000020", x"00000001")
+      --PRUEBA DE PIN CONTROL
+      (ACCESS_WRITE,  x"00000000", x"00000001"),
+      (ACCESS_WRITE,  x"00000000", x"00000001"),
+      (ACCESS_WRITE,  x"00000004", x"00000001"),
+      (ACCESS_WRITE,  x"00000004", x"00000001") 
             ); -- Fin de las operaciones
 
     type td_estado is (START, INIT_ACCESO, LECTURA1, LECTURA2, ESCRITURA1, FIN_ACCESO, IDLE);

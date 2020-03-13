@@ -17,6 +17,7 @@
 --                              output port to control up to 16 slaves
 -- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
 -- 16/11/2019  JIQdC	1.30	Modificación para aplicación en CIAA-ACC
+-- 11/03/2020  JIQdC	1.40	Control de señales digitales en CIAA-ACC
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -28,10 +29,10 @@ entity pin_control is
 		-- Width of S_AXI data bus
 		C_S_AXI_DATA_WIDTH	: integer	:= 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 4;
+		C_S_AXI_ADDR_WIDTH	: integer	:= 6;
 		-- USer constants
-        USER_CORE_ID_VER    : std_logic_vector(31 downto 0) := X"00010003";
-        MAX_COUNT_1MS       : integer    := 99999        
+		MAX_COUNT_1MS       : integer    := 100000;					--1ms/S_AXI_ACLK_period
+		LED_BLINK_PERIOD_MS	: unsigned(15 downto 0) := x"01f4"	 	--LED blink period in ms
 	);
 	port (
 		-- Global Clock Signal
@@ -96,16 +97,14 @@ entity pin_control is
 		S_AXI_RREADY	: in std_logic;
         
         -- User I/O
-		user_inputs1_i                     : in  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := X"01010101";
-		user_inputs2_i                     : in  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := X"02020202";
-		user_outputs1_o, user_outputs2_o   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-
         vadj_en_o       : out std_logic;
         led_red_o       : out std_logic;
-        led_green_o     : out std_logic;
-        hdmi_en_o       : out std_logic;
-		spi_tristate_o  : out std_logic;
-		tp8_o			: out std_logic        
+		led_green_o     : out std_logic;
+		led_dout0_o		: out std_logic;
+		-- led_dout1_o		: out std_logic;
+		-- led_dout2_o		: out std_logic;
+		-- led_dout3_o		: out std_logic;
+		spi_tristate_o  : out std_logic
 	);
 end pin_control;
 
@@ -114,14 +113,13 @@ architecture rtl of pin_control is
     -- Led blink regsters
     signal prescale_1ms_r                                   : integer range 0 to MAX_COUNT_1MS;
 	signal led_prescale_ce_r, led_toggle_r                  : std_logic;
-	signal led_count_reset_r                                : std_logic := '0';
     signal led_count_r, led_max_cnt_r                       : unsigned(15 downto 0);
 	-- Register inputs
-	signal datain1_r, datain2_r                             : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- signal datain0_r, datain1_r,datain2_r,datain3_r		: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
-	signal dataout1_r, dataout2_r                           : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	-- R/W register
-	signal datarw_r, dataaux_r                              : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal dataout0_r, dataout1_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- ,dataout2_r,dataout3_r
+			
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -140,7 +138,7 @@ architecture rtl of pin_control is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 1;
+	constant OPT_MEM_ADDR_BITS : integer := 3;
 	constant IO_RESET_VALUE : std_logic_vector(31 downto 0) := X"02FAF07F";
 	------------------------------------------------
 	---- Signals for user logic register space example
@@ -247,49 +245,47 @@ begin
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
-	    if S_AXI_ARESETN = '0' then
-	      datarw_r 	    <= X"000001F3";
-	      dataout1_r    <= (others => '0');
-		  dataout2_r    <= (others => '0');
-		  led_count_reset_r <= '0';
+		if S_AXI_ARESETN = '0' then
+			dataout0_r    <= (others => '0');
+			dataout1_r    <= (others => '0');
+			-- dataout2_r    <= (others => '0');
+			-- dataout3_r    <= (others => '0');
 	    else
 	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
-		  led_count_reset_r <= '0';
 	      if (slv_reg_wren = '1') then
 	        case loc_addr is
-	          when b"00" =>
+	          when b"0000" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 0
-					dataaux_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					dataout0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"01" =>
+	          when b"0001" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 1
-					datarw_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-					led_count_reset_r <= '1';
+					dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"10" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 2
-	                dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when b"11" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 3
-	                dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
+	        --   when b"0010" =>
+	        --     for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+	        --       if ( S_AXI_WSTRB(byte_index) = '1' ) then
+	        --         -- Respective byte enables are asserted as per write strobes                   
+	        --         -- slave register 2
+	        --         dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	        --       end if;
+	        --     end loop;
+	        --   when b"0011" =>
+	        --     for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+	        --       if ( S_AXI_WSTRB(byte_index) = '1' ) then
+	        --         -- Respective byte enables are asserted as per write strobes                   
+	        --         -- slave register 3
+	        --         dataout3_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+	        --       end if;
+	        --     end loop;
 	          when others =>
 				null; -- Maintain actual values
 			  end case;
@@ -377,61 +373,57 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (datarw_r, datain1_r, datain2_r, axi_araddr)
+	process (axi_araddr, dataout0_r, dataout1_r)
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
-	    -- Address decoding for reading registers
-	    loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
-	    case loc_addr is
-	      when b"00" =>
-	        reg_data_out <= USER_CORE_ID_VER; -- Addr0 reads Core ID and version
-	      when b"01" =>
-	        reg_data_out <= datarw_r;  -- R/W register
-	      when b"10" =>
-	        reg_data_out <= datain1_r; -- Read registered inputs
-	      when b"11" =>
-	        reg_data_out <= datain2_r; -- Read registered inputs
-	      when others =>
-			reg_data_out  <= (others => '0');
-	    end case;
-	end process; 
+		-- Address decoding for reading registers
+		loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+		case loc_addr is
+			when b"0000" =>
+				reg_data_out <= dataout0_r; 
+			when b"0001" =>
+				reg_data_out <= dataout1_r; 
+			-- when b"0010" =>
+			-- 	reg_data_out <= dataout2_r; 
+			-- when b"0011" =>
+			-- 	reg_data_out <= dataout3_r;
+			when others =>
+				reg_data_out <= (others => '0');
+		end case;
+	end process;
 
 	-- Output register or memory read data
 	process( S_AXI_ACLK ) is
 	begin
-	  if (rising_edge (S_AXI_ACLK)) then
-	    if ( S_AXI_ARESETN = '0' ) then
-	      axi_rdata  <= (others => '0');
-	    else
-	      if (slv_reg_rden = '1') then
-	        -- When there is a valid read address (S_AXI_ARVALID) with 
-	        -- acceptance of read address by the slave (axi_arready), 
-	        -- output the read dada 
-	        -- Read address mux
-	          axi_rdata <= reg_data_out;     -- register read data
-	      end if;   
-	    end if;
-	  end if;
+		if (rising_edge (S_AXI_ACLK)) then
+			if ( S_AXI_ARESETN = '0' ) then
+				axi_rdata  <= (others => '0');
+			else
+				if (slv_reg_rden = '1') then
+				-- When there is a valid read address (S_AXI_ARVALID) with
+				-- acceptance of read address by the slave (axi_arready),
+				-- output the read dada
+				-- Read address mux
+					axi_rdata <= reg_data_out;     -- register read data
+				end if;
+			end if;
+		end if;
 	end process;
-
-    -- User logic
-	-- Register inputs
+		
+	---- USER LOGIC
+	
+	-- Register outputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
-            led_max_cnt_r   <= unsigned(datarw_r(15 downto 0));
-			datain1_r	    <= user_inputs1_i;
-			datain2_r	    <= user_inputs2_i;
-            vadj_en_o       <= dataaux_r(0);
-			led_green_o     <= dataaux_r(0); -- Led shows VAdj ENA status 
-			tp8_o			<= dataaux_r(3);
-            spi_tristate_o  <= dataaux_r(1);
-            hdmi_en_o       <= dataaux_r(2);
-            user_outputs1_o <= dataout1_r;
-            user_outputs2_o <= dataout2_r;
+            vadj_en_o       <= dataout0_r(0);
+			led_green_o     <= dataout0_r(0); -- Led shows VAdj ENA status 
+			spi_tristate_o  <= dataout1_r(0);
+			led_dout0_o		<= dataout1_r(0);
 		end if;
 	end process;
-	
+
+	-- LED logic	
     -- 1 ms time base for LED
 	process (S_AXI_ACLK)
     begin
@@ -442,7 +434,7 @@ begin
 	    else
           led_prescale_ce_r      <= '0';
           prescale_1ms_r     <= prescale_1ms_r + 1;
-          if prescale_1ms_r = MAX_COUNT_1MS then
+          if prescale_1ms_r = (MAX_COUNT_1MS-1) then
             prescale_1ms_r  <= 0;
             led_prescale_ce_r    <= '1';
           end if;
@@ -454,13 +446,12 @@ begin
 	process (S_AXI_ACLK)
     begin
       if rising_edge(S_AXI_ACLK) then
-        if ( S_AXI_ARESETN = '0' or led_count_reset_r='1') then
+        if ( S_AXI_ARESETN = '0') then
           led_count_r     <= (others => '0');
-          led_toggle_r    <= '0';
           led_toggle_r    <= '0';
         elsif led_prescale_ce_r = '1' then
           led_count_r     <= led_count_r + 1;
-          if led_count_r = led_max_cnt_r then
+          if led_count_r = (LED_BLINK_PERIOD_MS - 1) then
             led_count_r   <= (others => '0');
             led_toggle_r  <= not led_toggle_r;
           end if;

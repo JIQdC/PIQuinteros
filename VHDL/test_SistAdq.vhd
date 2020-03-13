@@ -73,7 +73,7 @@ architecture sim of TestAXI is
     -- Master 
     AXI_master: entity work.axi_mst_m02(rtl) -- para simulacion RTL
     --  DUT: entity work.axi_mst_m02(STRUCTURE) -- Para simulacion post synthesis
-        generic map(TEST_TARGET_SLAVE_BASE_ADDR => x"44A00000")
+        generic map(TEST_TARGET_SLAVE_BASE_ADDR => x"44A10000")
         port map(
         
         M_AXI_ACLK    => clk, 
