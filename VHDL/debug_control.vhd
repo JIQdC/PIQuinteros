@@ -17,6 +17,8 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+Library UNISIM;
+use UNISIM.vcomponents.all;
 
 entity debug_control is
     generic(
@@ -56,6 +58,9 @@ architecture arch of debug_control is
     signal sync_1x: std_logic_vector(13 downto 0) := "00000001111111";
     --señales para mixed frequency
     signal mix_freq: std_logic_vector(13 downto 0) := "10100001100111";
+
+    --señal para selección de clock
+    signal bufgmux_S: std_logic := '0';
 begin
     --negación de reset
     rst_n <= not(rst_i);
@@ -105,8 +110,16 @@ begin
         '1';
 
     --multiplexo clk de escritura. Si los datos son del ADC (o si se usa el clk del ADC para los módulos de debug), se usa ese clk
-    wr_clk_o <=
-        clk_adc_i when (select_clk_i = '0' or control_i="1101") else
-        clk_fpga_i;
+    bufgmux_S <=    '0' when (select_clk_i = '0' or control_i="1101") else
+                    '1';
+
+    BUFGMUX_inst: BUFGMUX
+    port map
+    (
+        O => wr_clk_o, I0 => clk_adc_i, I1 => clk_fpga_i, S => bufgmux_S
+    );
+    -- wr_clk_o <=
+    --     clk_adc_i when (select_clk_i = '0' or control_i="1101") else
+    --     clk_fpga_i;
 
 end arch;
