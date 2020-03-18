@@ -96,14 +96,17 @@ entity pin_control is
     		-- accept the read data and response information.
 		S_AXI_RREADY	: in std_logic;
         
-        -- User I/O
+		-- User I/O
+		fifo_full_i		: in std_logic;
+		fifo_empty_i	: in std_logic;
+		fifo_rst_i		: in std_logic;
         vadj_en_o       : out std_logic;
         led_red_o       : out std_logic;
 		led_green_o     : out std_logic;
 		led_dout0_o		: out std_logic;
-		-- led_dout1_o		: out std_logic;
+		led_dout1_o		: out std_logic;
 		-- led_dout2_o		: out std_logic;
-		-- led_dout3_o		: out std_logic;
+		led_dout3_o		: out std_logic;
 		spi_tristate_o  : out std_logic
 	);
 end pin_control;
@@ -149,6 +152,10 @@ architecture rtl of pin_control is
 	signal reg_data_out	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal byte_index	: integer;
 	signal aw_en	    : std_logic;
+
+	--FIFO reset rising edge detected
+	signal led_pulse_count: integer := 0;
+	signal led_rst_en: std_logic := '0';
 
 begin
 	-- I/O Connections assignments
@@ -419,7 +426,6 @@ begin
             vadj_en_o       <= dataout0_r(0);
 			led_green_o     <= dataout0_r(0); -- Led shows VAdj ENA status 
 			spi_tristate_o  <= dataout1_r(0);
-			led_dout0_o		<= dataout1_r(0);
 		end if;
 	end process;
 
@@ -461,5 +467,33 @@ begin
 
 	-- Drive led output
 	led_red_o <= led_toggle_r;
+
+	-- LEDs for FIFO flags
+	led_dout0_o <= fifo_full_i;
+	led_dout1_o	<= fifo_empty_i;
+
+	-- 2s pulse generation when reset detected
+	process (fifo_rst_i)
+	begin
+		
+	end process;
+
+	process(S_AXI_ACLK,fifo_rst_i,led_prescale_ce_r)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if(fifo_rst_i = '1') then
+				led_pulse_count <= 0;
+				led_rst_en <= '1';
+			end if;
+			if (led_prescale_ce_r = '1' and led_rst_en = '1') then
+				led_pulse_count <= led_pulse_count + 1;
+				if led_pulse_count = (2000 - 1) then
+					led_rst_en <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+
+	led_dout3_o <= led_rst_en;
     
 end rtl;

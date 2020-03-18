@@ -109,15 +109,16 @@ begin
         '0' when control_i="0000" else
         '1';
 
-    --multiplexo clk de escritura. Si los datos son del ADC (o si se usa el clk del ADC para los módulos de debug), se usa ese clk
-    bufgmux_S <=    '0' when (select_clk_i = '0' or control_i="1101") else
-                    '1';
+    -- --multiplexo clk de escritura. Si los datos son del ADC (o si se usa el clk del ADC para los módulos de debug), se usa ese clk
+    -- bufgmux_S <=    '0' when (select_clk_i = '0' or control_i="1101") else
+    --                 '1';
 
-    BUFGMUX_inst: BUFGMUX
-    port map
-    (
-        O => wr_clk_o, I0 => clk_adc_i, I1 => clk_fpga_i, S => bufgmux_S
-    );
+    -- BUFGMUX_inst: BUFGMUX
+    -- port map
+    -- (
+    --     O => wr_clk_o, I0 => clk_adc_i, I1 => clk_fpga_i, S => bufgmux_S
+    -- );
+    wr_clk_o <= clk_adc_i;
     -- wr_clk_o <=
     --     clk_adc_i when (select_clk_i = '0' or control_i="1101") else
     --     clk_fpga_i;
