@@ -1,12 +1,4 @@
 /*
- * CIAASistAdq.c
- *
- *  Created on: Mar 13, 2020
- *      Author: jiqdc
- */
-
-
-/*
 Programa de apagado de regulador de placa CIAA-ACC
 José Quinteros del Castillo
 Instituto Balseiro
