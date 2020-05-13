@@ -1,0 +1,631 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "Divisor de potencia resistivo 1 x 16"
+Date "2020-05-13"
+Rev "1.0"
+Comp "Instituto Balseiro"
+Comment1 "Ingeniería en Telecomunicaciones"
+Comment2 "Quinteros del Castillo, José Ignacio"
+Comment3 "Sistema para Emulación, Adquisición y Procesamiento de Datos de Matrices de Sensores"
+Comment4 ""
+$EndDescr
+$Comp
+L Connector:Conn_Coaxial J1
+U 1 1 5EA3E56C
+P 4025 3850
+F 0 "J1" V 3953 3951 50  0000 L CNN
+F 1 "SMA_Female" V 3998 3951 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 4025 3850 50  0001 C CNN
+F 3 " ~" H 4025 3850 50  0001 C CNN
+	1    4025 3850
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J4
+U 1 1 5EA46A8E
+P 5250 4150
+F 0 "J4" H 5350 4079 50  0000 L CNN
+F 1 "SMA_Female" H 5350 4034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 5250 4150 50  0001 C CNN
+F 3 " ~" H 5250 4150 50  0001 C CNN
+	1    5250 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J5
+U 1 1 5EA473EB
+P 5250 4900
+F 0 "J5" H 5350 4829 50  0000 L CNN
+F 1 "SMA_Female" H 5350 4784 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 5250 4900 50  0001 C CNN
+F 3 " ~" H 5250 4900 50  0001 C CNN
+	1    5250 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J2
+U 1 1 5EA42426
+P 5250 2400
+F 0 "J2" H 5350 2329 50  0000 L CNN
+F 1 "SMA_Female" H 5350 2284 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 5250 2400 50  0001 C CNN
+F 3 " ~" H 5250 2400 50  0001 C CNN
+	1    5250 2400
+	1    0    0    -1  
+$EndComp
+Connection ~ 4750 3650
+Connection ~ 5525 3650
+$Comp
+L Connector:Conn_Coaxial J8
+U 1 1 5EA9F455
+P 6025 4150
+F 0 "J8" H 6125 4079 50  0000 L CNN
+F 1 "SMA_Female" H 6125 4034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6025 4150 50  0001 C CNN
+F 3 " ~" H 6025 4150 50  0001 C CNN
+	1    6025 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J9
+U 1 1 5EA9F45B
+P 6025 4900
+F 0 "J9" H 6125 4829 50  0000 L CNN
+F 1 "SMA_Female" H 6125 4784 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6025 4900 50  0001 C CNN
+F 3 " ~" H 6025 4900 50  0001 C CNN
+	1    6025 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J7
+U 1 1 5EA9F461
+P 6025 3150
+F 0 "J7" H 6125 3079 50  0000 L CNN
+F 1 "SMA_Female" H 6125 3034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6025 3150 50  0001 C CNN
+F 3 " ~" H 6025 3150 50  0001 C CNN
+	1    6025 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J6
+U 1 1 5EA9F467
+P 6025 2400
+F 0 "J6" H 6125 2329 50  0000 L CNN
+F 1 "SMA_Female" H 6125 2284 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6025 2400 50  0001 C CNN
+F 3 " ~" H 6025 2400 50  0001 C CNN
+	1    6025 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J12
+U 1 1 5EAA08B6
+P 6750 4150
+F 0 "J12" H 6850 4079 50  0000 L CNN
+F 1 "SMA_Female" H 6850 4034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6750 4150 50  0001 C CNN
+F 3 " ~" H 6750 4150 50  0001 C CNN
+	1    6750 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J13
+U 1 1 5EAA08BC
+P 6750 4900
+F 0 "J13" H 6850 4829 50  0000 L CNN
+F 1 "SMA_Female" H 6850 4784 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6750 4900 50  0001 C CNN
+F 3 " ~" H 6750 4900 50  0001 C CNN
+	1    6750 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J11
+U 1 1 5EAA08C2
+P 6750 3150
+F 0 "J11" H 6850 3079 50  0000 L CNN
+F 1 "SMA_Female" H 6850 3034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6750 3150 50  0001 C CNN
+F 3 " ~" H 6750 3150 50  0001 C CNN
+	1    6750 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J10
+U 1 1 5EAA08C8
+P 6750 2400
+F 0 "J10" H 6850 2329 50  0000 L CNN
+F 1 "SMA_Female" H 6850 2284 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 6750 2400 50  0001 C CNN
+F 3 " ~" H 6750 2400 50  0001 C CNN
+	1    6750 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J16
+U 1 1 5EAA1929
+P 7525 4150
+F 0 "J16" H 7625 4079 50  0000 L CNN
+F 1 "SMA_Female" H 7625 4034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 7525 4150 50  0001 C CNN
+F 3 " ~" H 7525 4150 50  0001 C CNN
+	1    7525 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J17
+U 1 1 5EAA192F
+P 7525 4900
+F 0 "J17" H 7625 4829 50  0000 L CNN
+F 1 "SMA_Female" H 7625 4784 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 7525 4900 50  0001 C CNN
+F 3 " ~" H 7525 4900 50  0001 C CNN
+	1    7525 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J15
+U 1 1 5EAA1935
+P 7525 3150
+F 0 "J15" H 7625 3079 50  0000 L CNN
+F 1 "SMA_Female" H 7625 3034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 7525 3150 50  0001 C CNN
+F 3 " ~" H 7525 3150 50  0001 C CNN
+	1    7525 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J14
+U 1 1 5EAA193B
+P 7525 2400
+F 0 "J14" H 7625 2329 50  0000 L CNN
+F 1 "SMA_Female" H 7625 2284 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 7525 2400 50  0001 C CNN
+F 3 " ~" H 7525 2400 50  0001 C CNN
+	1    7525 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR02
+U 1 1 5EAA398A
+P 5250 2600
+F 0 "#PWR02" H 5250 2350 50  0001 C CNN
+F 1 "GND" H 5255 2427 50  0000 C CNN
+F 2 "" H 5250 2600 50  0001 C CNN
+F 3 "" H 5250 2600 50  0001 C CNN
+	1    5250 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR06
+U 1 1 5EAA6E8B
+P 6025 2600
+F 0 "#PWR06" H 6025 2350 50  0001 C CNN
+F 1 "GND" H 6030 2427 50  0000 C CNN
+F 2 "" H 6025 2600 50  0001 C CNN
+F 3 "" H 6025 2600 50  0001 C CNN
+	1    6025 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR010
+U 1 1 5EAA74F0
+P 6750 2600
+F 0 "#PWR010" H 6750 2350 50  0001 C CNN
+F 1 "GND" H 6755 2427 50  0000 C CNN
+F 2 "" H 6750 2600 50  0001 C CNN
+F 3 "" H 6750 2600 50  0001 C CNN
+	1    6750 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR014
+U 1 1 5EAA7B95
+P 7525 2600
+F 0 "#PWR014" H 7525 2350 50  0001 C CNN
+F 1 "GND" H 7530 2427 50  0000 C CNN
+F 2 "" H 7525 2600 50  0001 C CNN
+F 3 "" H 7525 2600 50  0001 C CNN
+	1    7525 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR015
+U 1 1 5EAA82AD
+P 7525 3350
+F 0 "#PWR015" H 7525 3100 50  0001 C CNN
+F 1 "GND" H 7530 3177 50  0000 C CNN
+F 2 "" H 7525 3350 50  0001 C CNN
+F 3 "" H 7525 3350 50  0001 C CNN
+	1    7525 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR011
+U 1 1 5EAA91D4
+P 6750 3350
+F 0 "#PWR011" H 6750 3100 50  0001 C CNN
+F 1 "GND" H 6755 3177 50  0000 C CNN
+F 2 "" H 6750 3350 50  0001 C CNN
+F 3 "" H 6750 3350 50  0001 C CNN
+	1    6750 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR07
+U 1 1 5EAA9797
+P 6025 3350
+F 0 "#PWR07" H 6025 3100 50  0001 C CNN
+F 1 "GND" H 6030 3177 50  0000 C CNN
+F 2 "" H 6025 3350 50  0001 C CNN
+F 3 "" H 6025 3350 50  0001 C CNN
+	1    6025 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR04
+U 1 1 5EAAA5D7
+P 5250 4350
+F 0 "#PWR04" H 5250 4100 50  0001 C CNN
+F 1 "GND" H 5255 4177 50  0000 C CNN
+F 2 "" H 5250 4350 50  0001 C CNN
+F 3 "" H 5250 4350 50  0001 C CNN
+	1    5250 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR08
+U 1 1 5EAAABC5
+P 6025 4350
+F 0 "#PWR08" H 6025 4100 50  0001 C CNN
+F 1 "GND" H 6030 4177 50  0000 C CNN
+F 2 "" H 6025 4350 50  0001 C CNN
+F 3 "" H 6025 4350 50  0001 C CNN
+	1    6025 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR012
+U 1 1 5EAAB1B3
+P 6750 4350
+F 0 "#PWR012" H 6750 4100 50  0001 C CNN
+F 1 "GND" H 6755 4177 50  0000 C CNN
+F 2 "" H 6750 4350 50  0001 C CNN
+F 3 "" H 6750 4350 50  0001 C CNN
+	1    6750 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR016
+U 1 1 5EAAB782
+P 7525 4350
+F 0 "#PWR016" H 7525 4100 50  0001 C CNN
+F 1 "GND" H 7530 4177 50  0000 C CNN
+F 2 "" H 7525 4350 50  0001 C CNN
+F 3 "" H 7525 4350 50  0001 C CNN
+	1    7525 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR017
+U 1 1 5EAABE17
+P 7525 5100
+F 0 "#PWR017" H 7525 4850 50  0001 C CNN
+F 1 "GND" H 7530 4927 50  0000 C CNN
+F 2 "" H 7525 5100 50  0001 C CNN
+F 3 "" H 7525 5100 50  0001 C CNN
+	1    7525 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR013
+U 1 1 5EAAC522
+P 6750 5100
+F 0 "#PWR013" H 6750 4850 50  0001 C CNN
+F 1 "GND" H 6755 4927 50  0000 C CNN
+F 2 "" H 6750 5100 50  0001 C CNN
+F 3 "" H 6750 5100 50  0001 C CNN
+	1    6750 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR09
+U 1 1 5EAACC6F
+P 6025 5100
+F 0 "#PWR09" H 6025 4850 50  0001 C CNN
+F 1 "GND" H 6030 4927 50  0000 C CNN
+F 2 "" H 6025 5100 50  0001 C CNN
+F 3 "" H 6025 5100 50  0001 C CNN
+	1    6025 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR05
+U 1 1 5EAAD30E
+P 5250 5100
+F 0 "#PWR05" H 5250 4850 50  0001 C CNN
+F 1 "GND" H 5255 4927 50  0000 C CNN
+F 2 "" H 5250 5100 50  0001 C CNN
+F 3 "" H 5250 5100 50  0001 C CNN
+	1    5250 5100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4750 3650 4750 4150
+$Comp
+L Device:R R1
+U 1 1 5EA002DC
+P 4375 3650
+F 0 "R1" V 4275 3650 50  0000 C CNN
+F 1 "43" V 4375 3650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4305 3650 50  0001 C CNN
+F 3 "~" H 4375 3650 50  0001 C CNN
+	1    4375 3650
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5EADA6F6
+P 4900 2400
+F 0 "R2" V 4800 2400 50  0000 C CNN
+F 1 "43" V 4900 2400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4830 2400 50  0001 C CNN
+F 3 "~" H 4900 2400 50  0001 C CNN
+	1    4900 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 5EADB851
+P 4900 3150
+F 0 "R3" V 4800 3150 50  0000 C CNN
+F 1 "43" V 4900 3150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4830 3150 50  0001 C CNN
+F 3 "~" H 4900 3150 50  0001 C CNN
+	1    4900 3150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4750 2400 4750 3150
+Connection ~ 4750 3150
+Wire Wire Line
+	4750 3150 4750 3650
+$Comp
+L Device:R R4
+U 1 1 5EADE6D9
+P 4900 4150
+F 0 "R4" V 4800 4150 50  0000 C CNN
+F 1 "43" V 4900 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4830 4150 50  0001 C CNN
+F 3 "~" H 4900 4150 50  0001 C CNN
+	1    4900 4150
+	0    1    1    0   
+$EndComp
+Connection ~ 4750 4150
+Wire Wire Line
+	4750 4150 4750 4900
+$Comp
+L Device:R R5
+U 1 1 5EADEFD7
+P 4900 4900
+F 0 "R5" V 4800 4900 50  0000 C CNN
+F 1 "43" V 4900 4900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4830 4900 50  0001 C CNN
+F 3 "~" H 4900 4900 50  0001 C CNN
+	1    4900 4900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5525 3650 5525 4150
+Wire Wire Line
+	5525 2400 5525 3150
+$Comp
+L Device:R R6
+U 1 1 5EAEA381
+P 5675 2400
+F 0 "R6" V 5575 2400 50  0000 C CNN
+F 1 "43" V 5675 2400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5605 2400 50  0001 C CNN
+F 3 "~" H 5675 2400 50  0001 C CNN
+	1    5675 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R7
+U 1 1 5EAEA387
+P 5675 3150
+F 0 "R7" V 5575 3150 50  0000 C CNN
+F 1 "43" V 5675 3150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5605 3150 50  0001 C CNN
+F 3 "~" H 5675 3150 50  0001 C CNN
+	1    5675 3150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R8
+U 1 1 5EAEA38D
+P 5675 4150
+F 0 "R8" V 5575 4150 50  0000 C CNN
+F 1 "43" V 5675 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5605 4150 50  0001 C CNN
+F 3 "~" H 5675 4150 50  0001 C CNN
+	1    5675 4150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R9
+U 1 1 5EAEA393
+P 5675 4900
+F 0 "R9" V 5575 4900 50  0000 C CNN
+F 1 "43" V 5675 4900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5605 4900 50  0001 C CNN
+F 3 "~" H 5675 4900 50  0001 C CNN
+	1    5675 4900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6250 2400 6250 3150
+Wire Wire Line
+	7025 2400 7025 3150
+$Comp
+L Device:R R10
+U 1 1 5EAF3F39
+P 6400 2400
+F 0 "R10" V 6300 2400 50  0000 C CNN
+F 1 "43" V 6400 2400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 6330 2400 50  0001 C CNN
+F 3 "~" H 6400 2400 50  0001 C CNN
+	1    6400 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R11
+U 1 1 5EAF3F3F
+P 6400 3150
+F 0 "R11" V 6300 3150 50  0000 C CNN
+F 1 "43" V 6400 3150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 6330 3150 50  0001 C CNN
+F 3 "~" H 6400 3150 50  0001 C CNN
+	1    6400 3150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R12
+U 1 1 5EAF3F45
+P 6400 4150
+F 0 "R12" V 6300 4150 50  0000 C CNN
+F 1 "43" V 6400 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 6330 4150 50  0001 C CNN
+F 3 "~" H 6400 4150 50  0001 C CNN
+	1    6400 4150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R13
+U 1 1 5EAF3F4B
+P 6400 4900
+F 0 "R13" V 6300 4900 50  0000 C CNN
+F 1 "43" V 6400 4900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 6330 4900 50  0001 C CNN
+F 3 "~" H 6400 4900 50  0001 C CNN
+	1    6400 4900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R14
+U 1 1 5EAF4B97
+P 7175 2400
+F 0 "R14" V 7075 2400 50  0000 C CNN
+F 1 "43" V 7175 2400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 7105 2400 50  0001 C CNN
+F 3 "~" H 7175 2400 50  0001 C CNN
+	1    7175 2400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R15
+U 1 1 5EAF4B9D
+P 7175 3150
+F 0 "R15" V 7075 3150 50  0000 C CNN
+F 1 "43" V 7175 3150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 7105 3150 50  0001 C CNN
+F 3 "~" H 7175 3150 50  0001 C CNN
+	1    7175 3150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R16
+U 1 1 5EAF4BA3
+P 7175 4150
+F 0 "R16" V 7075 4150 50  0000 C CNN
+F 1 "43" V 7175 4150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 7105 4150 50  0001 C CNN
+F 3 "~" H 7175 4150 50  0001 C CNN
+	1    7175 4150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R17
+U 1 1 5EAF4BA9
+P 7175 4900
+F 0 "R17" V 7075 4900 50  0000 C CNN
+F 1 "43" V 7175 4900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 7105 4900 50  0001 C CNN
+F 3 "~" H 7175 4900 50  0001 C CNN
+	1    7175 4900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4025 3650 4225 3650
+Wire Wire Line
+	4750 3650 4525 3650
+Wire Wire Line
+	4750 3650 5525 3650
+Connection ~ 5525 3150
+Wire Wire Line
+	5525 3150 5525 3650
+Connection ~ 5525 4150
+Wire Wire Line
+	5525 4150 5525 4900
+Wire Wire Line
+	6250 4150 6250 4900
+Connection ~ 7025 3150
+Wire Wire Line
+	7025 3150 7025 3650
+Connection ~ 7025 3650
+Wire Wire Line
+	7025 3650 7025 4150
+Connection ~ 7025 4150
+Wire Wire Line
+	7025 4150 7025 4900
+Wire Wire Line
+	5525 3650 6250 3650
+Wire Wire Line
+	6250 3150 6250 3650
+Connection ~ 6250 3150
+Connection ~ 6250 3650
+Wire Wire Line
+	6250 3650 7025 3650
+Wire Wire Line
+	6250 3650 6250 4150
+Connection ~ 6250 4150
+$Comp
+L power:GND #PWR03
+U 1 1 5EAA9F35
+P 5250 3350
+F 0 "#PWR03" H 5250 3100 50  0001 C CNN
+F 1 "GND" H 5255 3177 50  0000 C CNN
+F 2 "" H 5250 3350 50  0001 C CNN
+F 3 "" H 5250 3350 50  0001 C CNN
+	1    5250 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_Coaxial J3
+U 1 1 5EA462FD
+P 5250 3150
+F 0 "J3" H 5350 3079 50  0000 L CNN
+F 1 "SMA_Female" H 5350 3034 50  0001 L CNN
+F 2 "Connector_Coaxial:SMA_Samtec_SMA-J-P-X-ST-EM1_EdgeMount" H 5250 3150 50  0001 C CNN
+F 3 " ~" H 5250 3150 50  0001 C CNN
+	1    5250 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR01
+U 1 1 5EA40F4A
+P 3825 3850
+F 0 "#PWR01" H 3825 3600 50  0001 C CNN
+F 1 "GND" H 3830 3677 50  0000 C CNN
+F 2 "" H 3825 3850 50  0001 C CNN
+F 3 "" H 3825 3850 50  0001 C CNN
+	1    3825 3850
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
