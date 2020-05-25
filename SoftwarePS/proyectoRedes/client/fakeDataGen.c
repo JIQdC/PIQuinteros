@@ -2,7 +2,7 @@
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(time_t update_period, OpMode_t mode)
+FakeDataGen_t * FakeDataGenInit(double update_period, OpMode_t mode)
 {
     FakeDataGen_t * fdg = malloc(sizeof(FakeDataGen_t));
 
@@ -59,6 +59,7 @@ void * fdg_threadFunc (void * ctx)
         case randConst:
             //pick a random constant and output to queue until stopped
             result = rand() & UINT16_MAX;
+            printf("FDG: writing %d into queue.\n",result);
             while (fdg->running)
             {
                 Dev_QueuePut(fdg->pq,result);

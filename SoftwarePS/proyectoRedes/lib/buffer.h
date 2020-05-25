@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
-#define BUF_SIZE 16
+#define BUF_SIZE 2
+
+#define UPDATE_TIME_SEC 1
 
 typedef struct __attribute__ ((packed))
 {

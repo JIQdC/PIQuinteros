@@ -1,0 +1,196 @@
+29979 execve("./server_main", ["./server_main"], 0x7ffdf3c30e88 /* 73 vars */) = 0
+29979 brk(NULL)                         = 0x55563a061000
+29979 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+29979 access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+29979 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+29979 fstat(3, {st_mode=S_IFREG|0644, st_size=248087, ...}) = 0
+29979 mmap(NULL, 248087, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f44e6a87000
+29979 close(3)                          = 0
+29979 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+29979 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+29979 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000b\0\0\0\0\0\0"..., 832) = 832
+29979 fstat(3, {st_mode=S_IFREG|0755, st_size=144976, ...}) = 0
+29979 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f44e6a85000
+29979 mmap(NULL, 2221184, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f44e667e000
+29979 mprotect(0x7f44e6698000, 2093056, PROT_NONE) = 0
+29979 mmap(0x7f44e6897000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19000) = 0x7f44e6897000
+29979 mmap(0x7f44e6899000, 13440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f44e6899000
+29979 close(3)                          = 0
+29979 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+29979 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+29979 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+29979 fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+29979 mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f44e628d000
+29979 mprotect(0x7f44e6474000, 2097152, PROT_NONE) = 0
+29979 mmap(0x7f44e6674000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7f44e6674000
+29979 mmap(0x7f44e667a000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f44e667a000
+29979 close(3)                          = 0
+29979 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f44e6a82000
+29979 arch_prctl(ARCH_SET_FS, 0x7f44e6a82740) = 0
+29979 mprotect(0x7f44e6674000, 16384, PROT_READ) = 0
+29979 mprotect(0x7f44e6897000, 4096, PROT_READ) = 0
+29979 mprotect(0x555639cfd000, 4096, PROT_READ) = 0
+29979 mprotect(0x7f44e6ac4000, 4096, PROT_READ) = 0
+29979 munmap(0x7f44e6a87000, 248087)    = 0
+29979 set_tid_address(0x7f44e6a82a10)   = 29979
+29979 set_robust_list(0x7f44e6a82a20, 24) = 0
+29979 rt_sigaction(SIGRTMIN, {sa_handler=0x7f44e6683cb0, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x7f44e6690890}, NULL, 8) = 0
+29979 rt_sigaction(SIGRT_1, {sa_handler=0x7f44e6683d50, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x7f44e6690890}, NULL, 8) = 0
+29979 rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+29979 prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+29979 brk(NULL)                         = 0x55563a061000
+29979 brk(0x55563a082000)               = 0x55563a082000
+29979 socket(AF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+29979 setsockopt(3, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0
+29979 bind(3, {sa_family=AF_INET, sin_port=htons(12345), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+29979 listen(3, 5)                      = 0
+29979 fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 1), ...}) = 0
+29979 write(1, "Server listening on all addresse"..., 47) = 47
+29979 eventfd2(0, EFD_SEMAPHORE)        = 6
+29979 mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f44e5a8c000
+29979 mprotect(0x7f44e5a8d000, 8388608, PROT_READ|PROT_WRITE) = 0
+29979 clone(child_stack=0x7f44e628bfb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7f44e628c9d0, tls=0x7f44e628c700, child_tidptr=0x7f44e628c9d0) = 29980
+29979 select(4, [0 3], NULL, NULL, NULL <unfinished ...>
+29980 set_robust_list(0x7f44e628c9e0, 24) = 0
+29979 <... select resumed> )            = 1 (in [3])
+29979 accept(3, {sa_family=AF_INET, sin_port=htons(38292), sin_addr=inet_addr("127.0.0.1")}, [16]) = 7
+29979 mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+29979 <... mmap resumed> )              = 0x7f44e528b000
+29979 mprotect(0x7f44e528c000, 8388608, PROT_READ|PROT_WRITE) = 0
+29979 clone(child_stack=0x7f44e5a8afb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7f44e5a8b9d0, tls=0x7f44e5a8b700, child_tidptr=0x7f44e5a8b9d0) = 30002
+29979 select(4, [0 3], NULL, NULL, NULL <unfinished ...>
+30002 set_robust_list(0x7f44e5a8b9e0, 24) = 0
+30002 mmap(NULL, 134217728, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x7f44dd28b000
+30002 munmap(0x7f44dd28b000, 47665152)  = 0
+30002 munmap(0x7f44e4000000, 19443712)  = 0
+30002 mprotect(0x7f44e0000000, 135168, PROT_READ|PROT_WRITE) = 0
+30002 select(8, [6 7], NULL, NULL, NULL) = 1 (in [7])
+30002 recvfrom(7, "\1\2:\331:\331", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 41 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 41
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> "\1\2", 6, 0, NULL, NULL) = 2
+30002 recvfrom(7, "\1\2:\331", 4, 0, NULL, NULL) = 4
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL) = 1 (in [7])
+29980 write(1, "Client thread 0 with output valu"..., 39 <unfinished ...>
+30002 recvfrom(7,  <unfinished ...>
+29980 <... write resumed> )             = 39
+30002 <... recvfrom resumed> ":\331\1\2", 6, 0, NULL, NULL) = 4
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> "\1\2", 2, 0, NULL, NULL) = 2
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 39 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 39
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> ":\331:\331\1\2", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 write(1, "Client thread 0 with output valu"..., 41) = 41
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+30002 recvfrom(7, "\1\2:\331:\331", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 write(1, "Client thread 0 with output valu"..., 41) = 41
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 select(8, [6 7], NULL, NULL, NULL) = 1 (in [7])
+30002 recvfrom(7, "\1\2", 6, 0, NULL, NULL) = 2
+30002 recvfrom(7, "\1\2:\331", 4, 0, NULL, NULL) = 4
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 39 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 39
+30002 recvfrom(7, ":\331\1\2", 6, 0, NULL, NULL) = 4
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 recvfrom(7, "\1\2", 2, 0, NULL, NULL) = 2
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 39 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 39
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> ":\331:\331\1\2", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+29980 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30002 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+29980 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30002 <... futex resumed> )             = 0
+29980 write(1, "Client thread 0 with output valu"..., 41 <unfinished ...>
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 <... write resumed> )             = 41
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+30002 recvfrom(7, "\1\2:\331:\331", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 41 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 41
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> "\1\2", 6, 0, NULL, NULL) = 2
+30002 recvfrom(7, "\1\2:\331", 4, 0, NULL, NULL) = 4
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29980 write(1, "Client thread 0 with output valu"..., 39 <unfinished ...>
+30002 <... select resumed> )            = 1 (in [7])
+29980 <... write resumed> )             = 39
+30002 recvfrom(7,  <unfinished ...>
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 <... recvfrom resumed> ":\331\1\2", 6, 0, NULL, NULL) = 4
+30002 recvfrom(7, "\1\2", 2, 0, NULL, NULL) = 2
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 write(1, "Client thread 0 with output valu"..., 39) = 39
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 select(8, [6 7], NULL, NULL, NULL) = 1 (in [7])
+30002 recvfrom(7, ":\331:\331\0\0", 6, 0, NULL, NULL) = 6
+30002 futex(0x55563a0617c0, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 futex(0x55563a061780, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 futex(0x55563a061780, FUTEX_WAKE_PRIVATE, 1) = 1
+29980 <... futex resumed> )             = 0
+29980 write(1, "Client thread 0 with output valu"..., 41) = 41
+29980 futex(0x55563a0617c0, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30002 select(8, [6 7], NULL, NULL, NULL <unfinished ...>
+29979 <... select resumed> )            = ? ERESTARTNOHAND (To be restarted if no handler)
+29979 --- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
+30002 <... select resumed> <unfinished ...>) = ?
+29980 <... futex resumed>)              = ?
+30002 +++ killed by SIGINT +++
+29980 +++ killed by SIGINT +++
+29979 +++ killed by SIGINT +++

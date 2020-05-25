@@ -42,7 +42,7 @@ typedef struct
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(time_t update_period, OpMode_t mode);
+FakeDataGen_t * FakeDataGenInit(double update_period, OpMode_t mode);
 
 // destroys a fake data generator
 void FakeDataGenDestroy(FakeDataGen_t * fdg);

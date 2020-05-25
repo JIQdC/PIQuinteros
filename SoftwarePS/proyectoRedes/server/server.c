@@ -343,7 +343,28 @@ void ProcThreadDestroy(Proc_Thread_t * prTh)
 }
 
 // function to be run by the processing thread
-void * procTh_threadFunc(void * ctx);
+void * procTh_threadFunc(void * ctx)
+{
+    // TEST IMPLEMENTATION: get first value from active threads
+    Proc_Thread_t * pTh = (Proc_Thread_t *) ctx;
+    Server_t * server = (Server_t *) pTh->server;
+    Buffer_t buf;
+
+    int i;
+
+    while(pTh->running)
+    {
+        for(i=0;i<MAX_CLIENT_THREADS;i++)
+        {
+            if(server->clTh[i]->running)
+            {
+                buf = Cl_QueueGet(server->clTh[i]->pQ);
+                printf("Client thread %d with output value %d.\n",i,buf.data[0]);
+            }
+        }
+    }
+
+}
 
 // sets a processing thread to run
 void ProcThreadRun(Proc_Thread_t * prTh)
@@ -403,6 +424,8 @@ Server_t * ServerInit(int server_portno)
     //listen for client connections
     listen(server->sockfd,5);
     server->clilen = sizeof(server->cli_addr);
+
+    printf("Server listening on all addresses, port %d.\n",server_portno);
 
     //initialize thread semaphore
     if(sem_init(&server->sem_threads,0,MAX_CLIENT_THREADS) < 0) error("sem_init in ServerInit");
@@ -533,6 +556,7 @@ void ServerRun(Server_t * server)
                     {
                         //run this thread
                         ClThreadRun(server->clTh[i],newsockfd);
+                        break;
                     }
                     //this should NOT happen
                     if(i == MAX_CLIENT_THREADS - 1)
@@ -544,5 +568,9 @@ void ServerRun(Server_t * server)
             }   
         }
     }
+
+    //stop processing thread
+    ProcThreadStop(server->prTh);
+    
     printf("Server stopped correctly.\n");
 }

@@ -1,0 +1,287 @@
+30001 execve("./client_main", ["./client_main"], 0x7fff3dfe0a68 /* 73 vars */) = 0
+30001 brk(NULL)                         = 0x557a367c1000
+30001 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+30001 access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+30001 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+30001 fstat(3, {st_mode=S_IFREG|0644, st_size=248087, ...}) = 0
+30001 mmap(NULL, 248087, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7eff669a0000
+30001 close(3)                          = 0
+30001 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+30001 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3
+30001 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\272\0\0\0\0\0\0"..., 832) = 832
+30001 fstat(3, {st_mode=S_IFREG|0644, st_size=1700792, ...}) = 0
+30001 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7eff6699e000
+30001 mmap(NULL, 3789144, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7eff66418000
+30001 mprotect(0x7eff665b5000, 2093056, PROT_NONE) = 0
+30001 mmap(0x7eff667b4000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19c000) = 0x7eff667b4000
+30001 close(3)                          = 0
+30001 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+30001 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+30001 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000b\0\0\0\0\0\0"..., 832) = 832
+30001 fstat(3, {st_mode=S_IFREG|0755, st_size=144976, ...}) = 0
+30001 mmap(NULL, 2221184, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7eff661f9000
+30001 mprotect(0x7eff66213000, 2093056, PROT_NONE) = 0
+30001 mmap(0x7eff66412000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19000) = 0x7eff66412000
+30001 mmap(0x7eff66414000, 13440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7eff66414000
+30001 close(3)                          = 0
+30001 access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+30001 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+30001 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+30001 fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+30001 mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7eff65e08000
+30001 mprotect(0x7eff65fef000, 2097152, PROT_NONE) = 0
+30001 mmap(0x7eff661ef000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7eff661ef000
+30001 mmap(0x7eff661f5000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7eff661f5000
+30001 close(3)                          = 0
+30001 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7eff6699b000
+30001 arch_prctl(ARCH_SET_FS, 0x7eff6699b740) = 0
+30001 mprotect(0x7eff661ef000, 16384, PROT_READ) = 0
+30001 mprotect(0x7eff66412000, 4096, PROT_READ) = 0
+30001 mprotect(0x7eff667b4000, 4096, PROT_READ) = 0
+30001 mprotect(0x557a358fd000, 4096, PROT_READ) = 0
+30001 mprotect(0x7eff669dd000, 4096, PROT_READ) = 0
+30001 munmap(0x7eff669a0000, 248087)    = 0
+30001 set_tid_address(0x7eff6699ba10)   = 30001
+30001 set_robust_list(0x7eff6699ba20, 24) = 0
+30001 rt_sigaction(SIGRTMIN, {sa_handler=0x7eff661fecb0, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x7eff6620b890}, NULL, 8) = 0
+30001 rt_sigaction(SIGRT_1, {sa_handler=0x7eff661fed50, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x7eff6620b890}, NULL, 8) = 0
+30001 rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+30001 prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+30001 brk(NULL)                         = 0x557a367c1000
+30001 brk(0x557a367e2000)               = 0x557a367e2000
+30001 socket(AF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+30001 stat("/etc/resolv.conf", {st_mode=S_IFREG|0644, st_size=715, ...}) = 0
+30001 openat(AT_FDCWD, "/etc/host.conf", O_RDONLY|O_CLOEXEC) = 6
+30001 fstat(6, {st_mode=S_IFREG|0644, st_size=92, ...}) = 0
+30001 read(6, "# The \"order\" line is only used "..., 4096) = 92
+30001 read(6, "", 4096)                 = 0
+30001 close(6)                          = 0
+30001 futex(0x7eff661f7ba4, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+30001 openat(AT_FDCWD, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 6
+30001 fstat(6, {st_mode=S_IFREG|0644, st_size=715, ...}) = 0
+30001 read(6, "# This file is managed by man:sy"..., 4096) = 715
+30001 read(6, "", 4096)                 = 0
+30001 close(6)                          = 0
+30001 uname({sysname="Linux", nodename="jiqdc-ubuntu", ...}) = 0
+30001 connect(3, {sa_family=AF_INET, sin_port=htons(12345), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+30001 fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 3), ...}) = 0
+30001 write(1, "Client connected to 0.0.0.0:1234"..., 35) = 35
+30001 mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7eff65607000
+30001 mprotect(0x7eff65608000, 8388608, PROT_READ|PROT_WRITE) = 0
+30001 clone(child_stack=0x7eff65e06fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7eff65e079d0, tls=0x7eff65e07700, child_tidptr=0x7eff65e079d0) = 30003
+30001 mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7eff64e06000
+30001 mprotect(0x7eff64e07000, 8388608, PROT_READ|PROT_WRITE) = 0
+30001 clone(child_stack=0x7eff65605fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7eff656069d0, tls=0x7eff65606700, child_tidptr=0x7eff656069d0) = 30004
+30001 mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7eff64605000
+30001 mprotect(0x7eff64606000, 8388608, PROT_READ|PROT_WRITE) = 0
+30001 clone(child_stack=0x7eff64e04fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7eff64e059d0, tls=0x7eff64e05700, child_tidptr=0x7eff64e059d0) = 30005
+30001 fstat(0,  <unfinished ...>
+30005 set_robust_list(0x7eff64e059e0, 24 <unfinished ...>
+30001 <... fstat resumed> {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 3), ...}) = 0
+30005 <... set_robust_list resumed> )   = 0
+30001 read(0,  <unfinished ...>
+30003 set_robust_list(0x7eff65e079e0, 24 <unfinished ...>
+30005 write(1, "FDG: writing 55610 into queue.\n", 31 <unfinished ...>
+30003 <... set_robust_list resumed> )   = 0
+30005 <... write resumed> )             = 31
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30003 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30005 <... futex resumed> )             = 0
+30003 futex(0x557a367c1430, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 futex(0x557a367c1430, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30003 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30005 <... futex resumed> )             = 0
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30004 set_robust_list(0x7eff656069e0, 24) = 0
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 futex(0x557a367c1300, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30003 futex(0x557a367c1300, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30003 <... futex resumed> )             = 0
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 <... futex resumed> )             = 0
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1) = 1
+30004 <... futex resumed> )             = 0
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38) = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 <... futex resumed> )             = 0
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 futex(0x557a367c1300, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30003 futex(0x557a367c1300, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30003 <... futex resumed> )             = 0
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 futex(0x557a367c1300, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30003 futex(0x557a367c1300, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30003 <... futex resumed> )             = 0
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 futex(0x557a367c1300, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30003 futex(0x557a367c1300, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30003 <... futex resumed> )             = 0
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 futex(0x557a367c1300, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30003 futex(0x557a367c1300, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = -1 EAGAIN (Resource temporarily unavailable)
+30003 <... futex resumed> )             = 0
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\1\2", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1340, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+30004 <... futex resumed> )             = 0
+30003 <... futex resumed> )             = 1
+30004 write(1, "TxTh: Received from TxQueue[0] 5"..., 38 <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30004 <... write resumed> )             = 38
+30004 write(1, "TxTh: Received from TxQueue[1] 5"..., 38) = 38
+30004 write(3, "\1\2:\331:\331\0\0", 8) = 8
+30004 futex(0x557a367c1340, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30005 <... nanosleep resumed> NULL)     = 0
+30005 futex(0x557a367c1470, FUTEX_WAKE_PRIVATE, 1) = 1
+30003 <... futex resumed> )             = 0
+30005 nanosleep({tv_sec=1, tv_nsec=0},  <unfinished ...>
+30003 futex(0x557a367c1470, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, 0xffffffff <unfinished ...>
+30001 <... read resumed> 0x557a367c28b0, 1024) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+30001 --- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
+30005 <... nanosleep resumed> <unfinished ...>) = ?
+30004 <... futex resumed>)              = ?
+30003 <... futex resumed>)              = ?
+30005 +++ killed by SIGINT +++
+30004 +++ killed by SIGINT +++
+30003 +++ killed by SIGINT +++
+30001 +++ killed by SIGINT +++

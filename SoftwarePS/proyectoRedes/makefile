@@ -18,10 +18,10 @@ LIB_HEADERS := $(wildcard lib/*.h)
 all: client_main server_main
 
 client_main: $(CLIENT_SRCS) $(CLIENT_HEADERS) $(LIB_SRCS) $(LIB_HEADERS)
-	gcc -g $(CLIENT_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)
+	gcc -g -Wall $(CLIENT_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)
 
 server_main: $(SERVER_SRCS) $(SERVER_HEADERS) $(LIB_SRCS) $(LIB_HEADERS)
-	gcc -g $(SERVER_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)
+	gcc -g -Wall $(SERVER_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)
 
 clean:
 	rm -rvf client_main server_main

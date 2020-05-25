@@ -182,6 +182,8 @@ void * adqTh_threadFunc(void * ctx)
 
     int i;
 
+    uint16_t dev_data;
+
     while(adqTh->running)
     {
         //adquire a free Rx_Buffer
@@ -193,7 +195,9 @@ void * adqTh_threadFunc(void * ctx)
         //fill buffer with data from FakeDataGen    
         for(i=0;i<BUF_SIZE;i++)
         {
-            rxBuf->data[i]=Dev_QueueGet(devQ);
+            dev_data = Dev_QueueGet(devQ);
+            // printf("AdqTh: Received from FDG %d.\n",dev_data);
+            rxBuf->data[i]= dev_data;
         }    
 
         //put buffer in Tx_Queue
@@ -268,8 +272,10 @@ Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ, char * server_add
         exit(1);
     }
     //get server address from host found
-    memcpy(server->h_addr_list[0],&serv_addr.sin_addr.s_addr,server->h_length);
-    //use port passed as argument
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr_list[0], 
+         (char *)&serv_addr.sin_addr.s_addr,
+         server->h_length);    //use port passed as argument
     serv_addr.sin_port=htons(server_portno);
     //connect to server
     if (connect(txTh->sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) error("connect to server in txTh");
@@ -288,7 +294,7 @@ void TxThreadDestroy(Tx_Thread_t * txTh)
     free(txTh);
 }
 
-// writes a msg into sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
+// writes a msg to sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
 int socketWrite(int sockfd, void * msg, size_t size_msg)
 {
     int n;
@@ -332,6 +338,9 @@ void * txTh_threadFunc(void * ctx)
     {
         //capture from Tx_Queue
         rxBuf = Tx_QueueGet(txQ);
+
+        printf("TxTh: Received from TxQueue[0] %d.\n",rxBuf->data[0]);
+        printf("TxTh: Received from TxQueue[1] %d.\n",rxBuf->data[1]);
 
         //send buffer to socket
         wr_ret = socketWrite(txTh->sockfd,rxBuf,sizeof(rxBuf));

@@ -13,7 +13,7 @@ int main()
     Tx_Queue_t * txQ = Tx_QueueInit();
 
     //initialize FakeDataGen
-    FakeDataGen_t * fdg = FakeDataGenInit(123,sine2k);
+    FakeDataGen_t * fdg = FakeDataGenInit(UPDATE_TIME_SEC,randConst);
 
     //initialize adquisition thread
     Adq_Thread_t * adqTh = AdqThreadInit(rxQ,txQ,BD_ID,CH_ID,fdg->pq);
@@ -27,6 +27,20 @@ int main()
 
     //run fake data generator
     FakeDataGenRun(fdg);
+
+    getchar();
+
+    //stop all (be careful with stop precedence to avoid blocking)
+    TxThreadStop(txTh);
+    AdqThreadStop(adqTh);
+    FakeDataGenStop(fdg);   
+
+    //destroy all
+    FakeDataGenDestroy(fdg);
+    TxThreadDestroy(txTh);
+    AdqThreadDestroy(adqTh);
+    Rx_QueueDestroy(rxQ);
+    Tx_QueueDestroy(txQ);
 
     return 0;
 }
