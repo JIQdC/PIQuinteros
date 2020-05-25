@@ -1,3 +1,6 @@
+#ifndef DEVQUEUE_H_
+#define DEVQUEUE_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,20 +17,11 @@
 #include <sys/eventfd.h>
 #include <signal.h>
 #include <math.h>
-#include "error.h"
+#include "../lib/error.h"
 
-#define DEV_Q_SIZE 16
-
-#define SINE_AMPLITUDE 32768
-#define SINE_OFFSET 32768
-
-typedef enum
-{
-    sine4k,
-    sine2k,
-    randConst,
-    noise
-} OpMode_t;
+#define DEV_Q_SIZE_LOG2 4
+#define DEV_Q_SIZE (1<<DEV_Q_SIZE_LOG2)
+#define DEV_Q_MASK (DEV_Q_SIZE - 1)
 
 typedef struct
 {
@@ -41,18 +35,6 @@ typedef struct
 
     uint16_t elements[DEV_Q_SIZE];
 } Dev_Queue_t;
-
-typedef struct
-{
-    double update_period;   //in seconds
-    OpMode_t mode;
-    Dev_Queue_t * pq;
-    pthread_t th;
-    int running;
-} FakeDataGen_t;
-
-////ERROR
-void error(const char *msg);
 
 ////QUEUES
 // initializes a Dev_Queue_t queue
@@ -70,18 +52,4 @@ uint16_t Dev_QueueGet(Dev_Queue_t *pQ);
 // Gets the number of elements in a Dev_Queue_t queue
 int Dev_QueueSize(Dev_Queue_t *pQ);
 
-////FAKE DATA GEN
-// initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(time_t update_period, OpMode_t mode);
-
-// destroys a fake data generator
-void FakeDataGenDestroy(FakeDataGen_t * fdg);
-
-// function to be run by the fake data generator
-void * fdg_threadFunc (void * ctx);
-
-// runs a fake data gen
-void FakeDataGenRun(FakeDataGen_t * fdg);
-
-//stops a fake data gen
-void FakeDataGenStop(FakeDataGen_t * fdg);
+#endif //DEVQUEUE_H_

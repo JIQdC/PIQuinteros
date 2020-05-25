@@ -6,19 +6,15 @@ Rx_Queue_t* Rx_QueueInit()
 {
     //memory allocation for queue
     Rx_Queue_t* pQ = malloc(sizeof(Rx_Queue_t));
+
     //initialize basic elements
     pQ->get = 0;
     pQ->put = 0;
     pQ->q_size = RX_Q_SIZE;
 
-    //initialize semaphores for each buffer
-    int i;
-    for(i=0;i<RX_Q_SIZE;i++)
-    {
-        //semaphores start with 0 so that "get" mechanism locks on that. only the "put" mechanism can post to the semaphore, signaling to "get" that this slot can be obtained
-        if(sem_init(&(pQ->elements[i].sem_lock),0,0)<0) error("init of sem_lock");
-    }
-
+    //initialize semaphore
+    if(sem_init(&pQ->sem,0,RX_Q_SIZE)<0) error("sem_init in Rx_Queue");
+    
     return pQ;
 }
 
@@ -31,7 +27,7 @@ void Rx_QueueDestroy(Rx_Queue_t *pQ)
 // Gets the number of elements in an Rx_Queue_t queue
 int Rx_QueueSize(Rx_Queue_t *pQ)
 {
-    int dif = (pQ->put - pQ->get)%RX_Q_SIZE;
+    int dif = (pQ->put - pQ->get) & RX_Q_MASK;
     if(dif>=0)
     {
         return dif;
@@ -40,6 +36,21 @@ int Rx_QueueSize(Rx_Queue_t *pQ)
     {
         return RX_Q_SIZE - dif;
     }
+}
+
+// Returns a pointer to a free Buffer_t
+Buffer_t * Rx_Queue_Acquire(Rx_Queue_t *q)
+{
+    sem_wait(&q->sem);
+    Buffer_t * ret = &(q->elements[q->get++ & RX_Q_MASK]);
+    return ret;
+}
+
+// Releases an Buffer_t making it ready to be reused
+void Rx_Queue_Release(Rx_Queue_t *q, Buffer_t * rxBuf)
+{
+	sem_post(&q->sem);
+    q->get++;
 }
 
 // initializes a Tx_Queue_t queue
@@ -73,7 +84,7 @@ void Tx_QueueDestroy(Tx_Queue_t *pQ)
 }
 
 // Adds a new element to a Tx_Queue_t queue
-void Tx_QueuePut(Tx_Queue_t *pQ, Rx_Buffer_t * elem)
+void Tx_QueuePut(Tx_Queue_t *pQ, Buffer_t * elem)
 {
     //wait for put semaphore for available space in queue
     if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
@@ -81,7 +92,7 @@ void Tx_QueuePut(Tx_Queue_t *pQ, Rx_Buffer_t * elem)
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait of sem_lock");
 
     //write element in queue
-    pQ->elements[pQ->put % TX_Q_SIZE] = elem;
+    pQ->elements[pQ->put & TX_Q_MASK] = elem;
 
     //increase put counter
     pQ->put++;
@@ -93,9 +104,9 @@ void Tx_QueuePut(Tx_Queue_t *pQ, Rx_Buffer_t * elem)
 }
 
 // Gets and removes an element from a Tx_Queue_t queue
-Rx_Buffer_t * Tx_QueueGet(Tx_Queue_t *pQ)
+Buffer_t * Tx_QueueGet(Tx_Queue_t *pQ)
 {
-    Rx_Buffer_t * result;
+    Buffer_t * result;
 
     //wait for get semaphore for available space in queue
     if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
@@ -103,7 +114,7 @@ Rx_Buffer_t * Tx_QueueGet(Tx_Queue_t *pQ)
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait de sem_lock");
 
     //get element from queue
-    result = pQ->elements[pQ->get % RX_Q_SIZE];
+    result = pQ->elements[pQ->get & TX_Q_MASK];
 
     //increase get counter
     pQ->get++;
@@ -119,7 +130,7 @@ Rx_Buffer_t * Tx_QueueGet(Tx_Queue_t *pQ)
 // Gets the number of elements in a Tx_Queue_t queue
 int Tx_QueueSize(Tx_Queue_t *pQ)
 {
-    int dif = (pQ->put - pQ->get)%TX_Q_SIZE;
+    int dif = (pQ->put - pQ->get)& TX_Q_MASK;
     if(dif>=0)
     {
         return dif;
@@ -133,12 +144,13 @@ int Tx_QueueSize(Tx_Queue_t *pQ)
 ////ADQUISITION THREAD
 
 // initializes an Adq_Thread_t
-Adq_Thread_t * AdqThreadInit(Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id)
+Adq_Thread_t * AdqThreadInit(Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ)
 {
     Adq_Thread_t * adqTh = malloc(sizeof(Adq_Thread_t));
 
     adqTh->rxQ = rxQ;
     adqTh->txQ = txQ;
+    adqTh->devQ = devQ;
 
     adqTh->running = 0;
 
@@ -164,24 +176,28 @@ void * adqTh_threadFunc(void * ctx)
     Adq_Thread_t * adqTh = (Adq_Thread_t *) ctx;
     Rx_Queue_t * rxQ = adqTh->rxQ;
     Tx_Queue_t * txQ = adqTh->txQ;
+    Dev_Queue_t * devQ = adqTh->devQ;
+
+    Buffer_t * rxBuf;
 
     int i;
 
     while(adqTh->running)
     {
-        //timestamp 
+        //adquire a free Rx_Buffer
+        rxBuf = Rx_Queue_Acquire(rxQ);
+
+        //timestamp this buffer
         //TO BE IMPLEMENTED!!
-
-        //fill buffer pointed by get with data from Dev_Queue
-
         
-        
-        //post semaphore of buffer
-        if(sem_post(&(rxQ->elements[rxQ->get % RX_Q_SIZE].sem_lock)) < 0) error("sem_post of sem_lock");
+        //fill buffer with data from FakeDataGen    
+        for(i=0;i<BUF_SIZE;i++)
+        {
+            rxBuf->data[i]=Dev_QueueGet(devQ);
+        }    
 
         //put buffer in Tx_Queue
-        Tx_QueuePut(txQ,&(rxQ->elements[rxQ->get % RX_Q_SIZE]));
-
+        Tx_QueuePut(txQ,rxBuf);
     }
 
     //return to be joined
@@ -223,7 +239,7 @@ void AdqThreadStop(Adq_Thread_t * adqTh)
 ///TRANSMISSION THREAD
 
 // initializes a Tx_Thread_t
-Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, char * server_addr, const int server_portno)
+Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ, char * server_addr, const int server_portno)
 {
     struct sockaddr_in serv_addr;
     memset(&serv_addr,0,sizeof(serv_addr));
@@ -233,8 +249,9 @@ Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, char * server_addr, const int serve
     //allocate memory for Tx_Thread_t
     Tx_Thread_t * txTh = malloc(sizeof(Tx_Thread_t));
 
-    //assign transmission queue
+    //assign transmission and reception queue
     txTh->txQ = txQ;
+    txTh->rxQ = rxQ;
 
     //save connection params (just in case we need them in the future)
     txTh->server_addr = server_addr;
@@ -271,19 +288,61 @@ void TxThreadDestroy(Tx_Thread_t * txTh)
     free(txTh);
 }
 
+// writes a msg into sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
+int socketWrite(int sockfd, void * msg, size_t size_msg)
+{
+    int n;
+
+    //cast msg to char * to be able to chop it
+    char * msg_c = (char *) msg;
+
+    n = write(sockfd,msg_c,size_msg);
+
+    if(n == size_msg)
+    {
+        return 0;
+    }
+    else if(n > 0)
+    {
+        return socketWrite(sockfd,msg_c+n,size_msg-n);
+    }
+    else if(n == 0)
+    {
+        //is this the correct way of asserting that the connection is closed by the server?
+        //should I try reading from socket instead?
+        return 1;
+    }
+    else // n < 0
+    {
+        return -1;
+    }    
+}
+
 // function to be run by a transmission thread
 void * txTh_threadFunc(void * ctx)
 {
     Tx_Thread_t * txTh = (Tx_Thread_t *) ctx;
     Tx_Queue_t * txQ = txTh->txQ;
+    Rx_Queue_t * rxQ = txTh->rxQ;
+    Buffer_t * rxBuf;
+
+    int wr_ret;
 
     while(txTh->running)
     {
         //capture from Tx_Queue
+        rxBuf = Tx_QueueGet(txQ);
 
         //send buffer to socket
+        wr_ret = socketWrite(txTh->sockfd,rxBuf,sizeof(rxBuf));
+        if(wr_ret > 0)
+        {
+            //do something for closed server. Die perhaps?
+        }
+        if(wr_ret < 0) error("socket write in txTh");
 
-        //mark buffer as ready to be written again by adquisition thread
+        //release buffer
+        Rx_Queue_Release(rxQ,rxBuf);
     }
 
     //return to be joined
