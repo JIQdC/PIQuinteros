@@ -190,7 +190,7 @@ void * adqTh_threadFunc(void * ctx)
         rxBuf = Rx_Queue_Acquire(rxQ);
 
         //timestamp this buffer
-        //TO BE IMPLEMENTED!!
+        if(clock_gettime(CLOCK_REALTIME,&rxBuf->tp)<0) error("clock_gettime in adqTh");
         
         //fill buffer with data from FakeDataGen    
         for(i=0;i<BUF_SIZE;i++)

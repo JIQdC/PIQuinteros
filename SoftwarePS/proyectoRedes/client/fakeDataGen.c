@@ -2,14 +2,19 @@
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(double update_period, OpMode_t mode)
+FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param)
 {
     FakeDataGen_t * fdg = malloc(sizeof(FakeDataGen_t));
 
     fdg->update_period = update_period;
     fdg->mode = mode;
+    fdg->mode_param = mode_param;
     fdg->pq = Dev_QueueInit();
     fdg->running = 0;
+
+    //init timefd
+    fdg->timefd = timerfd_create(CLOCK_REALTIME,0);
+    if(fdg->timefd < 0) error("timerfd_create in fdg init");
 
     return fdg;
 }
@@ -18,6 +23,7 @@ FakeDataGen_t * FakeDataGenInit(double update_period, OpMode_t mode)
 void FakeDataGenDestroy(FakeDataGen_t * fdg)
 {
     Dev_QueueDestroy(fdg->pq);
+    close(fdg->timefd);
     free(fdg);
 }
 
@@ -27,33 +33,30 @@ void * fdg_threadFunc (void * ctx)
     FakeDataGen_t * fdg =  (FakeDataGen_t *) ctx;
     uint16_t result;
     double time_o = 0;
+    uint64_t tim_rd;
 
     //seed for randomness
-    srand(time(NULL));    
+    srand(time(NULL));
 
-    //first, check mode chosen
+    //run timer
+    struct itimerspec it;
+    it.it_interval=fdg->update_period;
+    it.it_value=fdg->update_period;
+    if(timerfd_settime(fdg->timefd,0,&it,NULL)<0) error("timerfd_settime in fdg_threadFunc");
+
     switch (fdg->mode)
     {
-        case sine2k:
-            //produce a sine wave of 2kHz frequency until stopped
+        case sine:
+            printf("FDG: generating sine wave of frequency %d Hz.\n",fdg->mode_param);
+            //produce a sine wave of frequency set in mode_param until stopped
             while(fdg->running)
             {
                 //calculate sine, put in queue, update time
-                result = (uint16_t) (SINE_AMPLITUDE * sin(2*M_PI*2000*time_o) + SINE_OFFSET);
+                result = (uint16_t) (SINE_AMPLITUDE * sin(2*M_PI*fdg->mode_param*time_o) + SINE_OFFSET);
                 Dev_QueuePut(fdg->pq,result);
-                time_o += fdg->update_period;
-                usleep(fdg->update_period*1000000);
-            }
-            break;
-        case sine4k:
-            //produce a sine wave of 2kHz frequency until stopped
-            while(fdg->running)
-            {
-                //calculate sine, put in queue, update time
-                result = (uint16_t) (SINE_AMPLITUDE * sin(2*M_PI*4000*time_o) + SINE_OFFSET);
-                Dev_QueuePut(fdg->pq,result);
-                time_o += fdg->update_period;
-                usleep(fdg->update_period*1000000);
+                time_o += fdg->update_period.tv_sec + 1e9*fdg->update_period.tv_nsec;
+                //wait for timer
+                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
             }
             break;
         case randConst:
@@ -63,16 +66,29 @@ void * fdg_threadFunc (void * ctx)
             while (fdg->running)
             {
                 Dev_QueuePut(fdg->pq,result);
-                usleep(fdg->update_period*1000000);
+                //wait for timer
+                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
             }
-            break;      
+            break; 
+        case countOffset:
+            //count from offset passed as mode_param
+            result = fdg->mode_param;
+            printf("FDG: generating counter from offset %d.\n",fdg->mode_param);
+            while(fdg->running)
+            {
+                Dev_QueuePut(fdg->pq,result++);
+                //wait for timer
+                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
+            }
         default: //noise
             //output random numbers to queue until stopped
+            printf("FDG: generating random data.\n");
             while (fdg->running)
             {
                 result = rand() & UINT16_MAX;
                 Dev_QueuePut(fdg->pq,result);
-                usleep(fdg->update_period*1000000);
+                //wait for timer
+                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
             }            
             break;
     }

@@ -17,6 +17,8 @@
 #include <sys/eventfd.h>
 #include <signal.h>
 #include <math.h>
+#include <sys/timerfd.h>
+
 #include "../lib/error.h"
 #include "devQueue.h"
 
@@ -25,24 +27,29 @@
 
 typedef enum
 {
-    sine4k,
-    sine2k,
+    sine,
     randConst,
-    noise
+    noise,
+    countOffset
 } OpMode_t;
 
 typedef struct
 {
-    double update_period;   //in seconds
+    struct timespec update_period;   //in seconds and nanoseconds
+    int timefd;
+
     OpMode_t mode;
+    uint16_t mode_param;
+
     Dev_Queue_t * pq;
+
     pthread_t th;
     int running;
 } FakeDataGen_t;
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(double update_period, OpMode_t mode);
+FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param);
 
 // destroys a fake data generator
 void FakeDataGenDestroy(FakeDataGen_t * fdg);

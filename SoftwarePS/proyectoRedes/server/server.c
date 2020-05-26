@@ -396,7 +396,7 @@ void * procTh_threadFunc(void * ctx)
         while(cTh != NULL && Cl_QueueSize(cTh->pQ)!= 0)
         {
             buf = Cl_QueueGet(cTh->pQ);
-            printf("Client thread %d with output value %d.\n",i++,buf.data[0]);
+            printf("Client thread %d with time %s",i++,ctime(&buf.tp.tv_sec));
             cTh = cTh->clThList_next;
         }
         //release lock on list

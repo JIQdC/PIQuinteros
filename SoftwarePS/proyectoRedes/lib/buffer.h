@@ -2,16 +2,18 @@
 #define BUFFER_H_
 
 #include <stdint.h>
+#include <time.h>
 
 #define BUF_SIZE 2
 
 #define UPDATE_TIME_SEC 1
+#define UPDATE_TIME_NSEC 0
 
 typedef struct __attribute__ ((packed))
 {
     uint8_t bd_id;
     uint8_t ch_id;
-    //timestamp
+    struct timespec tp;
     uint16_t data[BUF_SIZE];
 } Buffer_t;
 

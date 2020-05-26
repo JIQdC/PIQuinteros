@@ -13,7 +13,10 @@ int main()
     Tx_Queue_t * txQ = Tx_QueueInit();
 
     //initialize FakeDataGen
-    FakeDataGen_t * fdg = FakeDataGenInit(UPDATE_TIME_SEC,randConst);
+    struct timespec update_time;
+    update_time.tv_sec=UPDATE_TIME_SEC;
+    update_time.tv_nsec=UPDATE_TIME_NSEC;
+    FakeDataGen_t * fdg = FakeDataGenInit(update_time,countOffset,1000);
 
     //initialize adquisition thread
     Adq_Thread_t * adqTh = AdqThreadInit(rxQ,txQ,BD_ID,CH_ID,fdg->pq);
