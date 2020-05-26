@@ -37,6 +37,12 @@
 
 #define STDIN_BUF_LENGTH 32
 
+struct Server_str;
+typedef struct Server_str Server_t;
+
+struct Cl_Thread_str;
+typedef struct Cl_Thread_str Cl_Thread_t;
+
 typedef struct
 {
     sem_t sem_lock;
@@ -60,10 +66,10 @@ typedef struct
     int get;
     int q_size;
 
-    pthread_t elements[TH_Q_SIZE];
+    Cl_Thread_t * elements[TH_Q_SIZE];
 } Th_Queue_t;
 
-typedef struct
+struct Cl_Thread_str
 {
     uint8_t running;
     pthread_t th;
@@ -71,32 +77,36 @@ typedef struct
     int sockfd;
     Cl_Queue_t * pQ;
 
-    void * server;
-} Cl_Thread_t;
+    Server_t * server;
+
+    Cl_Thread_t * clThList_next;
+};
 
 typedef struct
 {
     uint8_t running;
     pthread_t th;
 
-    void * server;
+    Server_t * server;
 } Proc_Thread_t;
 
-typedef struct
+struct Server_str
 {
     int sockfd;
     socklen_t clilen;
     struct sockaddr_in cli_addr;
 
     sem_t sem_threads;
-    Cl_Thread_t * clTh[MAX_CLIENT_THREADS];
+
+    Cl_Thread_t * clThList_head;
+    sem_t clThList_sem;
 
     Th_Queue_t * thQ;
 
     Proc_Thread_t * prTh;
 
     int stop_flag;
-} Server_t;
+};
 
 ////QUEUE
 // initializes a Cl_Queue_t queue
@@ -121,10 +131,10 @@ Th_Queue_t* Th_QueueInit();
 void Th_QueueDestroy(Th_Queue_t *pQ);
 
 // Adds a new element to a Th_Queue_t queue
-void Th_QueuePut(Th_Queue_t *pQ, pthread_t elem);
+void Th_QueuePut(Th_Queue_t *pQ, Cl_Thread_t * elem);
 
 // Gets and removes an element from a Th_Queue_t queue
-pthread_t Th_QueueGet(Th_Queue_t *pQ);
+Cl_Thread_t * Th_QueueGet(Th_Queue_t *pQ);
 
 // Gets the number of elements in a Th_Queue_t queue
 int Th_QueueSize(Th_Queue_t *pQ);

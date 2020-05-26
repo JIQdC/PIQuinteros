@@ -339,11 +339,8 @@ void * txTh_threadFunc(void * ctx)
         //capture from Tx_Queue
         rxBuf = Tx_QueueGet(txQ);
 
-        printf("TxTh: Received from TxQueue[0] %d.\n",rxBuf->data[0]);
-        printf("TxTh: Received from TxQueue[1] %d.\n",rxBuf->data[1]);
-
         //send buffer to socket
-        wr_ret = socketWrite(txTh->sockfd,rxBuf,sizeof(rxBuf));
+        wr_ret = socketWrite(txTh->sockfd,rxBuf,sizeof(Buffer_t));
         if(wr_ret > 0)
         {
             //do something for closed server. Die perhaps?

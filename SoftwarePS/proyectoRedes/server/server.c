@@ -78,6 +78,7 @@ Buffer_t Cl_QueueGet(Cl_Queue_t *pQ)
 // Gets the number of elements in a Cl_Queue_t queue
 int Cl_QueueSize(Cl_Queue_t *pQ)
 {
+    if(pQ == NULL) return 0;
     int dif = (pQ->put - pQ->get)& CL_Q_MASK;
     if(dif>=0)
     {
@@ -120,7 +121,7 @@ void Th_QueueDestroy(Th_Queue_t *pQ)
 }
 
 // Adds a new element to a Th_Queue_t queue
-void Th_QueuePut(Th_Queue_t *pQ, pthread_t elem)
+void Th_QueuePut(Th_Queue_t *pQ, Cl_Thread_t * elem)
 {
     //wait for put semaphore for available space in queue
     if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
@@ -140,9 +141,9 @@ void Th_QueuePut(Th_Queue_t *pQ, pthread_t elem)
 }
 
 // Gets and removes an element from a Th_Queue_t queue
-pthread_t Th_QueueGet(Th_Queue_t *pQ)
+Cl_Thread_t * Th_QueueGet(Th_Queue_t *pQ)
 {
-    pthread_t result;
+    Cl_Thread_t * result;
 
     //wait for get semaphore for available space in queue
     if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
@@ -189,6 +190,8 @@ Cl_Thread_t * ClThreadInit(Server_t * server)
     clTh->running = 0;
     //server as passed in argument
     clTh->server=server;
+    //set next list element
+    clTh->clThList_next = server->clThList_head;
 
     return clTh;
 }
@@ -241,8 +244,37 @@ int socketRead(int sockfd, void * msg, size_t size_msg)
 // close connection on a thread and prepare it to be joined
 void closeConnection(Cl_Thread_t * clTh, Server_t * server)
 {
+    Cl_Thread_t ** ppNext;
+
+    //close socket
     close(clTh->sockfd);
-    Th_QueuePut(server->thQ,clTh->th);
+    //wait for almost empty list
+    while(Cl_QueueSize(clTh->pQ)>1);
+    //get lock on list
+    sem_wait(&server->clThList_sem);
+    //get list head
+    ppNext = &server->clThList_head;
+    //remove from list
+    while(*ppNext != NULL) //it should never be NULL though...
+    {
+        if((*ppNext) == clTh)
+        {
+            //redirect ppNext pointer to cTh->next
+            *ppNext = clTh->clThList_next;
+        }
+        else
+        {
+            //keep looking on list next element
+            ppNext = &((*ppNext)->clThList_next);
+        }
+        
+    }
+    //release lock on list
+    sem_post(&server->clThList_sem);
+
+    //put thread in queue to be joined
+    Th_QueuePut(server->thQ,clTh);
+    //deassert flag
     clTh->running = 0;
 }
 
@@ -255,9 +287,9 @@ void * clTh_threadFunc(void * ctx)
     Buffer_t * buf = malloc(sizeof(Buffer_t));
     memset(buf,0,sizeof(Buffer_t));
 
-    struct timeval tv;
-    tv.tv_sec = CL_BLOCKTIME_SEC;
-    tv.tv_usec = CL_BLOCKTIME_USEC;
+    // struct timeval tv;
+    // tv.tv_sec = CL_BLOCKTIME_SEC;
+    // tv.tv_usec = CL_BLOCKTIME_USEC;
     fd_set rfds;
     int sel_ret;
 
@@ -349,21 +381,29 @@ void * procTh_threadFunc(void * ctx)
     Proc_Thread_t * pTh = (Proc_Thread_t *) ctx;
     Server_t * server = (Server_t *) pTh->server;
     Buffer_t buf;
+    Cl_Thread_t * cTh;
 
     int i;
 
     while(pTh->running)
     {
-        for(i=0;i<MAX_CLIENT_THREADS;i++)
+        //get lock on list
+        sem_wait(&server->clThList_sem);
+        //get first element from list
+        cTh = server->clThList_head;
+        //go through list
+        i=0;
+        while(cTh != NULL && Cl_QueueSize(cTh->pQ)!= 0)
         {
-            if(server->clTh[i]->running)
-            {
-                buf = Cl_QueueGet(server->clTh[i]->pQ);
-                printf("Client thread %d with output value %d.\n",i,buf.data[0]);
-            }
+            buf = Cl_QueueGet(cTh->pQ);
+            printf("Client thread %d with output value %d.\n",i++,buf.data[0]);
+            cTh = cTh->clThList_next;
         }
+        //release lock on list
+        sem_post(&server->clThList_sem);
     }
 
+    return NULL;
 }
 
 // sets a processing thread to run
@@ -404,7 +444,6 @@ Server_t * ServerInit(int server_portno)
 {
     Server_t * server = malloc(sizeof(Server_t));
     struct sockaddr_in serv_addr;
-    int i;
     int val = 1;
 
     //open socket, set attributes
@@ -429,11 +468,11 @@ Server_t * ServerInit(int server_portno)
 
     //initialize thread semaphore
     if(sem_init(&server->sem_threads,0,MAX_CLIENT_THREADS) < 0) error("sem_init in ServerInit");
-    //initialize client threads
-    for(i=0;i<MAX_CLIENT_THREADS;i++)
-    {
-        server->clTh[i]=ClThreadInit(server);
-    }
+
+    //initialize client thread list
+    server->clThList_head = NULL;
+    //initialize list protection semaphore
+    if(sem_init(&server->clThList_sem,0,1) < 0) error("sem_init in ServerInit");
 
     //initialize thread queue
     server->thQ = Th_QueueInit();
@@ -456,12 +495,9 @@ void ServerDestroy(Server_t * server)
     //destroy thread semaphore
     if(sem_destroy(&server->sem_threads) < 0) error("sem_destroy in ServerDestroy");
 
-    //destroy client threads
-    int i;
-    for(i=0;i<MAX_CLIENT_THREADS;i++)
-    {
-        ClThreadDestroy(server->clTh[i]);
-    }
+    //destroy list semaphore
+    if(sem_destroy(&server->clThList_sem) < 0) error("sem_destroy in ServerDestroy");
+
     //destroy thread queue
     Th_QueueDestroy(server->thQ);
 
@@ -475,13 +511,19 @@ void ServerDestroy(Server_t * server)
     free(server);
 }
 
-// join pending threads from server thread queue
+// join pending threads from server thread queue and destroy its resources
 void joinPendingThreads(Server_t * server)
 {
+    Cl_Thread_t * cTh;
+
     while(Th_QueueSize(server->thQ) != 0)
     {
-        //hago join con el thread
-        pthread_join(Th_QueueGet(server->thQ),NULL);
+        //get from Th_Queue
+        cTh = Th_QueueGet(server->thQ);
+        //join thread
+        pthread_join(cTh->th,NULL);
+        //destroy client thread
+        ClThreadDestroy(cTh);   
     }
 }
 
@@ -491,10 +533,9 @@ void ServerRun(Server_t * server)
     int newsockfd;
 
     fd_set rfds;
-    struct timeval tv;
     int sel_ret;
 
-    int n,i;
+    int n;
     char buffer[STDIN_BUF_LENGTH];
 
     //run processing thread
@@ -513,7 +554,7 @@ void ServerRun(Server_t * server)
         sel_ret = select(server->sockfd+1,&rfds,NULL,NULL,NULL);
         if(sel_ret < 0)
         {
-           error("select in ServerRun");
+           error("select in qServerRun");
         }
         else
         {
@@ -549,28 +590,21 @@ void ServerRun(Server_t * server)
                         &server->clilen);
                 if (newsockfd < 0) error("server accept");
 
-                //find available thread
-                for(i=0;i<MAX_CLIENT_THREADS;i++)
-                {
-                    if(server->clTh[i]->running == 0)
-                    {
-                        //run this thread
-                        ClThreadRun(server->clTh[i],newsockfd);
-                        break;
-                    }
-                    //this should NOT happen
-                    if(i == MAX_CLIENT_THREADS - 1)
-                    {
-                        printf("something is wrong...\n");
-                        exit(1);
-                    }
-                }
+                //lock on list
+                sem_wait(&server->clThList_sem);
+                //add new client thread to list
+                server->clThList_head = ClThreadInit(server);
+                //release lock on list
+                sem_post(&server->clThList_sem);
+                //run thread
+                ClThreadRun(server->clThList_head,newsockfd);
+                
             }   
         }
     }
 
     //stop processing thread
     ProcThreadStop(server->prTh);
-    
+
     printf("Server stopped correctly.\n");
 }
