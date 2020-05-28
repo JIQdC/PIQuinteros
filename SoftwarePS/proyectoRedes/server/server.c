@@ -367,6 +367,8 @@ Proc_Thread_t * ProcThreadInit(Server_t * server)
     prTh->running = 0;
     prTh->server = server;
 
+    prTh->chList_head = NULL;
+
     return prTh;
 }
 
@@ -376,50 +378,63 @@ void ProcThreadDestroy(Proc_Thread_t * prTh)
     free(prTh);
 }
 
-// opens a file with current time as filename. writes header for Buffer_t
-FILE * fileOpen()
+// opens a channel file with current time_ch_id as filename. writes header for Buffer_t
+Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
 {
+    Ch_File_t * chF = malloc(sizeof(Ch_File_t));
     struct timespec t;
-    FILE * fd;
     char * word1;
-    char word2[24] = "";
+    char word2[40] = "";
+    char str_ch_id[10] = "";
+
+    //identify chFile with ch_id
+    chF->ch_id = ch_id;
+    //set element next list
+    chF->chList_next = prTh->chList_head;    
     
     //get time from clock and place it formatted in word 1
     if(clock_gettime(CLOCK_REALTIME,&t) < 0) error("clock_gettime in fileOpen");
     word1 = ctime(&t.tv_sec);
     //remove last char and place in word2
     strncpy(word2,word1,strlen(word1)-1);
+    //convert int ch_id into str ch_id
+    sprintf(str_ch_id," ch%d",ch_id);
+    //concat
+    strcat(word2,str_ch_id);
     //open file with name
-    fd = fopen(word2,"w+");
-    if(fd == NULL) error("fopen in fileOpen");
+    chF->f = fopen(word2,"w+");
+    if(chF->f == NULL) error("fopen in fileOpen");
 
-    fprintf(fd,"sec,nsec,bd_id,ch_id,data,");
+    //header
+    fprintf(chF->f,"sec,nsec,bd_id,ch_id,data,");
     #ifdef _DEBUG
-    fprintf(fd,"rx_q,tx_q,cl_q");
+    fprintf(chF->f,"rx_q,tx_q,cl_q");
     #endif
-    fprintf(fd,"\n");
+    fprintf(chF->f,"\n");
     //notify
     printf("prTh: opened file with name %s\n",word2);
 
-    return fd;
+    return chF;
 }
 
-// writes a Buffer_t into file
-void fileWriteBuffer(const Buffer_t * buf,FILE * fd)
+// writes a Buffer_t into ch_file
+void chFileWriteBuffer(const Buffer_t * buf,Ch_File_t * chF)
 {
     int i;
 
     struct timespec tBuf = buf->tp;
     for (i=0;i<BUF_SIZE;i++)
     {
-        fprintf(fd,"%ld,%ld,%d,%d,%d,",tBuf.tv_sec,tBuf.tv_nsec,buf->bd_id,buf->ch_id,buf->data[i]);
+        fprintf(chF->f,"%ld,%ld,%d,%d,%d,",tBuf.tv_sec,tBuf.tv_nsec,buf->bd_id,buf->ch_id,buf->data[i]);
         #ifdef _DEBUG
-        fprintf(fd,"%d,%d,%d",buf->rx_qstate,buf->tx_qstate,buf->cl_qstate);
+        fprintf(chF->f,"%d,%d,%d",buf->rx_qstate,buf->tx_qstate,buf->cl_qstate);
         #endif
-        fprintf(fd,"\n");
+        fprintf(chF->f,"\n");
         tBuf.tv_sec += UPDATE_TIME_SEC;
         tBuf.tv_nsec += UPDATE_TIME_NSEC;
     }
+
+    fflush(chF->f);
 }
 
 // function to be run by the processing thread
@@ -429,9 +444,7 @@ void * procTh_threadFunc(void * ctx)
     Server_t * server = (Server_t *) pTh->server;
     Buffer_t buf;
     Cl_Thread_t * cTh;
-
-    //open output file
-    FILE * fd = fileOpen();
+    Ch_File_t * chF;
 
     while(pTh->running)
     {
@@ -443,15 +456,43 @@ void * procTh_threadFunc(void * ctx)
         while(cTh != NULL && Cl_QueueSize(cTh->pQ)!= 0)
         {
             buf = Cl_QueueGet(cTh->pQ);
-            fileWriteBuffer(&buf,fd);
-            cTh = cTh->clThList_next;
+
+            //check if channel is on prTh channel list
+            chF = pTh->chList_head;
+            while(chF != NULL)
+            {
+                if(chF->ch_id == buf.ch_id)
+                {
+                    //write buf to this channel file
+                    chFileWriteBuffer(&buf,chF);
+                    break;
+                }
+                else
+                {
+                    //keep looking on next element
+                    chF = chF->chList_next;
+                }                
+            }
+            //if chFile is not opened, open and write
+            if(chF == NULL)
+            {
+                chF = chFileOpen(pTh,buf.ch_id);
+                pTh->chList_head = chF;
+                chFileWriteBuffer(&buf,pTh->chList_head);
+            }
         }
         //release lock on list
         sem_post(&server->clThList_sem);
     }
 
-    //close output file
-    fclose(fd);
+    //once stopped, close all open files
+    chF = pTh->chList_head;
+    while(chF != NULL)
+    {
+        fclose(chF->f);
+        chF = chF->chList_next;
+    }
+    
 
     return NULL;
 }

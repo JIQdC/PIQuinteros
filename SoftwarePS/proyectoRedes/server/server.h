@@ -79,12 +79,24 @@ struct Cl_Thread_str
     Cl_Thread_t * clThList_next;
 };
 
+struct Ch_File_Str;
+typedef struct Ch_File_Str Ch_File_t;
+
+struct Ch_File_Str
+{
+    uint8_t ch_id;
+    FILE * f;
+    Ch_File_t * chList_next;
+};
+
 typedef struct
 {
     uint8_t running;
     pthread_t th;
 
     Server_t * server;
+
+    Ch_File_t * chList_head;
 } Proc_Thread_t;
 
 struct Server_str
@@ -162,11 +174,11 @@ Proc_Thread_t * ProcThreadInit(Server_t * server);
 // destroys a Proc_Thread_t
 void ProcThreadDestroy(Proc_Thread_t * prTh);
 
-// opens a file with current time as filename. writes header for Buffer_t
-FILE * fileOpen();
+// opens a channel file with current time_ch_id as filename. writes header for Buffer_t
+Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id);
 
-// writes a Buffer_t into file
-void fileWriteBuffer(const Buffer_t * buf,FILE * fd);
+// writes a Buffer_t into ch_file
+void chFileWriteBuffer(const Buffer_t * buf,Ch_File_t * chF);
 
 // function to be run by the processing thread
 void * procTh_threadFunc(void * ctx);
