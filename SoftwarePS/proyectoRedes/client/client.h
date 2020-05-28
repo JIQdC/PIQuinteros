@@ -17,25 +17,29 @@
 #include <sys/eventfd.h>
 #include <signal.h>
 #include <netdb.h> 
+#include <sys/timerfd.h>
 
 #include "../lib/error.h"
 #include "../lib/buffer.h"
 #include "devQueue.h"
 
-#define RX_Q_SIZE_LOG2 4
+#define RX_Q_SIZE_LOG2 6
 #define RX_Q_SIZE (1<<RX_Q_SIZE_LOG2)
 #define RX_Q_MASK (RX_Q_SIZE - 1)
 
-#define TX_Q_SIZE_LOG2 4
+#define TX_Q_SIZE_LOG2 6
 #define TX_Q_SIZE (1<<TX_Q_SIZE_LOG2)
 #define TX_Q_MASK (TX_Q_SIZE - 1)
+
+struct Client_str;
+typedef struct Client_str Client_t;
 
 typedef struct
 {
     sem_t sem;
 
-    int put;
-    int get;
+    int acq;
+    int rls;
     int q_size;
 
     Buffer_t elements[RX_Q_SIZE];
@@ -56,6 +60,7 @@ typedef struct
 
 typedef struct
 {
+    Client_t * client;
     pthread_t th;
     int running;
     Rx_Queue_t *rxQ;
@@ -73,6 +78,42 @@ typedef struct
     int server_portno;
     int sockfd;
 } Tx_Thread_t;
+
+typedef enum
+{
+    sampleNumber,
+    timeInterval
+} CaptureMode_t;
+
+typedef enum
+{
+    manual,
+    timer
+} TriggerMode_t;
+
+struct Client_str
+{
+    Dev_Queue_t * devQ; //this should be replaced to a pointer to wherever data comes from in a "real" implementation
+    Rx_Queue_t *rxQ;
+    Tx_Queue_t *txQ;
+
+    Adq_Thread_t * adqTh;
+    Tx_Thread_t * txTh;
+
+    char * serv_addr;
+    int server_portno;
+
+    int eventfd_out;
+
+    CaptureMode_t capMode;
+    TriggerMode_t trigMode;
+
+    int timerfd_start;
+    int timerfd_stop;
+    struct itimerspec timerfd_stop_spec;
+    int eventfd_samples;
+    int n_samples;
+};
 
 ////QUEUES
 // initializes an Rx_Queue_t queue
@@ -107,10 +148,13 @@ int Tx_QueueSize(Tx_Queue_t *pQ);
 
 ////ADQUISITION THREAD
 // initializes an Adq_Thread_t
-Adq_Thread_t * AdqThreadInit(Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ);
+Adq_Thread_t * AdqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ);
 
 // destroys an Adq_Thread_t
 void AdqThreadDestroy(Adq_Thread_t * adqTh);
+
+// acquires a buffer, fills it with data, and passes it to Tx_Queue
+void acquireFillPass(Adq_Thread_t * adqTh);
 
 // function to be run by the adquisition thread
 void * adqTh_threadFunc(void * ctx);
@@ -139,5 +183,18 @@ void TxThreadRun(Tx_Thread_t * txTh);
 
 // stops a transmission thread
 void TxThreadStop(Tx_Thread_t * txTh);
+
+//// CLIENT
+// initializes a Client_t
+Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * server_addr, int server_portno, int eventfd_out, CaptureMode_t capMode, TriggerMode_t trigMode);
+
+// destroys a Client_t
+void ClientDestroy(Client_t * client);
+
+// runs a Client_t
+void ClientRun(Client_t * client);
+
+// stops a Client_t
+void ClientStop(Client_t * client);
 
 #endif //CLIENT_H_

@@ -6,44 +6,34 @@
 #define SERVER_ADDR "0.0.0.0"
 #define SERVER_PORTNO 12345
 
+//#define _DEBUG 1
+
 int main()
 {
-    //initialize queues
-    Rx_Queue_t * rxQ = Rx_QueueInit();
-    Tx_Queue_t * txQ = Tx_QueueInit();
-
+    uint64_t rd_buf;
+    int efd = eventfd(0,0);
     //initialize FakeDataGen
     struct timespec update_time;
-    update_time.tv_sec=UPDATE_TIME_SEC;
-    update_time.tv_nsec=UPDATE_TIME_NSEC;
-    FakeDataGen_t * fdg = FakeDataGenInit(update_time,countOffset,1000);
+    update_time.tv_sec = UPDATE_TIME_SEC;
+    update_time.tv_nsec = UPDATE_TIME_NSEC;
+    FakeDataGen_t * fdg = FakeDataGenInit(update_time,countOffset,1000,efd);
 
-    //initialize adquisition thread
-    Adq_Thread_t * adqTh = AdqThreadInit(rxQ,txQ,BD_ID,CH_ID,fdg->pq);
+    //initialize client
+    Client_t * client = ClientInit(fdg->pq,BD_ID,CH_ID,SERVER_ADDR,SERVER_PORTNO,efd,sampleNumber,manual);
 
-    //initialize transmission thread
-    Tx_Thread_t * txTh = TxThreadInit(txQ,rxQ,SERVER_ADDR,SERVER_PORTNO);
-
-    //run threads
-    AdqThreadRun(adqTh);
-    TxThreadRun(txTh);
-
-    //run fake data generator
+    //run fdg
     FakeDataGenRun(fdg);
+    //run client
+    ClientRun(client);
 
-    getchar();
-
-    //stop all (be careful with stop precedence to avoid blocking)
-    TxThreadStop(txTh);
-    AdqThreadStop(adqTh);
+    //wait for client to finish
+    read(efd,&rd_buf,sizeof(rd_buf));
+    //stop fdg
     FakeDataGenStop(fdg);   
 
     //destroy all
     FakeDataGenDestroy(fdg);
-    TxThreadDestroy(txTh);
-    AdqThreadDestroy(adqTh);
-    Rx_QueueDestroy(rxQ);
-    Tx_QueueDestroy(txQ);
+    ClientDestroy(client);
 
     return 0;
 }

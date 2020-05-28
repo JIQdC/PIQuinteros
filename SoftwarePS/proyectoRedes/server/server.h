@@ -24,14 +24,11 @@
 
 #define MAX_CLIENT_THREADS 16
 
-#define CL_Q_SIZE_LOG2 4
+#define CL_Q_SIZE_LOG2 6
 #define CL_Q_SIZE (1<<CL_Q_SIZE_LOG2)
 #define CL_Q_MASK (CL_Q_SIZE - 1)
 
-#define CL_BLOCKTIME_SEC 1
-#define CL_BLOCKTIME_USEC 0
-
-#define TH_Q_SIZE_LOG2 4
+#define TH_Q_SIZE_LOG2 6
 #define TH_Q_SIZE (1<<TH_Q_SIZE_LOG2)
 #define TH_Q_MASK (TH_Q_SIZE - 1)
 
@@ -164,6 +161,12 @@ Proc_Thread_t * ProcThreadInit(Server_t * server);
 
 // destroys a Proc_Thread_t
 void ProcThreadDestroy(Proc_Thread_t * prTh);
+
+// opens a file with current time as filename. writes header for Buffer_t
+FILE * fileOpen();
+
+// writes a Buffer_t into file
+void fileWriteBuffer(const Buffer_t * buf,FILE * fd);
 
 // function to be run by the processing thread
 void * procTh_threadFunc(void * ctx);

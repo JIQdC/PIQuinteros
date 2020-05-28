@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <time.h>
 
-#define BUF_SIZE 2
+#define BUF_SIZE 32
 
-#define UPDATE_TIME_SEC 1
-#define UPDATE_TIME_NSEC 0
+#define UPDATE_TIME_SEC 0
+#define UPDATE_TIME_NSEC 100000
 
 typedef struct __attribute__ ((packed))
 {
@@ -15,6 +15,12 @@ typedef struct __attribute__ ((packed))
     uint8_t ch_id;
     struct timespec tp;
     uint16_t data[BUF_SIZE];
+
+#ifdef _DEBUG
+    int tx_qstate;
+    int rx_qstate;
+    int cl_qstate;
+#endif
 } Buffer_t;
 
 #endif //BUFFER_H_

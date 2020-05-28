@@ -22,7 +22,7 @@
 #include "../lib/error.h"
 #include "devQueue.h"
 
-#define SINE_AMPLITUDE 32768
+#define SINE_AMPLITUDE 32767
 #define SINE_OFFSET 32768
 
 typedef enum
@@ -45,11 +45,13 @@ typedef struct
 
     pthread_t th;
     int running;
+
+    int eventfd_out;
 } FakeDataGen_t;
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param);
+FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param, int eventfd_out);
 
 // destroys a fake data generator
 void FakeDataGenDestroy(FakeDataGen_t * fdg);

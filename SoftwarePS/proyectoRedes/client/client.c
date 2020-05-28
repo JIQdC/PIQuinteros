@@ -8,8 +8,8 @@ Rx_Queue_t* Rx_QueueInit()
     Rx_Queue_t* pQ = malloc(sizeof(Rx_Queue_t));
 
     //initialize basic elements
-    pQ->get = 0;
-    pQ->put = 0;
+    pQ->acq = 0;
+    pQ->rls = 0;
     pQ->q_size = RX_Q_SIZE;
 
     //initialize semaphore
@@ -27,7 +27,7 @@ void Rx_QueueDestroy(Rx_Queue_t *pQ)
 // Gets the number of elements in an Rx_Queue_t queue
 int Rx_QueueSize(Rx_Queue_t *pQ)
 {
-    int dif = (pQ->put - pQ->get) & RX_Q_MASK;
+    int dif = (pQ->acq - pQ->rls) & RX_Q_MASK;
     if(dif>=0)
     {
         return dif;
@@ -42,7 +42,10 @@ int Rx_QueueSize(Rx_Queue_t *pQ)
 Buffer_t * Rx_Queue_Acquire(Rx_Queue_t *q)
 {
     sem_wait(&q->sem);
-    Buffer_t * ret = &(q->elements[q->get++ & RX_Q_MASK]);
+    Buffer_t * ret = &(q->elements[q->acq++ & RX_Q_MASK]);
+    #ifdef _DEBUG
+    ret->rx_qstate = Rx_QueueSize(q);
+    #endif
     return ret;
 }
 
@@ -50,7 +53,7 @@ Buffer_t * Rx_Queue_Acquire(Rx_Queue_t *q)
 void Rx_Queue_Release(Rx_Queue_t *q, Buffer_t * rxBuf)
 {
 	sem_post(&q->sem);
-    q->get++;
+    q->rls++;
 }
 
 // initializes a Tx_Queue_t queue
@@ -90,6 +93,11 @@ void Tx_QueuePut(Tx_Queue_t *pQ, Buffer_t * elem)
     if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
     //wait for queue lock semaphore
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait of sem_lock");
+
+    #ifdef _DEBUG
+    //queue status
+    elem->tx_qstate = Tx_QueueSize(pQ);
+    #endif
 
     //write element in queue
     pQ->elements[pQ->put & TX_Q_MASK] = elem;
@@ -144,9 +152,11 @@ int Tx_QueueSize(Tx_Queue_t *pQ)
 ////ADQUISITION THREAD
 
 // initializes an Adq_Thread_t
-Adq_Thread_t * AdqThreadInit(Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ)
+Adq_Thread_t * AdqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ)
 {
     Adq_Thread_t * adqTh = malloc(sizeof(Adq_Thread_t));
+
+    adqTh->client = client;
 
     adqTh->rxQ = rxQ;
     adqTh->txQ = txQ;
@@ -170,10 +180,9 @@ void AdqThreadDestroy(Adq_Thread_t * adqTh)
     free(adqTh);
 }
 
-// function to be run by the adquisition thread
-void * adqTh_threadFunc(void * ctx)
+// acquires a buffer, fills it with data, and passes it to Tx_Queue
+void acquireFillPass(Adq_Thread_t * adqTh)
 {
-    Adq_Thread_t * adqTh = (Adq_Thread_t *) ctx;
     Rx_Queue_t * rxQ = adqTh->rxQ;
     Tx_Queue_t * txQ = adqTh->txQ;
     Dev_Queue_t * devQ = adqTh->devQ;
@@ -184,24 +193,41 @@ void * adqTh_threadFunc(void * ctx)
 
     uint16_t dev_data;
 
-    while(adqTh->running)
+    //acquire a free Buffer_t
+    rxBuf = Rx_Queue_Acquire(rxQ);
+
+    //timestamp this buffer
+    if(clock_gettime(CLOCK_REALTIME,&rxBuf->tp)<0) error("clock_gettime in adqTh");
+    
+    //fill buffer with data from FakeDataGen    
+    for(i=0;i<BUF_SIZE;i++)
     {
-        //adquire a free Rx_Buffer
-        rxBuf = Rx_Queue_Acquire(rxQ);
+        dev_data = Dev_QueueGet(devQ);
+        rxBuf->data[i]= dev_data;
+    }    
 
-        //timestamp this buffer
-        if(clock_gettime(CLOCK_REALTIME,&rxBuf->tp)<0) error("clock_gettime in adqTh");
-        
-        //fill buffer with data from FakeDataGen    
-        for(i=0;i<BUF_SIZE;i++)
-        {
-            dev_data = Dev_QueueGet(devQ);
-            // printf("AdqTh: Received from FDG %d.\n",dev_data);
-            rxBuf->data[i]= dev_data;
-        }    
+    //put buffer in Tx_Queue
+    Tx_QueuePut(txQ,rxBuf);
+}
 
-        //put buffer in Tx_Queue
-        Tx_QueuePut(txQ,rxBuf);
+// function to be run by the adquisition thread
+void * adqTh_threadFunc(void * ctx)
+{
+    Adq_Thread_t * adqTh = (Adq_Thread_t *) ctx;
+    uint64_t wr_buf;
+
+    if(adqTh->client->capMode == sampleNumber)
+    {
+        //capture until reaching the required number of samples or thread is stopped
+        while(adqTh->running && (adqTh->devQ->get < adqTh->client->n_samples)) acquireFillPass(adqTh);
+        //notify client
+        wr_buf = 1;
+        write(adqTh->client->eventfd_samples,&wr_buf,sizeof(wr_buf));
+    }
+    else
+    {
+        //capture until thread is stopped
+        while(adqTh->running) acquireFillPass(adqTh);
     }
 
     //return to be joined
@@ -385,4 +411,168 @@ void TxThreadStop(Tx_Thread_t * txTh)
 
     //wait for thread to finish and join
     if(pthread_join(txTh->th,NULL) != 0) error("pthread_join in txTh");
+}
+
+//// CLIENT
+// initializes a Client_t
+Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * server_addr, int server_portno, int eventfd_out, CaptureMode_t capMode, TriggerMode_t trigMode)
+{
+    Client_t * client = malloc(sizeof(Client_t));
+
+    struct tm time_br;
+    struct timespec time_sp;
+    struct itimerspec timerfd_start_spec;
+
+    //devQ is external
+    client->devQ = devQ;
+    //rx and tx queues must be initialized
+    client->rxQ = Rx_QueueInit();
+    client->txQ = Tx_QueueInit();
+
+    //initialize threads
+    client->adqTh = AdqThreadInit(client,client->rxQ,client->txQ,bd_id,ch_id,client->devQ);
+    client->txTh = TxThreadInit(client->txQ,client->rxQ,server_addr,server_portno);
+
+    //SYNC WITH FDG: eventfd initialized externally
+    client->eventfd_out = eventfd_out;
+
+    //modes passed as argument
+    client->capMode = capMode;
+    client->trigMode = trigMode;
+
+    switch (client->capMode)
+    {
+    case sampleNumber:
+        //initialize eventfd for adqTh notification
+        client->eventfd_samples = eventfd(0,0);
+        //get sample number from user        
+        printf("ClientInit: Enter samples to acquire from Dev:");
+        scanf("%d",&client->n_samples);
+        break;
+
+    case timeInterval:
+        //set stop time to 0
+        memset(&client->timerfd_stop_spec,0,sizeof(client->timerfd_stop_spec));
+        //get time interval from user
+        printf("ClientInit: enter time interval for capture (in seconds): ");
+        scanf("%ld",&client->timerfd_stop_spec.it_value.tv_sec);
+        //create timer
+        client->timerfd_stop = timerfd_create(CLOCK_REALTIME,0);
+        if(client->timerfd_stop < 0) error("timerfd_create in ClientInit");    
+        break;
+
+    default:
+        break;
+    }
+
+    switch (client->trigMode)
+    {
+    case manual:
+        //nothing to be done here. Manual trigger is set in ClientRun()
+        break;
+    
+    case timer:
+        //clear timer start time
+        memset(&timerfd_start_spec,0,sizeof(timerfd_start_spec));
+        //get local time
+        if(clock_gettime(CLOCK_REALTIME,&time_sp)<0) error("clock_gettime in ClientInit");
+        localtime_r(&time_sp.tv_sec,&time_br);
+        //change hour, minute, second
+        printf("ClientInit: enter start hour (0-23): ");
+        scanf("%d",&time_br.tm_hour);
+        printf("ClientInit: enter start minute (0-59): ");
+        scanf("%d",&time_br.tm_min);
+        printf("ClientInit: enter start second (0-59): ");
+        scanf("%d",&time_br.tm_sec);
+        //create and start timer
+        timerfd_start_spec.it_value.tv_sec = mktime(&time_br);
+        client->timerfd_start = timerfd_create(CLOCK_REALTIME,0);
+
+        timerfd_settime(client->timerfd_start,TFD_TIMER_ABSTIME,&timerfd_start_spec,NULL);
+        break;
+
+    default:
+        break;
+    }
+
+    return client;
+}
+
+// destroys a Client_t
+void ClientDestroy(Client_t * client)
+{
+    TxThreadDestroy(client->txTh);
+    AdqThreadDestroy(client->adqTh);
+    Rx_QueueDestroy(client->rxQ);
+    Tx_QueueDestroy(client->txQ);
+    close(client->timerfd_start);
+    close(client->timerfd_stop);
+    close(client->eventfd_samples);
+}
+
+// stops a Client_t
+void ClientStop(Client_t * client)
+{
+    TxThreadStop(client->txTh);
+    AdqThreadStop(client->adqTh);
+}
+
+// runs a Client_t
+void ClientRun(Client_t * client)
+{
+    uint64_t rd_buf,wr_buf;
+    struct timespec tspec;
+
+    switch (client->trigMode)
+    {
+        case manual:
+            printf("Client ready to capture. Press any key to start capture...\n");
+            getchar();
+            getchar();
+            break;
+        
+        case timer:
+            printf("Client waiting for timer to run.\n");
+            read(client->timerfd_start,&rd_buf,sizeof(rd_buf));
+            break;
+        default:
+            break;
+    }
+
+    clock_gettime(CLOCK_REALTIME,&tspec);
+    printf("Client started capture at time %s",ctime(&tspec.tv_sec));
+    //if capture with time interval, start this timer
+    if(client->capMode == timeInterval)
+    {
+        timerfd_settime(client->timerfd_stop,0,&client->timerfd_stop_spec,NULL);
+    }
+
+    //SYNC WITH FDG: signal outer world of start
+    wr_buf = 1;
+    write(client->eventfd_out,&wr_buf,sizeof(wr_buf));
+
+    //run threads
+    AdqThreadRun(client->adqTh);
+    TxThreadRun(client->txTh);
+
+    switch (client->capMode)
+    {
+    case sampleNumber:
+        //wait for adqThread notification
+        read(client->eventfd_samples,&rd_buf,sizeof(rd_buf));
+        ClientStop(client);
+        break;
+    
+    case timeInterval:
+        //wait for time Interval
+        read(client->timerfd_stop,&rd_buf,sizeof(rd_buf));
+        ClientStop(client);
+        break;
+    default:
+        break;
+    }
+
+    //SYNC WITH FDG: signal outer world of stopping
+    wr_buf = 1;
+    write(client->eventfd_out,&wr_buf,sizeof(wr_buf));
 }

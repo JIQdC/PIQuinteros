@@ -2,7 +2,7 @@
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param)
+FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param, int eventfd_out)
 {
     FakeDataGen_t * fdg = malloc(sizeof(FakeDataGen_t));
 
@@ -15,6 +15,8 @@ FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mo
     //init timefd
     fdg->timefd = timerfd_create(CLOCK_REALTIME,0);
     if(fdg->timefd < 0) error("timerfd_create in fdg init");
+
+    fdg->eventfd_out = eventfd_out;
 
     return fdg;
 }
@@ -33,10 +35,13 @@ void * fdg_threadFunc (void * ctx)
     FakeDataGen_t * fdg =  (FakeDataGen_t *) ctx;
     uint16_t result;
     double time_o = 0;
-    uint64_t tim_rd;
+    uint64_t rd_buf;
 
     //seed for randomness
     srand(time(NULL));
+
+    //SYNC WITH CLIENT: wait for signal from outer world
+    read(fdg->eventfd_out,&rd_buf,sizeof(rd_buf));
 
     //run timer
     struct itimerspec it;
@@ -54,9 +59,9 @@ void * fdg_threadFunc (void * ctx)
                 //calculate sine, put in queue, update time
                 result = (uint16_t) (SINE_AMPLITUDE * sin(2*M_PI*fdg->mode_param*time_o) + SINE_OFFSET);
                 Dev_QueuePut(fdg->pq,result);
-                time_o += fdg->update_period.tv_sec + 1e9*fdg->update_period.tv_nsec;
+                time_o += fdg->update_period.tv_sec + 1e-9*fdg->update_period.tv_nsec;
                 //wait for timer
-                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
+                read(fdg->timefd,&rd_buf,sizeof(uint64_t));
             }
             break;
         case randConst:
@@ -67,7 +72,7 @@ void * fdg_threadFunc (void * ctx)
             {
                 Dev_QueuePut(fdg->pq,result);
                 //wait for timer
-                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
+                read(fdg->timefd,&rd_buf,sizeof(uint64_t));
             }
             break; 
         case countOffset:
@@ -78,8 +83,9 @@ void * fdg_threadFunc (void * ctx)
             {
                 Dev_QueuePut(fdg->pq,result++);
                 //wait for timer
-                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
+                read(fdg->timefd,&rd_buf,sizeof(uint64_t));
             }
+            break;
         default: //noise
             //output random numbers to queue until stopped
             printf("FDG: generating random data.\n");
@@ -88,7 +94,7 @@ void * fdg_threadFunc (void * ctx)
                 result = rand() & UINT16_MAX;
                 Dev_QueuePut(fdg->pq,result);
                 //wait for timer
-                read(fdg->timefd,&tim_rd,sizeof(uint64_t));
+                read(fdg->timefd,&rd_buf,sizeof(uint64_t));
             }            
             break;
     }

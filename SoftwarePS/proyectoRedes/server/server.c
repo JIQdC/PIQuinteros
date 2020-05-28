@@ -39,6 +39,11 @@ void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem)
     //wait for queue lock semaphore
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait of sem_lock");
 
+    #ifdef _DEBUG
+    //queue state
+    elem.cl_qstate = Cl_QueueSize(pQ);
+    #endif
+
     //write element in queue
     pQ->elements[pQ->put & CL_Q_MASK] = elem;
 
@@ -287,9 +292,6 @@ void * clTh_threadFunc(void * ctx)
     Buffer_t * buf = malloc(sizeof(Buffer_t));
     memset(buf,0,sizeof(Buffer_t));
 
-    // struct timeval tv;
-    // tv.tv_sec = CL_BLOCKTIME_SEC;
-    // tv.tv_usec = CL_BLOCKTIME_USEC;
     fd_set rfds;
     int sel_ret;
 
@@ -374,16 +376,62 @@ void ProcThreadDestroy(Proc_Thread_t * prTh)
     free(prTh);
 }
 
+// opens a file with current time as filename. writes header for Buffer_t
+FILE * fileOpen()
+{
+    struct timespec t;
+    FILE * fd;
+    char * word1;
+    char word2[24] = "";
+    
+    //get time from clock and place it formatted in word 1
+    if(clock_gettime(CLOCK_REALTIME,&t) < 0) error("clock_gettime in fileOpen");
+    word1 = ctime(&t.tv_sec);
+    //remove last char and place in word2
+    strncpy(word2,word1,strlen(word1)-1);
+    //open file with name
+    fd = fopen(word2,"w+");
+    if(fd == NULL) error("fopen in fileOpen");
+
+    fprintf(fd,"sec,nsec,bd_id,ch_id,data,");
+    #ifdef _DEBUG
+    fprintf(fd,"rx_q,tx_q,cl_q");
+    #endif
+    fprintf(fd,"\n");
+    //notify
+    printf("prTh: opened file with name %s\n",word2);
+
+    return fd;
+}
+
+// writes a Buffer_t into file
+void fileWriteBuffer(const Buffer_t * buf,FILE * fd)
+{
+    int i;
+
+    struct timespec tBuf = buf->tp;
+    for (i=0;i<BUF_SIZE;i++)
+    {
+        fprintf(fd,"%ld,%ld,%d,%d,%d,",tBuf.tv_sec,tBuf.tv_nsec,buf->bd_id,buf->ch_id,buf->data[i]);
+        #ifdef _DEBUG
+        fprintf(fd,"%d,%d,%d",buf->rx_qstate,buf->tx_qstate,buf->cl_qstate);
+        #endif
+        fprintf(fd,"\n");
+        tBuf.tv_sec += UPDATE_TIME_SEC;
+        tBuf.tv_nsec += UPDATE_TIME_NSEC;
+    }
+}
+
 // function to be run by the processing thread
 void * procTh_threadFunc(void * ctx)
 {
-    // TEST IMPLEMENTATION: get first value from active threads
     Proc_Thread_t * pTh = (Proc_Thread_t *) ctx;
     Server_t * server = (Server_t *) pTh->server;
     Buffer_t buf;
     Cl_Thread_t * cTh;
 
-    int i;
+    //open output file
+    FILE * fd = fileOpen();
 
     while(pTh->running)
     {
@@ -392,16 +440,18 @@ void * procTh_threadFunc(void * ctx)
         //get first element from list
         cTh = server->clThList_head;
         //go through list
-        i=0;
         while(cTh != NULL && Cl_QueueSize(cTh->pQ)!= 0)
         {
             buf = Cl_QueueGet(cTh->pQ);
-            printf("Client thread %d with time %s",i++,ctime(&buf.tp.tv_sec));
+            fileWriteBuffer(&buf,fd);
             cTh = cTh->clThList_next;
         }
         //release lock on list
         sem_post(&server->clThList_sem);
     }
+
+    //close output file
+    fclose(fd);
 
     return NULL;
 }
@@ -563,13 +613,13 @@ void ServerRun(Server_t * server)
             {
                 memset(buffer,0,sizeof(buffer));
                 fgets(buffer,STDIN_BUF_LENGTH-1,stdin);
-                printf("Read from stdin: %s\n",buffer);
+                printf("Server: Read from stdin: %s\n",buffer);
 
                 //check if close has been issued
                 if(strstr(buffer,"stop") != NULL)
                 {
                     //ack
-                    printf("Stop command received. Exiting active threads.\n");
+                    printf("Server: Stop command received. Exiting active threads.\n");
                     //signal threads to stop
                     n = 1;
                     write(server->stop_flag,&n,sizeof(n));
