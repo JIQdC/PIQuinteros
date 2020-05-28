@@ -1,187 +1,11 @@
 #include "server.h"
 
-////QUEUE
-// initializes a Cl_Queue_t queue
-Cl_Queue_t* Cl_QueueInit()
+struct Ch_File_Str
 {
-    //memory allocation for queue
-    Cl_Queue_t* pQ = malloc(sizeof(Cl_Queue_t));
-    //initialize basic elements
-    pQ->get = 0;
-    pQ->put = 0;
-    pQ->q_size = CL_Q_SIZE;
-
-    //initialize semaphores
-    if(sem_init(&(pQ->sem_lock),0,1)<0) error("init of sem lock");
-    if(sem_init(&(pQ->sem_get),0,0)<0) error("init of sem get");
-    if(sem_init(&(pQ->sem_put),0,CL_Q_SIZE)<0) error("init of sem put");
-
-    return pQ;
-}
-
-// destroys a Cl_Queue_t queue
-void Cl_QueueDestroy(Cl_Queue_t *pQ)
-{
-    //destroy semaphores
-    if(sem_destroy(&(pQ->sem_lock))<0) error("destroy of sem lock");
-    if(sem_destroy(&(pQ->sem_get))<0) error("destroy of sem get");
-    if(sem_destroy(&(pQ->sem_put))<0) error("destroy of sem put");
-
-    //release memory
-    free(pQ);
-}
-
-// Adds a new element to a Cl_Queue_t queue
-void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem)
-{
-    //wait for put semaphore for available space in queue
-    if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
-    //wait for queue lock semaphore
-    if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait of sem_lock");
-
-    #ifdef _DEBUG
-    //queue state
-    elem.cl_qstate = Cl_QueueSize(pQ);
-    #endif
-
-    //write element in queue
-    pQ->elements[pQ->put & CL_Q_MASK] = elem;
-
-    //increase put counter
-    pQ->put++;
-    
-    //post get semaphore
-    if(sem_post(&(pQ->sem_get))<0) error("sem_post of sem_get");
-    //post lock semaphore
-    if(sem_post(&(pQ->sem_lock))<0) error("sem_post of sem_lock");
-}
-
-// Gets and removes an element from a Cl_Queue_t queue
-Buffer_t Cl_QueueGet(Cl_Queue_t *pQ)
-{
-    Buffer_t result;
-
-    //wait for get semaphore for available space in queue
-    if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
-    //wait for queue lock semaphore
-    if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait de sem_lock");
-
-    //get element from queue
-    result = pQ->elements[pQ->get & CL_Q_MASK];
-
-    //increase get counter
-    pQ->get++;
-
-    //post put semaphore
-    if(sem_post(&(pQ->sem_put))<0) error("sem_post de sem_put");
-    //post lock semaphore
-    if(sem_post(&(pQ->sem_lock))<0) error("sem_post de sem_lock");
-
-    return result;
-}
-
-// Gets the number of elements in a Cl_Queue_t queue
-int Cl_QueueSize(Cl_Queue_t *pQ)
-{
-    if(pQ == NULL) return 0;
-    int dif = (pQ->put - pQ->get)& CL_Q_MASK;
-    if(dif>=0)
-    {
-        return dif;
-    }
-    else
-    {
-        return CL_Q_SIZE - dif;
-    }
-}
-
-// initializes a Th_Queue_t queue
-Th_Queue_t* Th_QueueInit()
-{
-    //memory allocation for queue
-    Th_Queue_t* pQ = malloc(sizeof(Cl_Queue_t));
-    //initialize basic elements
-    pQ->get = 0;
-    pQ->put = 0;
-    pQ->q_size = TH_Q_SIZE;
-
-    //initialize semaphores
-    if(sem_init(&(pQ->sem_lock),0,1)<0) error("init of sem lock");
-    if(sem_init(&(pQ->sem_get),0,0)<0) error("init of sem get");
-    if(sem_init(&(pQ->sem_put),0,CL_Q_SIZE)<0) error("init of sem put");
-
-    return pQ;
-}
-
-// destroys a Th_Queue_t queue
-void Th_QueueDestroy(Th_Queue_t *pQ)
-{
-    //destroy semaphores
-    if(sem_destroy(&(pQ->sem_lock))<0) error("destroy of sem lock");
-    if(sem_destroy(&(pQ->sem_get))<0) error("destroy of sem get");
-    if(sem_destroy(&(pQ->sem_put))<0) error("destroy of sem put");
-
-    //release memory
-    free(pQ);
-}
-
-// Adds a new element to a Th_Queue_t queue
-void Th_QueuePut(Th_Queue_t *pQ, Cl_Thread_t * elem)
-{
-    //wait for put semaphore for available space in queue
-    if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
-    //wait for queue lock semaphore
-    if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait of sem_lock");
-
-    //write element in queue
-    pQ->elements[pQ->put & TH_Q_MASK] = elem;
-
-    //increase put counter
-    pQ->put++;
-    
-    //post get semaphore
-    if(sem_post(&(pQ->sem_get))<0) error("sem_post of sem_get");
-    //post lock semaphore
-    if(sem_post(&(pQ->sem_lock))<0) error("sem_post of sem_lock");
-}
-
-// Gets and removes an element from a Th_Queue_t queue
-Cl_Thread_t * Th_QueueGet(Th_Queue_t *pQ)
-{
-    Cl_Thread_t * result;
-
-    //wait for get semaphore for available space in queue
-    if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
-    //wait for queue lock semaphore
-    if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait de sem_lock");
-
-    //get element from queue
-    result = pQ->elements[pQ->get & TH_Q_MASK];
-
-    //increase get counter
-    pQ->get++;
-
-    //post put semaphore
-    if(sem_post(&(pQ->sem_put))<0) error("sem_post de sem_put");
-    //post lock semaphore
-    if(sem_post(&(pQ->sem_lock))<0) error("sem_post de sem_lock");
-
-    return result;
-}
-
-// Gets the number of elements in a Th_Queue_t queue
-int Th_QueueSize(Th_Queue_t *pQ)
-{
-    int dif = (pQ->put - pQ->get)& TH_Q_MASK;
-    if(dif>=0)
-    {
-        return dif;
-    }
-    else
-    {
-        return TH_Q_SIZE - dif;
-    }
-}
+    uint8_t ch_id;
+    FILE * f;
+    Ch_File_t * chList_next;
+};
 
 ////CLIENT THREAD
 // initializes an Cl_Thread_t
@@ -212,7 +36,7 @@ void ClThreadDestroy(Cl_Thread_t * clTh)
 }
 
 // reads msg_size bytes from socket and place them into msg. Retries reading until full msg is read. Returns 0 on success, -1 on read error, 1 on connection closed.
-int socketRead(int sockfd, void * msg, size_t size_msg)
+static int socketRead(int sockfd, void * msg, size_t size_msg)
 {
     int n;
 
@@ -247,7 +71,7 @@ int socketRead(int sockfd, void * msg, size_t size_msg)
 }
 
 // close connection on a thread and prepare it to be joined
-void closeConnection(Cl_Thread_t * clTh, Server_t * server)
+static void closeConnection(Cl_Thread_t * clTh, Server_t * server)
 {
     Cl_Thread_t ** ppNext;
 
@@ -284,7 +108,7 @@ void closeConnection(Cl_Thread_t * clTh, Server_t * server)
 }
 
 // function to be run by the client thread
-void * clTh_threadFunc(void * ctx)
+static void * clTh_threadFunc(void * ctx)
 {
     Cl_Thread_t * clTh = (Cl_Thread_t *) ctx;
     Server_t * server = (Server_t *) clTh->server;
@@ -379,7 +203,7 @@ void ProcThreadDestroy(Proc_Thread_t * prTh)
 }
 
 // opens a channel file with current time_ch_id as filename. writes header for Buffer_t
-Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
+static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
 {
     Ch_File_t * chF = malloc(sizeof(Ch_File_t));
     struct timespec t;
@@ -418,7 +242,7 @@ Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
 }
 
 // writes a Buffer_t into ch_file
-void chFileWriteBuffer(const Buffer_t * buf,Ch_File_t * chF)
+static void chFileWriteBuffer(const Buffer_t * buf,Ch_File_t * chF)
 {
     int i;
 
@@ -438,7 +262,7 @@ void chFileWriteBuffer(const Buffer_t * buf,Ch_File_t * chF)
 }
 
 // function to be run by the processing thread
-void * procTh_threadFunc(void * ctx)
+static void * procTh_threadFunc(void * ctx)
 {
     Proc_Thread_t * pTh = (Proc_Thread_t *) ctx;
     Server_t * server = (Server_t *) pTh->server;
@@ -603,7 +427,7 @@ void ServerDestroy(Server_t * server)
 }
 
 // join pending threads from server thread queue and destroy its resources
-void joinPendingThreads(Server_t * server)
+static void joinPendingThreads(Server_t * server)
 {
     Cl_Thread_t * cTh;
 
