@@ -21,17 +21,10 @@
 
 #include "../lib/error.h"
 #include "devQueue.h"
+#include "fdg_params.h"
 
 #define SINE_AMPLITUDE 32767
 #define SINE_OFFSET 32768
-
-typedef enum
-{
-    sine,
-    randConst,
-    noise,
-    countOffset
-} OpMode_t;
 
 typedef struct
 {
@@ -51,13 +44,10 @@ typedef struct
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param, int eventfd_out);
+FakeDataGen_t * FakeDataGenInit(const FdgParams_t * params, int eventfd_out);
 
 // destroys a fake data generator
 void FakeDataGenDestroy(FakeDataGen_t * fdg);
-
-// function to be run by the fake data generator
-void * fdg_threadFunc (void * ctx);
 
 // runs a fake data gen
 void FakeDataGenRun(FakeDataGen_t * fdg);

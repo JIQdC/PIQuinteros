@@ -1,0 +1,20 @@
+# FDG CONFIG FILE
+# This is a model of the FDG Config File. Comment lines start with '#'. Blank lines are ignored. Unless specified, ALL PARAMETERS MUST BE SET.
+# Parameters must be formatted as
+# 'KEY=VALUE'
+
+# PARAMETER DESCRIPTION
+# FDG_MODE: operation mode for FDG. Can take values 'sine', 'countOffset', 'randConst', or 'noise'.
+# FDG_MODE_PAR: parameter for operation mode. If FDG_MODE=sine, this parameter represents the frequency of the generated sine wave, in Hz. If FDG_MODE=countOffset, this parameter is the offset for the counter. Otherwise it can be ignored.
+# FDG_UPT_SEC: FDG generation time interval, in seconds. Adds with FDG_UPT_NSEC
+# FDG_UPT_NSEC: FDG generation time interval, in nanoseconds. Adds with FDG_UPT_SEC
+# (either FDG_UPT_SEC or FDG_UPT_NSEC must be set to a non-zero value)
+
+FDG_MODE=countOffset
+# valid if FDG_MODE=countOffset or FDG_MODE=sine
+FDG_MODE_PAR=1500
+
+FDG_UPT_SEC=0
+FDG_UPT_NSEC=100000
+
+# END FDG CONFIG FILE

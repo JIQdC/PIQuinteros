@@ -21,8 +21,9 @@
 
 #include "../lib/error.h"
 #include "../lib/buffer.h"
+#include "../fdg/devQueue.h"
 #include "client_queues.h"
-#include "devQueue.h"
+#include "client_params.h"
 
 struct Client_str;
 typedef struct Client_str Client_t;
@@ -48,18 +49,6 @@ typedef struct
     int sockfd;
 } Tx_Thread_t;
 
-typedef enum
-{
-    sampleNumber,
-    timeInterval
-} CaptureMode_t;
-
-typedef enum
-{
-    manual,
-    timer
-} TriggerMode_t;
-
 struct Client_str
 {
     Dev_Queue_t * devQ; //this should be replaced to a pointer to wherever data comes from in a "real" implementation
@@ -69,17 +58,16 @@ struct Client_str
     Adq_Thread_t * adqTh;
     Tx_Thread_t * txTh;
 
-    char * serv_addr;
-    int server_portno;
-
-    int eventfd_out;
-
     CaptureMode_t capMode;
     TriggerMode_t trigMode;
 
+    int eventfd_out;
+
     int timerfd_start;
+
     int timerfd_stop;
     struct itimerspec timerfd_stop_spec;
+    
     int eventfd_samples;
     int n_samples;
 };
@@ -112,7 +100,7 @@ void TxThreadStop(Tx_Thread_t * txTh);
 
 //// CLIENT
 // initializes a Client_t
-Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * server_addr, int server_portno, int eventfd_out, CaptureMode_t capMode, TriggerMode_t trigMode);
+Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params);
 
 // destroys a Client_t
 void ClientDestroy(Client_t * client);

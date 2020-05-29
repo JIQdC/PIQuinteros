@@ -1,4 +1,4 @@
-#include "fakeDataGen.h"
+#include "../fdg/fakeDataGen.h"
 #include "client.h"
 
 #define BD_ID 1
@@ -8,18 +8,28 @@
 
 //#define _DEBUG 1
 
-int main()
+int main(int argc, char *argv[])
 {
     uint64_t rd_buf;
     int efd = eventfd(0,0);
+    ClParams_t * clPars = malloc(sizeof(ClParams_t));
+    FdgParams_t * fdgPars = malloc(sizeof(FdgParams_t));
+
+    if (argc != 3)
+    {
+        printf("usage: %s client_config_file fdg_config_file\n",argv[0]);
+        exit(1);
+    }
+    
+    //parse parameters from files
+    ClientParseFile(argv[1],clPars);
+    FdgParseFile(argv[2],fdgPars);
+
     //initialize FakeDataGen
-    struct timespec update_time;
-    update_time.tv_sec = UPDATE_TIME_SEC;
-    update_time.tv_nsec = UPDATE_TIME_NSEC;
-    FakeDataGen_t * fdg = FakeDataGenInit(update_time,countOffset,1000,efd);
+    FakeDataGen_t * fdg = FakeDataGenInit(fdgPars,efd);
 
     //initialize client
-    Client_t * client = ClientInit(fdg->pq,BD_ID,CH_ID,SERVER_ADDR,SERVER_PORTNO,efd,sampleNumber,manual);
+    Client_t * client = ClientInit(fdg->pq,efd,clPars);
 
     //run fdg
     FakeDataGenRun(fdg);

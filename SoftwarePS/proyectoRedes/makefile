@@ -8,6 +8,8 @@ LINKERFLAG = -lm -lrt -pthread
 
 CLIENT_SRCS := $(wildcard client/*.c) 
 CLIENT_HEADERS := $(wildcard client/*.h) 
+FDG_SRCS := $(wildcard fdg/*.c) 
+FDG_HEADERS := $(wildcard fdg/*.h) 
 SERVER_SRCS := $(wildcard server/*.c) 
 SERVER_HEADERS := $(wildcard server/*.h) 
 LIB_SRCS := $(wildcard lib/*.c)
@@ -17,8 +19,8 @@ LIB_HEADERS := $(wildcard lib/*.h)
 
 all: client_main server_main
 
-client_main: $(CLIENT_SRCS) $(CLIENT_HEADERS) $(LIB_SRCS) $(LIB_HEADERS)
-	gcc -g -Wall $(CLIENT_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)
+client_main: $(CLIENT_SRCS) $(CLIENT_HEADERS) $(LIB_SRCS) $(LIB_HEADERS) $(FDG_SRCS) $(FDG_HEADERS)
+	gcc -g -Wall $(CLIENT_SRCS) $(LIB_SRCS) $(FDG_SRCS) -o $@ $(LINKERFLAG)
 
 server_main: $(SERVER_SRCS) $(SERVER_HEADERS) $(LIB_SRCS) $(LIB_HEADERS)
 	gcc -g -Wall $(SERVER_SRCS) $(LIB_SRCS) -o $@ $(LINKERFLAG)

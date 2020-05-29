@@ -1,0 +1,43 @@
+# CLIENT CONFIG FILE
+# This is a model of the Client Config File. Comment lines start with '#'. Blank lines are ignored. Unless specified, ALL PARAMETERS MUST BE SET.
+# Parameters must be formatted as
+# 'KEY=VALUE'
+
+# PARAMETER DESCRIPTION
+# BD_ID: identifier for board. Can take values 0-255
+# CH_ID: identifier for channel. Can take values 0-255
+# SERVER_ADDR: server address or name. String to be passed to gethostbyname()
+# SERVER_PORTNO: server port number
+# CAP_MODE: capture mode for client. Can take values 'sampleNumber' or 'timeInterval'
+# SAMPLE_NUM: valid if CAP_MODE=sampleNumber. Number of samples to be captured by client.
+# STOP_SEC: valid if CAP_MODE=timeInterval. Time interval for client capture, in seconds. Adds with STOP_NSEC.
+# STOP_NSEC: set if CAP_MODE=timeInterval. Time interval for client capture, in nanoseconds. Adds with STOP_SEC.
+# TRIG_MODE: trigger mode for client. Can take values 'manual' or 'timer'. Defaults to 'manual' if not set.
+# START_YEAR, START_MONTH, START_DAY: valid if TRIG_MODE=timer. Date to start capture. Defaults to today if not set.
+# START_HOUR, START_MIN, START_SEC: valid if TRIG_MODE=timer. Time to start capture.
+
+BD_ID=0
+CH_ID=2
+
+SERVER_ADDR=0.0.0.0
+SERVER_PORTNO=12345
+
+CAP_MODE=timeInterval
+
+# valid if CAP_MODE=sampleNumber
+SAMPLE_NUM=1500
+# valid if CAP_MODE=timeInterval
+STOP_SEC=2
+STOP_NSEC=0
+
+TRIG_MODE=timer
+
+# valid if TRIG_MODE=timer
+# START_YEAR=2020
+# START_MONTH=05
+# START_DAY=28
+START_HOUR=15
+START_MIN=53
+START_SEC=00
+
+# END CLIENT CONFIG FILE

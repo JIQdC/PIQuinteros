@@ -266,12 +266,10 @@ void TxThreadStop(Tx_Thread_t * txTh)
 
 //// CLIENT
 // initializes a Client_t
-Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * server_addr, int server_portno, int eventfd_out, CaptureMode_t capMode, TriggerMode_t trigMode)
+Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
 {
     Client_t * client = malloc(sizeof(Client_t));
 
-    struct tm time_br;
-    struct timespec time_sp;
     struct itimerspec timerfd_start_spec;
 
     //devQ is external
@@ -281,32 +279,33 @@ Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * s
     client->txQ = Tx_QueueInit();
 
     //initialize threads
-    client->adqTh = AdqThreadInit(client,client->rxQ,client->txQ,bd_id,ch_id,client->devQ);
-    client->txTh = TxThreadInit(client->txQ,client->rxQ,server_addr,server_portno);
+    client->adqTh = AdqThreadInit(client,client->rxQ,client->txQ,params->bd_id,params->ch_id,client->devQ);
+    client->txTh = TxThreadInit(client->txQ,client->rxQ,params->serv_addr,params->server_portno);
 
     //SYNC WITH FDG: eventfd initialized externally
     client->eventfd_out = eventfd_out;
 
-    //modes passed as argument
-    client->capMode = capMode;
-    client->trigMode = trigMode;
+    //modes from params
+    client->capMode = params->capMode;
+    client->trigMode = params->trigMode;
 
     switch (client->capMode)
     {
     case sampleNumber:
         //initialize eventfd for adqTh notification
         client->eventfd_samples = eventfd(0,0);
-        //get sample number from user        
-        printf("ClientInit: Enter samples to acquire from Dev:");
-        scanf("%d",&client->n_samples);
+        //get sample number from params      
+        client->n_samples = params->n_samples;
         break;
 
     case timeInterval:
-        //set stop time to 0
-        memset(&client->timerfd_stop_spec,0,sizeof(client->timerfd_stop_spec));
-        //get time interval from user
-        printf("ClientInit: enter time interval for capture (in seconds): ");
-        scanf("%ld",&client->timerfd_stop_spec.it_value.tv_sec);
+        //get time interval from params
+        client->timerfd_stop_spec = params->timerfd_stop_spec;
+        // //set stop time to 0
+        // memset(&client->timerfd_stop_spec,0,sizeof(client->timerfd_stop_spec));
+        // //get time interval from user
+        // printf("ClientInit: enter time interval for capture (in seconds): ");
+        // scanf("%ld",&client->timerfd_stop_spec.it_value.tv_sec);
         //create timer
         client->timerfd_stop = timerfd_create(CLOCK_REALTIME,0);
         if(client->timerfd_stop < 0) error("timerfd_create in ClientInit");    
@@ -323,22 +322,24 @@ Client_t * ClientInit(Dev_Queue_t * devQ, uint8_t bd_id, uint8_t ch_id, char * s
         break;
     
     case timer:
+
+        // //get local time
+        // if(clock_gettime(CLOCK_REALTIME,&time_sp)<0) error("clock_gettime in ClientInit");
+        // localtime_r(&time_sp.tv_sec,&time_br);
+        // //change hour, minute, second
+        // printf("ClientInit: enter start hour (0-23): ");
+        // scanf("%d",&time_br.tm_hour);
+        // printf("ClientInit: enter start minute (0-59): ");
+        // scanf("%d",&time_br.tm_min);
+        // printf("ClientInit: enter start second (0-59): ");
+        // scanf("%d",&time_br.tm_sec);
+
         //clear timer start time
         memset(&timerfd_start_spec,0,sizeof(timerfd_start_spec));
-        //get local time
-        if(clock_gettime(CLOCK_REALTIME,&time_sp)<0) error("clock_gettime in ClientInit");
-        localtime_r(&time_sp.tv_sec,&time_br);
-        //change hour, minute, second
-        printf("ClientInit: enter start hour (0-23): ");
-        scanf("%d",&time_br.tm_hour);
-        printf("ClientInit: enter start minute (0-59): ");
-        scanf("%d",&time_br.tm_min);
-        printf("ClientInit: enter start second (0-59): ");
-        scanf("%d",&time_br.tm_sec);
+        //get start time from params
+        timerfd_start_spec.it_value.tv_sec = mktime(&params->timerfd_start_br);
         //create and start timer
-        timerfd_start_spec.it_value.tv_sec = mktime(&time_br);
         client->timerfd_start = timerfd_create(CLOCK_REALTIME,0);
-
         timerfd_settime(client->timerfd_start,TFD_TIMER_ABSTIME,&timerfd_start_spec,NULL);
         break;
 

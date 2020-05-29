@@ -2,13 +2,13 @@
 
 ////FAKE DATA GEN
 // initializes a fake data generator
-FakeDataGen_t * FakeDataGenInit(const struct timespec update_period, OpMode_t mode, uint16_t mode_param, int eventfd_out)
+FakeDataGen_t * FakeDataGenInit(const FdgParams_t * params, int eventfd_out)
 {
     FakeDataGen_t * fdg = malloc(sizeof(FakeDataGen_t));
 
-    fdg->update_period = update_period;
-    fdg->mode = mode;
-    fdg->mode_param = mode_param;
+    fdg->update_period = params->update_period;
+    fdg->mode = params->mode;
+    fdg->mode_param = params->mode_param;
     fdg->pq = Dev_QueueInit();
     fdg->running = 0;
 
@@ -30,7 +30,7 @@ void FakeDataGenDestroy(FakeDataGen_t * fdg)
 }
 
 // function to be run by the fake data generator
-void * fdg_threadFunc (void * ctx)
+static void * fdg_threadFunc (void * ctx)
 {
     FakeDataGen_t * fdg =  (FakeDataGen_t *) ctx;
     uint16_t result;
