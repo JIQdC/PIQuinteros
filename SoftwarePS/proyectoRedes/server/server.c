@@ -304,6 +304,9 @@ static void * procTh_threadFunc(void * ctx)
                 pTh->chList_head = chF;
                 chFileWriteBuffer(&buf,pTh->chList_head);
             }
+
+            //advance in cTh list
+            cTh = cTh->clThList_next;
         }
         //release lock on list
         sem_post(&server->clThList_sem);

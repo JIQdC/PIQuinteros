@@ -148,6 +148,7 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     size_t linecap = 0;
     ssize_t linelen;
     char * key,* value;
+    struct tm time_current;
 
     //clear params
     memset(clPars,0,sizeof(ClParams_t));
@@ -163,7 +164,8 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     //default start date = today
     struct timespec tspec;
     clock_gettime(CLOCK_REALTIME,&tspec);
-    localtime_r(&tspec.tv_sec,&clPars->timerfd_start_br);
+    localtime_r(&tspec.tv_sec,&time_current);
+    clPars->timerfd_start_br = time_current;
     //check start time if trigMode = timer
     clPars->timerfd_start_br.tm_hour = -1;
     clPars->timerfd_start_br.tm_min = -1;
@@ -193,6 +195,14 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     if(clPars->capMode == sampleNumber && clPars->n_samples == -1) paramError("SAMPLE_NUM");
     if(clPars->trigMode == timer)
     {
+        if(mktime(&clPars->timerfd_start_br) < tspec.tv_sec)
+        {
+            printf("ClParseParam: start time is before now. Program will initiate at once. Continue? (y/n): ");
+            if(getchar()=='n')
+            {
+               exit(1);
+            }
+        }
         if(clPars->timerfd_start_br.tm_hour == -1) paramError("START_HOUR");
         if(clPars->timerfd_start_br.tm_min == -1) paramError("START_MIN");
         if(clPars->timerfd_start_br.tm_sec == -1) paramError("START_SEC");

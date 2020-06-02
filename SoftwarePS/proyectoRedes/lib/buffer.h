@@ -11,6 +11,8 @@
 
 typedef struct __attribute__ ((packed))
 {
+    //packet_id: with/without header
+    //Cl_Params_t?? optional overhead
     uint8_t bd_id;
     uint8_t ch_id;
     struct timespec tp;

@@ -191,8 +191,6 @@ static int socketWrite(int sockfd, void * msg, size_t size_msg)
     }
     else if(n == 0)
     {
-        //is this the correct way of asserting that the connection is closed by the server?
-        //should I try reading from socket instead?
         return 1;
     }
     else // n < 0
@@ -301,11 +299,6 @@ Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
     case timeInterval:
         //get time interval from params
         client->timerfd_stop_spec = params->timerfd_stop_spec;
-        // //set stop time to 0
-        // memset(&client->timerfd_stop_spec,0,sizeof(client->timerfd_stop_spec));
-        // //get time interval from user
-        // printf("ClientInit: enter time interval for capture (in seconds): ");
-        // scanf("%ld",&client->timerfd_stop_spec.it_value.tv_sec);
         //create timer
         client->timerfd_stop = timerfd_create(CLOCK_REALTIME,0);
         if(client->timerfd_stop < 0) error("timerfd_create in ClientInit");    
@@ -322,18 +315,6 @@ Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
         break;
     
     case timer:
-
-        // //get local time
-        // if(clock_gettime(CLOCK_REALTIME,&time_sp)<0) error("clock_gettime in ClientInit");
-        // localtime_r(&time_sp.tv_sec,&time_br);
-        // //change hour, minute, second
-        // printf("ClientInit: enter start hour (0-23): ");
-        // scanf("%d",&time_br.tm_hour);
-        // printf("ClientInit: enter start minute (0-59): ");
-        // scanf("%d",&time_br.tm_min);
-        // printf("ClientInit: enter start second (0-59): ");
-        // scanf("%d",&time_br.tm_sec);
-
         //clear timer start time
         memset(&timerfd_start_spec,0,sizeof(timerfd_start_spec));
         //get start time from params
