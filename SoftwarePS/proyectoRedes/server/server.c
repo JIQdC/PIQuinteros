@@ -105,6 +105,8 @@ static void closeConnection(Cl_Thread_t * clTh, Server_t * server)
     Th_QueuePut(server->thQ,clTh);
     //deassert flag
     clTh->running = 0;
+    //post thread semaphore
+    sem_post(&server->sem_threads);
 }
 
 // function to be run by the client thread
@@ -143,7 +145,7 @@ static void * clTh_threadFunc(void * ctx)
             {
             case 0:
                 //place read value on queue
-                Cl_QueuePut(clTh->pQ,*buf);
+                Cl_QueuePut(clTh->pQ,buf);
                 break;
 
             case 1:
@@ -279,7 +281,7 @@ static void * procTh_threadFunc(void * ctx)
         //go through list
         while(cTh != NULL && Cl_QueueSize(cTh->pQ)!= 0)
         {
-            buf = Cl_QueueGet(cTh->pQ);
+            Cl_QueueGet(cTh->pQ,&buf);
 
             //check if channel is on prTh channel list
             chF = pTh->chList_head;

@@ -32,7 +32,7 @@ void Cl_QueueDestroy(Cl_Queue_t *pQ)
 }
 
 // Adds a new element to a Cl_Queue_t queue
-void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem)
+void Cl_QueuePut(Cl_Queue_t *pQ, const Buffer_t * elem)
 {
     //wait for put semaphore for available space in queue
     if(sem_wait(&(pQ->sem_put))<0) error("sem_wait of sem_put");
@@ -41,11 +41,11 @@ void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem)
 
     #ifdef _DEBUG
     //queue state
-    elem.cl_qstate = Cl_QueueSize(pQ);
+    elem->cl_qstate = Cl_QueueSize(pQ);
     #endif
 
     //write element in queue
-    pQ->elements[pQ->put & CL_Q_MASK] = elem;
+    pQ->elements[pQ->put & CL_Q_MASK] = *elem;
 
     //increase put counter
     pQ->put++;
@@ -57,17 +57,15 @@ void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem)
 }
 
 // Gets and removes an element from a Cl_Queue_t queue
-Buffer_t Cl_QueueGet(Cl_Queue_t *pQ)
+void Cl_QueueGet(Cl_Queue_t *pQ, Buffer_t *result)
 {
-    Buffer_t result;
-
     //wait for get semaphore for available space in queue
     if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
     //wait for queue lock semaphore
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait de sem_lock");
 
     //get element from queue
-    result = pQ->elements[pQ->get & CL_Q_MASK];
+    *result = pQ->elements[pQ->get & CL_Q_MASK];
 
     //increase get counter
     pQ->get++;
@@ -76,8 +74,6 @@ Buffer_t Cl_QueueGet(Cl_Queue_t *pQ)
     if(sem_post(&(pQ->sem_put))<0) error("sem_post de sem_put");
     //post lock semaphore
     if(sem_post(&(pQ->sem_lock))<0) error("sem_post de sem_lock");
-
-    return result;
 }
 
 // Gets the number of elements in a Cl_Queue_t queue

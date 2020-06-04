@@ -51,10 +51,10 @@ Cl_Queue_t* Cl_QueueInit();
 void Cl_QueueDestroy(Cl_Queue_t *pQ);
 
 // Adds a new element to a Cl_Queue_t queue
-void Cl_QueuePut(Cl_Queue_t *pQ, Buffer_t elem);
+void Cl_QueuePut(Cl_Queue_t *pQ, const Buffer_t * elem);
 
 // Gets and removes an element from a Cl_Queue_t queue
-Buffer_t Cl_QueueGet(Cl_Queue_t *pQ);
+void Cl_QueueGet(Cl_Queue_t *pQ, Buffer_t *result);
 
 // Gets the number of elements in a Cl_Queue_t queue
 int Cl_QueueSize(Cl_Queue_t *pQ);
