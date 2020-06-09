@@ -1,5 +1,5 @@
 ##Simulador de array rectangular utilizando cable coaxil
-##José Quinteros
+##Jose Quinteros
 ##Teleco IB
 ##08/09/2019
 
@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 c=299792458 #velocidad de la luz
 MHz=1E6
 
-#parámetros iniciales
+#parametros iniciales
 f=150*MHz               #frecuencia de la onda propagante
 theta=np.radians(30)    #ángulo theta
 phi=np.radians(15)      #ángulo phi (referido al eje x)
@@ -37,7 +37,7 @@ plt.show(1) """
 
 #parámetros del cable
 wavelength=vp/f         #longitud de onda en el cable
-li=0                   #longitud inicial (base de todos los tramos de cable)
+li=0.05                   #longitud inicial (base de todos los tramos de cable)
 
 #ahora sumamos los NxM tramos de cable, cada uno agregando un dl=tau[i,j,0]*vp
 L=0                     #longitud de cable total
@@ -46,7 +46,7 @@ k=1
 for i in range(0,N):
     for j in range(0,M):
         L=L+li+tau[i,j,0]*vp
-        print("Cable ",k,": ",tau[i,j,0]*vp,"m")
+        print("Cable ",k,": ",li+tau[i,j,0]*vp,"m")
         k=k+1
 
 
