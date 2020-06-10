@@ -46,9 +46,9 @@ architecture sim of TestAXI is
     signal axi_arprot, axi_awprot : std_logic_vector(2 downto 0);         
     signal axi_araddr, axi_awaddr : std_logic_vector(31 downto 0); 
     signal axi_awvalid, axi_awready, axi_wready, axi_wvalid, axi_bready, 
-            axi_arvalid, axi_arready, axi_rready  : std_logic_vector(0 downto 0);
-    signal axi_bvalid : std_logic_vector(0 downto 0) := "0"; -- Inicio en 0 para simulaciones de esclavo
-    signal axi_rvalid : std_logic_vector(0 downto 0) := "0"; -- Inicio en 0 para simulaciones de esclavo
+            axi_arvalid, axi_arready, axi_rready  : std_logic;
+    signal axi_bvalid : std_logic := '0'; -- Inicio en 0 para simulaciones de esclavo
+    signal axi_rvalid : std_logic := '0'; -- Inicio en 0 para simulaciones de esclavo
 
     --ADC
     signal usr_w1, usr_w2: std_logic_vector(13 downto 0) := "10000000000000";
@@ -73,7 +73,7 @@ architecture sim of TestAXI is
     -- Master 
     AXI_master: entity work.axi_mst_m02(rtl) -- para simulacion RTL
     --  DUT: entity work.axi_mst_m02(STRUCTURE) -- Para simulacion post synthesis
-        generic map(TEST_TARGET_SLAVE_BASE_ADDR => x"44A10000")
+        --generic map(TEST_TARGET_SLAVE_BASE_ADDR => x"44A20000")
         port map(
         
         M_AXI_ACLK    => clk, 
@@ -82,23 +82,23 @@ architecture sim of TestAXI is
         M_AXI_AWADDR  => axi_awaddr,   -- out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
         M_AXI_AWPROT  => axi_awprot,   -- out std_logic_vector(2 downto 0);
                             
-        M_AXI_AWVALID => axi_awvalid(0),  -- out std_logic;
-        M_AXI_AWREADY => axi_awready(0),  -- in std_logic;
+        M_AXI_AWVALID => axi_awvalid,  -- out std_logic;
+        M_AXI_AWREADY => axi_awready,  -- in std_logic;
         M_AXI_WDATA   => axi_wdata,    -- out std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
         M_AXI_WSTRB   => axi_wstrb,    -- out std_logic_vector(C_M_AXI_DATA_WIDTH/8-1 downto 0);
-        M_AXI_WVALID  => axi_wvalid(0),   -- out std_logic;
-        M_AXI_WREADY  => axi_wready(0),   -- in std_logic;
+        M_AXI_WVALID  => axi_wvalid,   -- out std_logic;
+        M_AXI_WREADY  => axi_wready,   -- in std_logic;
         M_AXI_BRESP   => axi_bresp,    -- in std_logic_vector(1 downto 0);
-        M_AXI_BVALID  => axi_bvalid(0),   -- in std_logic;
-        M_AXI_BREADY  => axi_bready(0),   -- out std_logic;
+        M_AXI_BVALID  => axi_bvalid,   -- in std_logic;
+        M_AXI_BREADY  => axi_bready,   -- out std_logic;
         M_AXI_ARADDR  => axi_araddr,   -- out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
         M_AXI_ARPROT  => axi_arprot,   -- out std_logic_vector(2 downto 0);
-        M_AXI_ARVALID => axi_arvalid(0),  -- out std_logic;
-        M_AXI_ARREADY => axi_arready(0),  -- in std_logic;
+        M_AXI_ARVALID => axi_arvalid,  -- out std_logic;
+        M_AXI_ARREADY => axi_arready,  -- in std_logic;
         M_AXI_RDATA   => axi_rdata,    -- in std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
         M_AXI_RRESP   => axi_rresp,    -- in std_logic_vector(1 downto 0);
-        M_AXI_RVALID  => axi_rvalid(0),   -- in std_logic;
-        M_AXI_RREADY  => axi_rready(0) ); -- out std_logic
+        M_AXI_RVALID  => axi_rvalid,   -- in std_logic;
+        M_AXI_RREADY  => axi_rready ); -- out std_logic
     
     ADC: entity work.ADCmodel_wrapper
     port map(
@@ -155,9 +155,11 @@ architecture sim of TestAXI is
             S00_AXI_0_rvalid=>axi_rvalid , -- out STD_LOGIC;
             S00_AXI_0_wdata=>axi_wdata , -- in STD_LOGIC_VECTOR ( 31 downto 0 );
             --S00_AXI_0_wid=>(others=>'0') , -- in STD_LOGIC_VECTOR ( 11 downto 0 );            NOT DECLARED
-            S00_AXI_0_wlast=>"0" , -- in STD_LOGIC;                       NOT DECLARED
+            S00_AXI_0_wlast=>'0' , -- in STD_LOGIC;                       NOT DECLARED
             S00_AXI_0_wready=>axi_wready , -- out STD_LOGIC;
             S00_AXI_0_wstrb=>axi_wstrb , -- in STD_LOGIC_VECTOR ( 3 downto 0 );
-            S00_AXI_0_wvalid=>axi_wvalid -- in STD_LOGIC    
+            S00_AXI_0_wvalid=>axi_wvalid, -- in STD_LOGIC    
+            S00_AXI_0_arregion => (others=>'0'),--: in STD_LOGIC_VECTOR ( 3 downto 0 );
+            S00_AXI_0_awregion => (others=>'0')--: in STD_LOGIC_VECTOR ( 3 downto 0 )
         );
 end sim;

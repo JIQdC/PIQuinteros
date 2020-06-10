@@ -129,16 +129,46 @@ architecture rtl of axi_mst_m02 is
       -- (ACCESS_READ,  x"00000018", x"00000001"),
       -- (ACCESS_READ,  x"00000018", x"00000001"),
       -- (ACCESS_READ,  x"00000018", x"00000001"),
-      -- (ACCESS_READ,  x"00000018", x"00000001")    
+      -- (ACCESS_READ,  x"00000018", x"00000001") ,         (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001") ,       (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001"),
+      -- (ACCESS_READ,  x"00000018", x"00000001")
       --PRUEBA DE RESET POR AXI
       -- -- reseteo general
       -- (ACCESS_WRITE, x"00000020", x"00000001"),
       -- (ACCESS_READ, x"00000020", x"00000001")
       --PRUEBA DE PIN CONTROL
-      (ACCESS_WRITE,  x"00000000", x"00000001"),
-      (ACCESS_WRITE,  x"00000000", x"00000001"),
-      (ACCESS_WRITE,  x"00000004", x"00000001"),
-      (ACCESS_WRITE,  x"00000004", x"00000001") 
+      -- (ACCESS_WRITE,  x"00000000", x"00000001"),
+      -- (ACCESS_WRITE,  x"00000000", x"00000001"),
+      -- (ACCESS_WRITE,  x"00000004", x"00000001"),
+      -- (ACCESS_WRITE,  x"00000004", x"00000001") 
+      -- PRUEBA DE AXI QUAD SPI
+      (ACCESS_WRITE, x"00020040", x"0000000A"), --reset
+      (ACCESS_WRITE, x"00020060", x"00000006"), --config
+      (ACCESS_READ, x"00020060", x"00000002"),  --config
+      (ACCESS_READ, x"00020064", x"00000000"),  --state reg   
+      (ACCESS_WRITE, x"00020070", x"00000002"), --ssel
+      (ACCESS_WRITE, x"00010004", x"00000000"), --read_en OFF
+      (ACCESS_WRITE, x"00020068", x"000000C0"), --instruction MSByte
+      (ACCESS_WRITE, x"00020068", x"00000001"), --instruction LSByte
+      (ACCESS_WRITE, x"00010004", x"00000001"), --read_en ON
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      (ACCESS_READ, x"00010004", x"00000001"),  --check tristate
+      --(ACCESS_READ, x"00010004", x"00000001")  --check tristate
+      --(ACCESS_WRITE, x"00020070", x"00000003"),  --deassert ssel
+      --(ACCESS_WRITE, x"00020060", x"00000106"), --config
+      (ACCESS_WRITE, x"00020068", x"0000000d"),
+      (ACCESS_READ, x"0002006C", x"00000000")   --leo (algo)
             ); -- Fin de las operaciones
 
     type td_estado is (START, INIT_ACCESO, LECTURA1, LECTURA2, ESCRITURA1, FIN_ACCESO, IDLE);

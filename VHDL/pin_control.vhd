@@ -107,7 +107,8 @@ entity pin_control is
 		led_dout1_o		: out std_logic;
 		-- led_dout2_o		: out std_logic;
 		led_dout3_o		: out std_logic;
-		spi_tristate_o  : out std_logic
+		spi_tristate_i	: in std_logic;	
+		spi_read_en_o  	: out std_logic
 	);
 end pin_control;
 
@@ -118,7 +119,8 @@ architecture rtl of pin_control is
 	signal led_prescale_ce_r, led_toggle_r                  : std_logic;
     signal led_count_r, led_max_cnt_r                       : unsigned(15 downto 0);
 	-- Register inputs
-	-- signal datain0_r, datain1_r,datain2_r,datain3_r		: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal datain0_r, user_input							: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	--, datain1_r,datain2_r,datain3_r	
 	-- Register outputs
 	signal dataout0_r, dataout1_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- ,dataout2_r,dataout3_r
@@ -156,6 +158,9 @@ architecture rtl of pin_control is
 	--FIFO reset rising edge detected
 	signal led_pulse_count: integer := 0;
 	signal led_rst_en: std_logic := '0';
+
+	--Aux for input formatting
+	signal zeros_spitr: std_logic_vector(C_S_AXI_DATA_WIDTH-2 downto 0) := (others => '0');
 
 begin
 	-- I/O Connections assignments
@@ -380,7 +385,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (axi_araddr, dataout0_r, dataout1_r)
+	process (axi_araddr, dataout0_r, dataout1_r, datain0_r,S_AXI_ACLK)
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -389,7 +394,7 @@ begin
 			when b"0000" =>
 				reg_data_out <= dataout0_r; 
 			when b"0001" =>
-				reg_data_out <= dataout1_r; 
+				reg_data_out <= datain0_r; 
 			-- when b"0010" =>
 			-- 	reg_data_out <= dataout2_r; 
 			-- when b"0011" =>
@@ -418,14 +423,15 @@ begin
 	end process;
 		
 	---- USER LOGIC
-	
-	-- Register outputs
+	user_input <= zeros_spitr & spi_tristate_i;
+	-- Register outputs and inputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
             vadj_en_o       <= dataout0_r(0);
 			led_green_o     <= dataout0_r(0); -- Led shows VAdj ENA status 
-			spi_tristate_o  <= dataout1_r(0);
+			spi_read_en_o  	<= dataout1_r(0);
+			datain0_r 		<= user_input;
 		end if;
 	end process;
 
