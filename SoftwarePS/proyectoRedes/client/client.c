@@ -1,19 +1,19 @@
 #include "client.h"
 
-////ADQUISITION THREAD
+////ACQUISITION THREAD
 
-// initializes an Adq_Thread_t
-Adq_Thread_t * AdqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ)
+// initializes an Acq_Thread_t
+Acq_Thread_t * AcqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ)
 {
-    Adq_Thread_t * adqTh = malloc(sizeof(Adq_Thread_t));
+    Acq_Thread_t * acqTh = malloc(sizeof(Acq_Thread_t));
 
-    adqTh->client = client;
+    acqTh->client = client;
 
-    adqTh->rxQ = rxQ;
-    adqTh->txQ = txQ;
-    adqTh->devQ = devQ;
+    acqTh->rxQ = rxQ;
+    acqTh->txQ = txQ;
+    acqTh->devQ = devQ;
 
-    adqTh->running = 0;
+    acqTh->running = 0;
 
     //stamp all buffers in rxQ with bd_id and ch_id
     int i;
@@ -22,21 +22,21 @@ Adq_Thread_t * AdqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * t
         rxQ->elements[i].bd_id = bd_id;
         rxQ->elements[i].ch_id = ch_id;
     }
-    return adqTh;
+    return acqTh;
 }
 
-// destroys an Adq_Thread_t
-void AdqThreadDestroy(Adq_Thread_t * adqTh)
+// destroys an Acq_Thread_t
+void AcqThreadDestroy(Acq_Thread_t * acqTh)
 {
-    free(adqTh);
+    free(acqTh);
 }
 
 // acquires a buffer, fills it with data, and passes it to Tx_Queue
-static void acquireFillPass(Adq_Thread_t * adqTh)
+static void acquireFillPass(Acq_Thread_t * acqTh)
 {
-    Rx_Queue_t * rxQ = adqTh->rxQ;
-    Tx_Queue_t * txQ = adqTh->txQ;
-    Dev_Queue_t * devQ = adqTh->devQ;
+    Rx_Queue_t * rxQ = acqTh->rxQ;
+    Tx_Queue_t * txQ = acqTh->txQ;
+    Dev_Queue_t * devQ = acqTh->devQ;
 
     Buffer_t * rxBuf;
 
@@ -48,7 +48,7 @@ static void acquireFillPass(Adq_Thread_t * adqTh)
     rxBuf = Rx_Queue_Acquire(rxQ);
 
     //timestamp this buffer
-    if(clock_gettime(CLOCK_REALTIME,&rxBuf->tp)<0) error("clock_gettime in adqTh");
+    if(clock_gettime(CLOCK_REALTIME,&rxBuf->tp)<0) error("clock_gettime in acqTh");
     
     //fill buffer with data from FakeDataGen    
     for(i=0;i<BUF_SIZE;i++)
@@ -61,60 +61,60 @@ static void acquireFillPass(Adq_Thread_t * adqTh)
     Tx_QueuePut(txQ,rxBuf);
 }
 
-// function to be run by the adquisition thread
-static void * adqTh_threadFunc(void * ctx)
+// function to be run by the acquisition thread
+static void * acqTh_threadFunc(void * ctx)
 {
-    Adq_Thread_t * adqTh = (Adq_Thread_t *) ctx;
+    Acq_Thread_t * acqTh = (Acq_Thread_t *) ctx;
     uint64_t wr_buf;
 
-    if(adqTh->client->capMode == sampleNumber)
+    if(acqTh->client->capMode == sampleNumber)
     {
         //capture until reaching the required number of samples or thread is stopped
-        while(adqTh->running && (adqTh->devQ->get < adqTh->client->n_samples)) acquireFillPass(adqTh);
+        while(acqTh->running && (acqTh->devQ->get < acqTh->client->n_samples)) acquireFillPass(acqTh);
         //notify client
         wr_buf = 1;
-        write(adqTh->client->eventfd_samples,&wr_buf,sizeof(wr_buf));
+        write(acqTh->client->eventfd_samples,&wr_buf,sizeof(wr_buf));
     }
     else
     {
         //capture until thread is stopped
-        while(adqTh->running) acquireFillPass(adqTh);
+        while(acqTh->running) acquireFillPass(acqTh);
     }
 
     //return to be joined
     return NULL;
 }
 
-// sets an adquisition thread to run
-void AdqThreadRun(Adq_Thread_t * adqTh)
+// sets an acquisition thread to run
+void AcqThreadRun(Acq_Thread_t * acqTh)
 {
-    if(adqTh->running == 1)
+    if(acqTh->running == 1)
     {
-        printf("Adquisition thread already running!\n");
+        printf("Acquisition thread already running!\n");
         exit(1);
     }
 
     //assert running flag
-    adqTh->running = 1;
+    acqTh->running = 1;
 
-    //create adquisition thread
-    if(pthread_create(&adqTh->th,NULL,adqTh_threadFunc,adqTh) != 0) error("pthread_create of adqTh");
+    //create acquisition thread
+    if(pthread_create(&acqTh->th,NULL,acqTh_threadFunc,acqTh) != 0) error("pthread_create of acqTh");
 }
 
-// stops an adquisition thread
-void AdqThreadStop(Adq_Thread_t * adqTh)
+// stops an acquisition thread
+void AcqThreadStop(Acq_Thread_t * acqTh)
 {
-    if(adqTh->running == 0)
+    if(acqTh->running == 0)
     {
-        printf("Adquisition thread already stopped!\n");
+        printf("Acquisition thread already stopped!\n");
         exit(1);
     }
 
     //deassert running flag
-    adqTh->running = 0;
+    acqTh->running = 0;
 
     //wait for thread to finish and join
-    if(pthread_join(adqTh->th,NULL) != 0) error("pthread_join of adqTh");
+    if(pthread_join(acqTh->th,NULL) != 0) error("pthread_join of acqTh");
 }
 
 ///TRANSMISSION THREAD
@@ -277,7 +277,7 @@ Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
     client->txQ = Tx_QueueInit();
 
     //initialize threads
-    client->adqTh = AdqThreadInit(client,client->rxQ,client->txQ,params->bd_id,params->ch_id,client->devQ);
+    client->acqTh = AcqThreadInit(client,client->rxQ,client->txQ,params->bd_id,params->ch_id,client->devQ);
     client->txTh = TxThreadInit(client->txQ,client->rxQ,params->serv_addr,params->server_portno);
 
     //SYNC WITH FDG: eventfd initialized externally
@@ -290,7 +290,7 @@ Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
     switch (client->capMode)
     {
     case sampleNumber:
-        //initialize eventfd for adqTh notification
+        //initialize eventfd for acqTh notification
         client->eventfd_samples = eventfd(0,0);
         //get sample number from params      
         client->n_samples = params->n_samples;
@@ -335,7 +335,7 @@ Client_t * ClientInit(Dev_Queue_t * devQ, int eventfd_out, ClParams_t * params)
 void ClientDestroy(Client_t * client)
 {
     TxThreadDestroy(client->txTh);
-    AdqThreadDestroy(client->adqTh);
+    AcqThreadDestroy(client->acqTh);
     Rx_QueueDestroy(client->rxQ);
     Tx_QueueDestroy(client->txQ);
     close(client->timerfd_start);
@@ -347,7 +347,7 @@ void ClientDestroy(Client_t * client)
 void ClientStop(Client_t * client)
 {
     TxThreadStop(client->txTh);
-    AdqThreadStop(client->adqTh);
+    AcqThreadStop(client->acqTh);
 }
 
 // runs a Client_t
@@ -385,13 +385,13 @@ void ClientRun(Client_t * client)
     write(client->eventfd_out,&wr_buf,sizeof(wr_buf));
 
     //run threads
-    AdqThreadRun(client->adqTh);
+    AcqThreadRun(client->acqTh);
     TxThreadRun(client->txTh);
 
     switch (client->capMode)
     {
     case sampleNumber:
-        //wait for adqThread notification
+        //wait for acqThread notification
         read(client->eventfd_samples,&rd_buf,sizeof(rd_buf));
         ClientStop(client);
         break;

@@ -36,7 +36,7 @@ typedef struct
     Rx_Queue_t *rxQ;
     Tx_Queue_t *txQ;
     Dev_Queue_t *devQ;  //this should be replaced to a pointer to wherever data comes from in a "real" implementation
-} Adq_Thread_t;
+} Acq_Thread_t;
 
 typedef struct
 {
@@ -55,7 +55,7 @@ struct Client_str
     Rx_Queue_t *rxQ;
     Tx_Queue_t *txQ;
 
-    Adq_Thread_t * adqTh;
+    Acq_Thread_t * acqTh;
     Tx_Thread_t * txTh;
 
     CaptureMode_t capMode;
@@ -73,17 +73,17 @@ struct Client_str
 };
 
 ////ADQUISITION THREAD
-// initializes an Adq_Thread_t
-Adq_Thread_t * AdqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ);
+// initializes an Acq_Thread_t
+Acq_Thread_t * AcqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ, const uint8_t bd_id, const uint8_t ch_id, Dev_Queue_t * devQ);
 
-// destroys an Adq_Thread_t
-void AdqThreadDestroy(Adq_Thread_t * adqTh);
+// destroys an Acq_Thread_t
+void AcqThreadDestroy(Acq_Thread_t * acqTh);
 
-// sets an adquisition thread to run
-void AdqThreadRun(Adq_Thread_t * adqTh);
+// sets an acquisition thread to run
+void AcqThreadRun(Acq_Thread_t * acqTh);
 
-// stops an adquisition thread
-void AdqThreadStop(Adq_Thread_t * adqTh);
+// stops an acquisition thread
+void AcqThreadStop(Acq_Thread_t * acqTh);
 
 ///TRANSMISSION THREAD
 // initializes a Tx_Thread_t
