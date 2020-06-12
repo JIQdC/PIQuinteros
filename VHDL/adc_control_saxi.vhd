@@ -106,7 +106,7 @@ entity adc_control_saxi is
 		S_AXI_RREADY	: in std_logic;
         
 		-- FIFO signals
-		fifo_dout_i: in std_logic_vector((N_ADC-1) downto 0);
+		fifo_dout_i: in std_logic_vector((2*N_ADC-1) downto 0);
 		fifo_empty_i: in std_logic;
 		fifo_full_i: in std_logic;
 		fifo_ov_i: in std_logic;
@@ -168,7 +168,7 @@ architecture rtl of adc_control_saxi is
 	
 	--aux signals for FIFO data formatting
 	signal user_inputs1_i, user_inputs2_i: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
-	signal zeros_readdata: std_logic_vector (C_S_AXI_DATA_WIDTH-14-1 downto 0) := (others => '0');
+	signal zeros_readdata: std_logic_vector (C_S_AXI_DATA_WIDTH-(2*N_ADC)-1 downto 0) := (others => '0');
 	signal zeros_flags: std_logic_vector (C_S_AXI_DATA_WIDTH-5-1 downto 0) := (others => '0');
 
 	--signals for reset generation
