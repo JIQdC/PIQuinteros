@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     }
 
     //chequeo si el regulador está encendido
-    memread(CONTROL_BASE_ADDR+REG_ADDR,&data);
+    memread(CONTROL_BASE_ADDR+REG_ADDR,&data,1);
     if(data != 1)
     {
         printf("\nEl regulador está apagado. Continuar? [y/n].\n");
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 			captured_data = (uint32_t * ) malloc(n_samples * sizeof(uint32_t));
 			for(i=0;i<n_samples;i++)
 			{
-				memread(AXI_BASE_ADDR+FIFODATA_ADDR,&(captured_data[i]));
+				memread(AXI_BASE_ADDR+FIFODATA_ADDR,&(captured_data[i]),1);
 				//printf("\nCapturado dato %d.\n",i);
 			}
 			printf("\nCaptura finalizada.\n");

@@ -1,9 +1,13 @@
 /*
- * CIAASistAdq.h
- *
- *  Created on: Mar 2, 2020
- *      Author: jiqdc
- */
+Emulation, acquisition and data processing system for sensor matrices 
+José Quinteros del Castillo
+Instituto Balseiro
+---
+Data acquisition interface for CIAA-ACC AXI bus
+
+Version: 2020-06-11
+Comments:
+*/
 
 #ifndef SRC_CIAASISTADQ_H_
 #define SRC_CIAASISTADQ_H_
@@ -19,13 +23,20 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <inttypes.h>
-#include <sys/time.h>
 #include <assert.h>
+#include <string.h>
+#include <time.h>
+#include <pthread.h>
+#include <sys/eventfd.h>
+
+#include "../lib/error.h"
+#include "../lib/acqPack.h"
+#include "client_queues.h"
+#include "client_params.h"
 
 #define PAGE_SIZE getpagesize()
 
-// direcciones de los registros de la interfaz AXI
+// AXI interface register addresses
 #define AXI_BASE_ADDR 0x43C00000
 #define SELECTCLK_ADDR 0b00000
 #define CONTROL_ADDR 0b00100
@@ -35,27 +46,27 @@
 #define RWREG_ADDR 0b10100
 #define FIFODATA_ADDR 0b11000
 #define FIFOFLAGS_ADDR 0b11100
+#define RESET_ADDR 0b100000
 
-//direcciones de los registros del módulo de control de pines
+//pin control module register addresses
 #define CONTROL_BASE_ADDR 0x43C10000
 #define REG_ADDR 0b000000
 #define SPI_TRISTATE_ADDR 0b000100
 
-//valor del potenciómetro
+//potentiometer value for required VADJ voltage
 #define POT_VALUE 29
 
-// valores para memread y memwrite
-#define MEM_COUNT 1
+//memwrite and memread do not require memory increase
 #define MEM_INCR 0
 
-// máscaras para FIFO flags
+//masks to read FIFO flags register
 #define EMPTY_MASK 0b10000
 #define FULL_MASK 0b01000
 #define OVERFLOW_MASK 0b00100
 #define RDRSTBUSY_MASK 0b00010
 #define WRRSTBUSY_MASK 0b00001
 
-// secuencias de control para debug
+//debug control sequences
 #define APAGADO_CTRL 0b000
 #define MIDSCALE_SH_CTRL 0b001
 #define PLUS_FULLSCALE_SH_CTRL 0b0010
@@ -71,11 +82,6 @@
 #define LIBRE_CTRL 0b1100
 #define CONT_NBITS_CTRL 0b1111
 
-// valores para clk de debug
-#define CLK_FPGA_VAL 1
-#define CLK_ADC_VAL 0
-
-// estructura para almacenar los datos de las flags de la FIFO
 typedef struct
 {
     bool full;
@@ -83,21 +89,110 @@ typedef struct
     bool wr_rst_busy;
     bool rd_rst_busy;
     bool overflow;
-} fifo_flags_t;
+}fifo_flags_t;
 
-// función para leer datos de un registro
-int memwrite(uint32_t addr, const uint32_t *data);
+struct Client_str;
+typedef struct Client_str Client_t;
 
-// función para escribir datos a un registro
-int memread(uint32_t addr, uint32_t *data);
+struct Multi_MemPtr_str;
+typedef struct Multi_MemPtr_str Multi_MemPtr_t;
 
-// función para leer el estado de las flags de la FIFO
-void read_fifo_flags(fifo_flags_t *flags);
+typedef struct
+{
+    Client_t * client;
+    pthread_t th;
+    int running;
+    Rx_Queue_t *rxQ;
+    Tx_Queue_t *txQ;
+    Multi_MemPtr_t *multiPtr;
+} Acq_Thread_t;
 
-//función para imprimir las flags de la FIFO
+typedef struct
+{
+    pthread_t th;
+    int running;
+    Rx_Queue_t *rxQ;
+    Tx_Queue_t *txQ;
+    #if TX_MODE == 1
+    char *server_addr;
+    int server_portno;
+    int sockfd;
+    #endif
+} Tx_Thread_t;
+
+struct Client_str
+{
+    Rx_Queue_t *rxQ;
+    Tx_Queue_t *txQ;
+
+    Acq_Thread_t * acqTh;
+    Tx_Thread_t * txTh;
+
+    CaptureMode_t capMode;
+    TriggerMode_t trigMode;
+
+    int timerfd_start;
+
+    int timerfd_stop;
+    struct itimerspec timerfd_stop_spec;
+    
+    int eventfd_samples;
+    int n_samples;
+};
+
+// writes data to a memory register
+int memwrite(uint32_t addr, const uint32_t *data, size_t count);
+
+// reads data from a memory register
+int memread(uint32_t addr, uint32_t *data, size_t count);
+
+// human readable print of FIFO flags structure
 void print_fifo_flags(fifo_flags_t *flags);
 
-long getMicrotime();
+// converts FIFO flag register to FIFO flags structure
+void fifoflags_reg_to_struct(fifo_flags_t *flags, uint8_t * flag_reg);
 
+////ACQUISITION THREAD
 
+// initializes an Acq_Thread_t
+Acq_Thread_t * AcqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ);
+
+// destroys an Acq_Thread_t
+void AcqThreadDestroy(Acq_Thread_t * acqTh);
+
+// sets an acquisition thread to run
+void AcqThreadRun(Acq_Thread_t * acqTh);
+
+// stops an acquisition thread
+void AcqThreadStop(Acq_Thread_t * acqTh);
+
+//// TRANSMISSION THREAD
+// initializes a Tx_Thread_t
+Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ
+#if TX_MODE == 1
+, char * server_addr, const int server_portno
+#endif
+);
+
+// destroys a Tx_Thread_t
+void TxThreadDestroy(Tx_Thread_t * txTh);
+
+// sets a transmission thread to run
+void TxThreadRun(Tx_Thread_t * txTh);
+
+// stops a transmission thread
+void TxThreadStop(Tx_Thread_t * txTh);
+
+//// CLIENT
+// initializes a Client_t
+Client_t * ClientInit(ClParams_t * params);
+
+// destroys a Client_t
+void ClientDestroy(Client_t * client);
+
+// stops a Client_t
+void ClientStop(Client_t * client);
+
+// runs a Client_t
+void ClientRun(Client_t * client);
 #endif /* SRC_CIAASISTADQ_H_ */
