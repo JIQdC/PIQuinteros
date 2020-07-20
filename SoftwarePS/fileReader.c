@@ -13,12 +13,13 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
-    
+
     int fd = open(argv[1],O_RDONLY);
     if(fd < 0) error("open file");
 
-    AcqPack_t * acqPack = malloc(sizeof(acqPack));
-    
+    AcqPack_t * acqPack = malloc(sizeof(AcqPack_t));
+    if(acqPack == NULL) error("malloc de acqPack");
+
     int ret_rd, i;
     uint16_t word0,word1;
     fifo_flags_t flags;
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
         printf("\n");
     }
 
-    
+
     close(fd);
 	return 0;
 }
