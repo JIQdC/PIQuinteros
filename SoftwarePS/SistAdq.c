@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
     if (argc != 2)
     {
-        printf("usage: %s client_config_file fdg_config_file\n",argv[0]);
+        printf("usage: %s client_config_file\n",argv[0]);
         exit(1);
     }
     
