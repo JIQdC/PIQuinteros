@@ -182,7 +182,11 @@ static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
 		//read fifo flags and data
 		for(j=0;j<PACK_SIZE;j++)
 		{
-			acqPack->flags[j] = *((volatile uint8_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+            do
+            {
+                acqPack->flags[j] = *((volatile uint8_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+            } while (acqPack->flags[j]&EMPTY_MASK);           
+			
 			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
 		}
 }
