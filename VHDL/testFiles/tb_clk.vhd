@@ -20,7 +20,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity tb_clk is
-    generic(T_SIM_LIMIT  : time := 10 us;
+    generic(T_SIM_LIMIT  : time := 10000 ms;
             T_CLK_PERIOD : time := 15.625 ns);
     port ( clk_o  : out std_logic := '0');
 end tb_clk;
