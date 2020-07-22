@@ -15,7 +15,8 @@ typedef enum
 typedef enum
 {
     manual,
-    timer
+    timer,
+    noDelay
 } TriggerMode_t;
 
 typedef struct

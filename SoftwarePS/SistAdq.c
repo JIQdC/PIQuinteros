@@ -20,8 +20,9 @@ int main(int argc, char *argv[])
     //initialize client
     Client_t * client = ClientInit(clPars);
 
-    uint32_t data = 3;      //reseteo debug y FIFO
-    memwrite(AXI_BASE_ADDR+RESET_ADDR,&data,1);
+    //reseteo debug y FIFO
+    fifo_reset();
+    debug_reset(10);
 
     //run client
     ClientRun(client);

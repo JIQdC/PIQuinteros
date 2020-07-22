@@ -92,9 +92,13 @@ static void cl_parseParam(const char * key, char *value, ClParams_t *clPars)
             clPars->trigMode = manual;
             return;
         }
-        else
+        else if(strstr(value,"noDelay")!=NULL)
         {
-            printf("ClParseParam: TRIG_MODE must be timer or manual.\n");
+            clPars->trigMode = noDelay;
+            return;
+        }        else
+        {
+            printf("ClParseParam: TRIG_MODE must be timer, manual or noDelay.\n");
             exit(1);
         }
     }

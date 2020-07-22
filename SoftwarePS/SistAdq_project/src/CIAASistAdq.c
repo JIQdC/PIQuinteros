@@ -84,6 +84,47 @@ void print_fifo_flags(fifo_flags_t *flags)
 	printf("FIFO rd_rst busy: %d\n",flags->rd_rst_busy);
 }
 
+// resets FIFO
+void fifo_reset()
+{
+    uint32_t wr_data,rd_data;
+    bool condition;
+
+	//activate reset
+    wr_data = 1;
+    memwrite(AXI_BASE_ADDR + FIFORST_ADDR,&wr_data,1);
+
+	//wait for assertion of wr_rst_busy and rd_rst_busy 
+    do
+    {
+        memread(AXI_BASE_ADDR + FIFOFLAGS_ADDR,&rd_data,1);
+        condition = (rd_data & WRRSTBUSY_MASK) && (rd_data & RDRSTBUSY_MASK);
+    } while (!condition);
+
+	//deactivate reset
+    wr_data = 0;
+    memwrite(AXI_BASE_ADDR + FIFORST_ADDR,&wr_data,1);
+
+	//wait for deassertion of wr_rst_busy and rd_rst_busy 
+    do
+    {
+        memread(AXI_BASE_ADDR + FIFOFLAGS_ADDR,&rd_data,1);
+        condition = (rd_data & WRRSTBUSY_MASK) && (rd_data & RDRSTBUSY_MASK);
+    } while (condition);
+}
+
+// resets debug module for duration microseconds
+void debug_reset(uint duration)
+{
+    uint32_t wr_data;
+
+    wr_data = 1;
+    memwrite(AXI_BASE_ADDR + DEBRST_ADDR,&wr_data,1);
+    usleep(duration);
+    wr_data = 0;
+    memwrite(AXI_BASE_ADDR + DEBRST_ADDR,&wr_data,1);
+}
+
 //// MULTI MEM POINTER
 //a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
 struct Multi_MemPtr_str
@@ -141,14 +182,11 @@ static void multi_mdestroy(Multi_MemPtr_t * multiPtr)
 ////ACQUISITION THREAD
 
 // initializes an Acq_Thread_t
-Acq_Thread_t * AcqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ)
+Acq_Thread_t * AcqThreadInit(Client_t * client)
 {
     Acq_Thread_t * acqTh = malloc(sizeof(Acq_Thread_t));
 
     acqTh->client = client;
-
-    acqTh->rxQ = rxQ;
-    acqTh->txQ = txQ;
 
     acqTh->running = 0;
 
@@ -205,9 +243,9 @@ static void * acqTh_threadFunc(void * ctx)
         //capture until reaching the required number of samples or thread is stopped
         while(acqTh->running && count--)
 		{
-			acqPack = Rx_Queue_Acquire(acqTh->rxQ);
+			acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
 			acquire_data(acqPack,acqTh->multiPtr);
-			Tx_QueuePut(acqTh->txQ,acqPack);
+			Tx_QueuePut(acqTh->client->txQ,acqPack);
 		}
         //notify client
         wr_buf = 1;
@@ -218,9 +256,9 @@ static void * acqTh_threadFunc(void * ctx)
         //capture until thread is stopped
         while(acqTh->running)
 		{
-			acqPack = Rx_Queue_Acquire(acqTh->rxQ);
+			acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
 			acquire_data(acqPack,acqTh->multiPtr);
-			Tx_QueuePut(acqTh->txQ,acqPack);
+			Tx_QueuePut(acqTh->client->txQ,acqPack);
 		}
     }
 
@@ -262,7 +300,7 @@ void AcqThreadStop(Acq_Thread_t * acqTh)
 
 //// TRANSMISSION THREAD
 // initializes a Tx_Thread_t
-Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ
+Tx_Thread_t * TxThreadInit(Client_t * client
 #if TX_MODE == 1
 , char * server_addr, const int server_portno
 #endif
@@ -271,9 +309,10 @@ Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ
     //allocate memory for Tx_Thread_t
     Tx_Thread_t * txTh = malloc(sizeof(Tx_Thread_t));
 
-    //assign transmission and reception queue
-    txTh->txQ = txQ;
-    txTh->rxQ = rxQ;
+    //assign client
+    txTh->client = client;
+
+    txTh->running = 0;
 
 	#if TX_MODE == 1
 	struct sockaddr_in serv_addr;
@@ -395,8 +434,8 @@ static void fileWrite(int fout, AcqPack_t * acqPack)
 static void * txTh_threadFunc(void * ctx)
 {
     Tx_Thread_t * txTh = (Tx_Thread_t *) ctx;
-    Tx_Queue_t * txQ = txTh->txQ;
-    Rx_Queue_t * rxQ = txTh->rxQ;
+    Tx_Queue_t * txQ = txTh->client->txQ;
+    Rx_Queue_t * rxQ = txTh->client->rxQ;
     AcqPack_t * acqPack;
 
     #if TX_MODE == 1
@@ -422,7 +461,7 @@ static void * txTh_threadFunc(void * ctx)
 
 	//open file
 	int fout = fileOpen();
-	while(txTh->running || Tx_QueueSize(txQ) > 1)
+	while(txTh->running && txTh->client->acqTh->running)
     {
         //capture from Tx_Queue
         acqPack = Tx_QueueGet(txQ);
@@ -432,7 +471,20 @@ static void * txTh_threadFunc(void * ctx)
 
         //release buffer
         Rx_Queue_Release(rxQ,acqPack);
-    }	
+    }
+
+    //if needed, empty Tx_Queue
+    while(Tx_QueueSize(txQ) > 0)
+    {
+        //capture from Tx_Queue
+        acqPack = Tx_QueueGet(txQ);
+
+		//write to file
+		fileWrite(fout,acqPack);
+
+        //release buffer
+        Rx_Queue_Release(rxQ,acqPack);
+    }
 
 	//close file
 	close(fout);
@@ -489,8 +541,8 @@ Client_t * ClientInit(ClParams_t * params)
     client->txQ = Tx_QueueInit();
 
     //initialize threads
-    client->acqTh = AcqThreadInit(client,client->rxQ,client->txQ);
-    client->txTh = TxThreadInit(client->txQ,client->rxQ
+    client->acqTh = AcqThreadInit(client);
+    client->txTh = TxThreadInit(client
 	#if TX_MODE == 1
 	,params->serv_addr,params->server_portno
 	#endif
@@ -537,6 +589,10 @@ Client_t * ClientInit(ClParams_t * params)
         timerfd_settime(client->timerfd_start,TFD_TIMER_ABSTIME,&timerfd_start_spec,NULL);
         break;
 
+    case noDelay:
+        //nothing to be done here. No delay trigger is set in ClientRun()
+        break;
+
     default:
         break;
     }
@@ -559,8 +615,8 @@ void ClientDestroy(Client_t * client)
 // stops a Client_t
 void ClientStop(Client_t * client)
 {
-    TxThreadStop(client->txTh);
     AcqThreadStop(client->acqTh);
+    TxThreadStop(client->txTh);
 }
 
 // runs a Client_t
@@ -580,6 +636,10 @@ void ClientRun(Client_t * client)
         case timer:
             printf("Client waiting for timer to run.\n");
             read(client->timerfd_start,&rd_buf,sizeof(rd_buf));
+            break;
+        
+        case noDelay:
+            //do nothing. Start at once
             break;
         default:
             break;

@@ -37,21 +37,23 @@ Comments:
 #define PAGE_SIZE getpagesize()
 
 // AXI interface register addresses
-#define AXI_BASE_ADDR 0x43C00000
-#define SELECTCLK_ADDR 0b00000
-#define CONTROL_ADDR 0b00100
-#define USRW1_ADDR 0b01000
-#define USRW2_ADDR 0b01100
-#define COREID_ADDR 0b10000
-#define RWREG_ADDR 0b10100
-#define FIFODATA_ADDR 0b11000
-#define FIFOFLAGS_ADDR 0b11100
-#define RESET_ADDR 0b100000
+#define AXI_BASE_ADDR   0x43C00000
+#define COREID_ADDR     (0x00<<2)
+#define CONTROL_ADDR    (0x01<<2)
+#define USRW1_ADDR      (0x02<<2)
+#define USRW2_ADDR      (0x03<<2)
+#define DEBRST_ADDR     (0x04<<2)
+#define FIFODATA_ADDR   (0x05<<2)
+#define FIFOFLAGS_ADDR  (0x06<<2)
+#define FIFORST_ADDR    (0x07<<2)
+#define FRWRCLK_ADDR    (0x08<<2)
+#define FRRDEN_ADDR     (0x09<<2)
+#define USRAUX_ADDR     (0xFF<<2)
 
 //pin control module register addresses
-#define CONTROL_BASE_ADDR 0x43C10000
-#define REG_ADDR 0b000000
-#define SPI_TRISTATE_ADDR 0b000100
+#define CONTROL_BASE_ADDR   0x43C10000
+#define REG_ADDR            (0x0<<2)
+#define SPI_TRISTATE_ADDR   (0x1<<2)
 
 //potentiometer value for required VADJ voltage
 #define POT_VALUE 29
@@ -102,8 +104,6 @@ typedef struct
     Client_t * client;
     pthread_t th;
     int running;
-    Rx_Queue_t *rxQ;
-    Tx_Queue_t *txQ;
     Multi_MemPtr_t *multiPtr;
 } Acq_Thread_t;
 
@@ -111,8 +111,7 @@ typedef struct
 {
     pthread_t th;
     int running;
-    Rx_Queue_t *rxQ;
-    Tx_Queue_t *txQ;
+    Client_t * client;
     #if TX_MODE == 1
     char *server_addr;
     int server_portno;
@@ -152,10 +151,16 @@ void print_fifo_flags(fifo_flags_t *flags);
 // converts FIFO flag register to FIFO flags structure
 void fifoflags_reg_to_struct(fifo_flags_t *flags, uint8_t * flag_reg);
 
+// resets FIFO
+void fifo_reset();
+
+// resets debug module for duration microseconds
+void debug_reset(uint duration);
+
 ////ACQUISITION THREAD
 
 // initializes an Acq_Thread_t
-Acq_Thread_t * AcqThreadInit(Client_t * client, Rx_Queue_t * rxQ, Tx_Queue_t * txQ);
+Acq_Thread_t * AcqThreadInit(Client_t * client);
 
 // destroys an Acq_Thread_t
 void AcqThreadDestroy(Acq_Thread_t * acqTh);
@@ -168,7 +173,7 @@ void AcqThreadStop(Acq_Thread_t * acqTh);
 
 //// TRANSMISSION THREAD
 // initializes a Tx_Thread_t
-Tx_Thread_t * TxThreadInit(Tx_Queue_t * txQ, Rx_Queue_t * rxQ
+Tx_Thread_t * TxThreadInit(Client_t * client
 #if TX_MODE == 1
 , char * server_addr, const int server_portno
 #endif
