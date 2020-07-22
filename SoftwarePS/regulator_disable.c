@@ -16,7 +16,7 @@ int main()
 	uint32_t data = 0;
 
 	//apago el regulador
-	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data)==0)
+	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data,1)==0)
 	{
 		printf("\nRegulador apagado correctamente.\n\n");
 	}

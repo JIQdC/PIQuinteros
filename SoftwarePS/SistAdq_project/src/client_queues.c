@@ -116,7 +116,7 @@ AcqPack_t * Tx_QueueGet(Tx_Queue_t *pQ)
     AcqPack_t * result;
 
     //wait for get semaphore for available space in queue
-    if(sem_wait(&(pQ->sem_get)) < 0) error("sem_get of sem_put");
+    if(sem_wait(&(pQ->sem_get)) < 0) error("sem_wait of sem_put");
     //wait for queue lock semaphore
     if(sem_wait(&(pQ->sem_lock))<0) error("sem_wait de sem_lock");
 

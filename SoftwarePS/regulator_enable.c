@@ -23,7 +23,7 @@ int main()
 	system(command);
 
 	//enciendo el regulador
-	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data)==0)
+	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data,1)==0)
 	{
 		printf("\nPotenciómetro seteado en 0x%d. Regulador encendido correctamente.\n\n",POT_VALUE);
 	}

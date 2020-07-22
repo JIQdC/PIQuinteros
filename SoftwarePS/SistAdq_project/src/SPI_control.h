@@ -18,8 +18,6 @@ Comentarios:
 #include <stdbool.h>
 #include "CIAASistAdq.h"
 
-#define SPI_TRISTATE_ADDR 0b000100
-
 // valores para SPI tristate
 #define SPI_WRITE 0
 #define SPI_READ 1
