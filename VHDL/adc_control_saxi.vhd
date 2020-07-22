@@ -1,26 +1,20 @@
--- The entire notice above must be reproduced on all authorized copies.
+----------------------------------------------------------------------------------
+-- Company:  Instituto Balseiro
+-- Engineer: José Quinteros
+-- 
+-- Design Name: 
+-- Module Name: 
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: Módulo de control AXI para FIFO y debug
+-- 
+-- Dependencies: None.
+-- 
+-- Revision: 2020-07-21
+-- Additional Comments: 
+----------------------------------------------------------------------------------
 
--- File         : spi_master_rtl.vhd
--- Library      : et_serial_comm_lib
--- Company      : EmTech
--- Author       : Gast�n Rodriguez
--- Address      : <grodriguez@emtech.com.ar>
--- Created on   : 17:09:12-19/01/2012
--- Version      : 0.20
--- Description  : SPI master control
-
--- Modification History:
--- Date        By    Version    Change Description
--------------------------------------------------------------------------------
--- 19/01/2012  GER      0.10    Original
--- 18/10/2013  GER      0.20    Added slave sel configuration input and NSSEL 
---                              output port to control up to 16 slaves
--- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
--- 16/11/2019  JIQdC	1.00	Modificación para aplicación en CIAA-ACC (pin control)
--- 19/12/2019  JIQdC	2.00	Modificación para aplicación en módulo de control de ADC con interfaz AXI
--- 13/02/2020  JIQdC	2.10	Modificación de mapa de memoria
--- 07/03/2020  JIQdC	2.20	Generación de reset para FIFO y debug
--------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -30,18 +24,13 @@ entity adc_control_saxi is
 		-- Width of S_AXI data bus
 		C_S_AXI_DATA_WIDTH	: integer	:= 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 6;
+		C_S_AXI_ADDR_WIDTH	: integer	:= 10;
 
 		-- User constants
 		-- Core ID and version
         USER_CORE_ID_VER    : std_logic_vector(31 downto 0) := X"00020003";
 		-- ADC bit resolution
-		N_ADC				: integer	:= 14;
-		-- Reset width (in S_AXI_ACLK pulses, up to 7)
-		RESET_WIDTH			: integer	:= 4;
-		-- Reset active for outputs
-		RST_ACTIVE_DEB		: std_logic := '1';
-		RST_ACTIVE_FIFO		: std_logic	:= '1'
+		N_ADC				: integer	:= 14
 	);
 	port (
 		-- Global Clock Signal
@@ -117,23 +106,28 @@ entity adc_control_saxi is
 		-- Control signals
 		deb_control_o: out std_logic_vector(3 downto 0);
 		deb_usr_w1_o, deb_usr_w2_o: out std_logic_vector((N_ADC-1) downto 0);
-		deb_select_clk_o:out std_logic;
+
+		-- Frequency measure signals
+		fr_wr_clk_i, fr_rd_en_i: in std_logic_vector(15 downto 0);
 
 		-- Reset signals
-		rst_fifo_o: out std_logic;
-		rst_debug_o: out std_logic
+		fifo_rst_o: out std_logic;
+		deb_rst_o: out std_logic;
+
+		-- Aux user signal
+		usr_aux_o: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 	);
 end adc_control_saxi;
 
 architecture rtl of adc_control_saxi is
 	-- Register inputs
-	signal 	datain1_r, datain2_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal fifo_data_r, fifo_flags_r, fr_wr_clk_r, fr_rd_en_r: 
+	std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
-	signal dataout0_r, dataout1_r, dataout2_r, dataout3_r   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	-- General purpose R/W register
-	signal datarw_r                              			: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	-- Reset register output
-	signal rst_select                            			: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal deb_control_r, deb_usr_w1_r, deb_usr_w2_r, deb_rst_r, fifo_rst_r:
+	std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- Aux user register
+	signal usr_aux_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -152,8 +146,7 @@ architecture rtl of adc_control_saxi is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 3;
-	constant IO_RESET_VALUE : std_logic_vector(31 downto 0) := X"02FAF07F";
+	constant OPT_MEM_ADDR_BITS : integer := 7; --memory address width -1 (max 7)
 	------------------------------------------------
 	---- Signals for user logic register space example
 	--------------------------------------------------
@@ -167,14 +160,10 @@ architecture rtl of adc_control_saxi is
 	-- user logic
 	
 	--aux signals for FIFO data formatting
-	signal user_inputs1_i, user_inputs2_i: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+	signal fifo_data_aux, fifo_flags_aux, fr_wr_clk_aux, fr_rd_en_aux: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	signal zeros_readdata: std_logic_vector (C_S_AXI_DATA_WIDTH-(2*N_ADC)-1 downto 0) := (others => '0');
 	signal zeros_flags: std_logic_vector (C_S_AXI_DATA_WIDTH-5-1 downto 0) := (others => '0');
-
-	--signals for reset generation
-	signal rst_cont_reg: unsigned(2 downto 0) := (others => '0');
-	signal rst_rst: std_logic := '0';
-	signal rst_en: std_logic := '1';
+	signal zeros_16: std_logic_vector (C_S_AXI_DATA_WIDTH-16-1 downto 0) := (others => '0');
 
 begin
 	-- I/O Connections assignments
@@ -265,87 +254,69 @@ begin
 	-- These registers are cleared when reset (active low) is applied.
 	-- Slave register write enable is asserted when valid address and data are available
 	-- and the slave is ready to accept the write address and write data.
+	-- Respective byte enables are asserted as per write strobes   
+
 	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
 
 	process (S_AXI_ACLK)
 	variable loc_addr_w : std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
 	begin
-	  if rising_edge(S_AXI_ACLK) then 
-
-		-- rst_rst default value
-			rst_rst <= '0';
-
-	    if S_AXI_ARESETN = '0' then
-	      datarw_r 	    <= IO_RESET_VALUE;		--value on-reset for R/W register
-	      dataout0_r    <= (others => '0');
-		  dataout1_r    <= (others => '0');
-		  dataout2_r    <= (others => '0');
-		  dataout3_r    <= (others => '0');
-		  --trigger general reset for FIFO and debug
-		  rst_select	<= x"00000003";
-		  rst_rst		<= '1';
-	    else
-	      loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
-	      if (slv_reg_wren = '1') then
-	        case loc_addr_w is
-	          when b"0000" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 0
-					dataout0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when b"0001" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 1
-					dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when b"0010" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 2
-	                dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when b"0011" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 3
-	                dataout3_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-				end loop;
-			when b"0101" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 5
-	                datarw_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-				end loop;
-			when b"1000" =>
-				for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-					if ( S_AXI_WSTRB(byte_index) = '1' ) then
-					-- Respective byte enables are asserted as per write strobes                   
-					-- reset register
-					rst_select(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-					end if;
-				end loop;
-				--check if read data is not zero
-				if(not(rst_select(1 downto 0) = "00")) then
-					rst_rst <= '1';
+	  	if rising_edge(S_AXI_ACLK) then 
+			if S_AXI_ARESETN = '0' then
+			usr_aux_r 	    	<= (others => '0');
+			deb_control_r    	<= (others => '0');
+			deb_usr_w1_r    	<= (others => '0');
+			deb_usr_w2_r    	<= (others => '0');
+			else
+				loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+				if (slv_reg_wren = '1') then
+					case loc_addr_w is
+						--debug control outputs
+						when x"01" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									deb_control_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						when x"02" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then        
+									deb_usr_w1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						when x"03" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									deb_usr_w2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						when x"04" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									deb_rst_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--FIFO reset output
+						when x"07" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									fifo_rst_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;	
+						--usr aux output
+						when x"FF" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									usr_aux_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--other cases include read-only registers and invalid addresses
+						when others =>
+							null; -- Maintain actual values
+					end case;
 				end if;
-			when others =>
-				null; -- Maintain actual values
-			  end case;
-	      end if;
-	    end if;
-	  end if;                   
+			end if;
+	  	end if;                   
 	end process; 
 
 	-- Implement write response logic generation
@@ -437,94 +408,91 @@ begin
 
 			-- FIFO read_en default value
 			fifo_rd_en_o <= '0';
-			if ( S_AXI_ARESETN = '0' ) then
-			axi_rdata  <= (others => '0');
-			else
-			if (slv_reg_rden = '1') then
 
+			if ( S_AXI_ARESETN = '0' ) then
+				axi_rdata  <= (others => '0');
+			elsif (slv_reg_rden = '1') then
 				-- When there is a valid read address (S_AXI_ARVALID) with 
 				-- acceptance of read address by the slave (axi_arready),
 				-- output the read data matching the read address.
-
 				case loc_addr_r is
-					--readback of control outputs
-					when b"0000" =>
-						axi_rdata <= dataout0_r;
-					when b"0001" =>
-						axi_rdata <= dataout1_r;
-					when b"0010" =>
-						axi_rdata <= dataout2_r;
-					when b"0011" =>
-						axi_rdata <= dataout3_r;
 					--core ID and version
-					when b"0100" =>
+					when x"00" =>
 						axi_rdata <= USER_CORE_ID_VER;
-					--General purpose R/W register
-					when b"0101" =>
-						axi_rdata <= datarw_r;  
+					--debug control outputs readback
+					when x"01" =>
+						axi_rdata <= deb_control_r;
+					when x"02" =>
+						axi_rdata <= deb_usr_w1_r;
+					when x"03" =>
+						axi_rdata <= deb_usr_w2_r;
+					when x"04" =>
+						axi_rdata <= deb_rst_r;
 					--FIFO data input
-					when b"0110" =>
+					when x"05" =>
 						--assert FIFO is not empty
 						if (fifo_empty_i = '0') then
 							--read data and output read_en for data updating	
-							axi_rdata <= datain1_r;
+							axi_rdata <= fifo_data_r;
 							fifo_rd_en_o <= '1';
-						end if;
-						--if FIFO is empty, nothing can be read
-					-- FIFO flags	
-					when b"0111" =>
-						axi_rdata <= datain2_r; 			
+						else
+						--if FIFO is empty, nothing can be read. Output 0s
+							axi_rdata <= (others => '0');
+						end if;				
+					--FIFO flags
+					when x"06" =>
+						axi_rdata <= fifo_flags_r;  
+					--FIFO reset readback
+					when x"07" =>
+						axi_rdata <= fifo_rst_r;  
+					--Frequency measurements
+					when x"08" =>
+						axi_rdata <= fr_wr_clk_r;		
+					when x"09" =>
+						axi_rdata <= fr_rd_en_r;					
+					--usr aux
+					when x"FF" =>
+						axi_rdata <= usr_aux_r;		
+
 					when others =>
 						axi_rdata  <= (others => '0');
 				  end case;
-			end if;   
 			end if;
 		end if;
 	end process;
 
 	-- User logic
 
-	-- FIFO data formatting to fit (C_S_AXI_DATA_WIDTH-1 downto 0) length
+	-- Data formatting to fit (C_S_AXI_DATA_WIDTH-1 downto 0) length
+
 	-- FIFO read data
-	user_inputs1_i <= zeros_readdata & fifo_dout_i;
+	fifo_data_aux <= zeros_readdata & fifo_dout_i;
 	-- FIFO flags
-	user_inputs2_i <= zeros_flags & fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
+	fifo_flags_aux <= zeros_flags & fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
+	-- Frequency counters
+	fr_wr_clk_aux <= zeros_16 & fr_wr_clk_i;
+	fr_rd_en_aux <= zeros_16 & fr_rd_en_i;
 
 	-- Register inputs and outputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
-			--FIFO input
-			datain1_r	    <= user_inputs1_i;
-			datain2_r		<= user_inputs2_i;
-			--Control outputs
-			deb_select_clk_o	<= dataout0_r(0);
-			deb_control_o		<= dataout1_r(3 downto 0);
-            deb_usr_w1_o 		<= dataout2_r((N_ADC-1) downto 0);
-            deb_usr_w2_o 		<= dataout3_r((N_ADC-1) downto 0);
+			--FIFO inputs
+			fifo_data_r	    <= fifo_data_aux;
+			fifo_flags_r	<= fifo_flags_aux;
+			--Frequency measurements
+			fr_wr_clk_r		<= fr_wr_clk_aux;
+			fr_rd_en_r		<= fr_rd_en_aux;
+			--Debug outputs
+			deb_control_o	<= deb_control_r(3 downto 0);
+            deb_usr_w1_o 	<= deb_usr_w1_r((N_ADC-1) downto 0);
+			deb_usr_w2_o 	<= deb_usr_w2_r((N_ADC-1) downto 0);
+			--Reset outputs
+			fifo_rst_o		<= fifo_rst_r(0);
+			deb_rst_o		<= deb_rst_r(0);
+			--user aux output
+			usr_aux_o		<= usr_aux_r;
 		end if;
 	end process;
-
-	-- Reset generation
-	process (S_AXI_ACLK, rst_rst, rst_cont_reg)
-	begin
-		if(rst_rst = '1') then
-			rst_cont_reg <= (others => '0');
-			rst_en <= '1';
-		elsif rising_edge(S_AXI_ACLK) then 
-			rst_cont_reg <= rst_cont_reg + 1;
-		end if;
-
-		if(rst_cont_reg >= to_unsigned(RESET_WIDTH-1, 3)) then
-			rst_en <= '0';
-		end if;
-	end process;
-
-	-- Reset output
-	rst_debug_o <= 	RST_ACTIVE_DEB when ((rst_select(1 downto 0)="01" or rst_select(1 downto 0)="11") and rst_en = '1') else
-					not(RST_ACTIVE_DEB);
-
-	rst_fifo_o <=		RST_ACTIVE_FIFO when ((rst_select(1 downto 0)="10" or rst_select(1 downto 0)="11") and rst_en = '1') else
-					not(RST_ACTIVE_FIFO); 	
-    
+   
 end rtl;

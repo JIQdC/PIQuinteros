@@ -1,24 +1,19 @@
--- The entire notice above must be reproduced on all authorized copies.
-
--- File         : spi_master_rtl.vhd
--- Library      : et_serial_comm_lib
--- Company      : EmTech
--- Author       : Gast�n Rodriguez
--- Address      : <grodriguez@emtech.com.ar>
--- Created on   : 17:09:12-19/01/2012
--- Version      : 0.20
--- Description  : SPI master control
-
--- Modification History:
--- Date        By    Version    Change Description
--------------------------------------------------------------------------------
--- 19/01/2012  GER      0.10    Original
--- 18/10/2013  GER      0.20    Added slave sel configuration input and NSSEL 
---                              output port to control up to 16 slaves
--- 03/10/2014  MAP		0.30	Modificacion para CPHA=1
--- 16/11/2019  JIQdC	1.30	Modificación para aplicación en CIAA-ACC
--- 11/03/2020  JIQdC	1.40	Control de señales digitales en CIAA-ACC
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+-- Company:  Instituto Balseiro
+-- Engineer: José Quinteros
+-- 
+-- Design Name: 
+-- Module Name: 
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: Módulo de control AXI para salidas externas
+-- 
+-- Dependencies: None.
+-- 
+-- Revision: 2020-07-21
+-- Additional Comments: 
+----------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -119,12 +114,9 @@ architecture rtl of pin_control is
 	signal led_prescale_ce_r, led_toggle_r                  : std_logic;
     signal led_count_r, led_max_cnt_r                       : unsigned(15 downto 0);
 	-- Register inputs
-	signal datain0_r, user_input							: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	--, datain1_r,datain2_r,datain3_r	
+	signal spi_tristate_r, spi_tristate_aux							: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
-	signal dataout0_r, dataout1_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	-- ,dataout2_r,dataout3_r
-			
+	signal vadj_en_r, spi_read_en_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -143,7 +135,7 @@ architecture rtl of pin_control is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 3;
+	constant OPT_MEM_ADDR_BITS : integer := 3; --memory address width -1 (max 3)
 	constant IO_RESET_VALUE : std_logic_vector(31 downto 0) := X"02FAF07F";
 	------------------------------------------------
 	---- Signals for user logic register space example
@@ -258,46 +250,29 @@ begin
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 		if S_AXI_ARESETN = '0' then
-			dataout0_r    <= (others => '0');
-			dataout1_r    <= (others => '0');
-			-- dataout2_r    <= (others => '0');
-			-- dataout3_r    <= (others => '0');
+			vadj_en_r    <= (others => '0');
+			spi_read_en_r    <= (others => '0');
+
 	    else
 	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 	      if (slv_reg_wren = '1') then
 	        case loc_addr is
-	          when b"0000" =>
+	          when x"0" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 0
-					dataout0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					vadj_en_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	          when b"0001" =>
+	          when x"1" =>
 	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 1
-					dataout1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+					spi_read_en_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
-	        --   when b"0010" =>
-	        --     for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	        --       if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	        --         -- Respective byte enables are asserted as per write strobes                   
-	        --         -- slave register 2
-	        --         dataout2_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	        --       end if;
-	        --     end loop;
-	        --   when b"0011" =>
-	        --     for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	        --       if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	        --         -- Respective byte enables are asserted as per write strobes                   
-	        --         -- slave register 3
-	        --         dataout3_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	        --       end if;
-	        --     end loop;
 	          when others =>
 				null; -- Maintain actual values
 			  end case;
@@ -385,20 +360,16 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (axi_araddr, dataout0_r, dataout1_r, datain0_r,S_AXI_ACLK)
+	process (axi_araddr, vadj_en_r, spi_read_en_r, spi_tristate_r,S_AXI_ACLK)
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
 		loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 		case loc_addr is
-			when b"0000" =>
-				reg_data_out <= dataout0_r; 
-			when b"0001" =>
-				reg_data_out <= datain0_r; 
-			-- when b"0010" =>
-			-- 	reg_data_out <= dataout2_r; 
-			-- when b"0011" =>
-			-- 	reg_data_out <= dataout3_r;
+			when x"0" =>
+				reg_data_out <= vadj_en_r; 
+			when x"1" =>
+				reg_data_out <= spi_tristate_r; 
 			when others =>
 				reg_data_out <= (others => '0');
 		end case;
@@ -423,15 +394,15 @@ begin
 	end process;
 		
 	---- USER LOGIC
-	user_input <= zeros_spitr & spi_tristate_i;
+	spi_tristate_aux <= zeros_spitr & spi_tristate_i;
 	-- Register outputs and inputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
-            vadj_en_o       <= dataout0_r(0);
-			led_green_o     <= dataout0_r(0); -- Led shows VAdj ENA status 
-			spi_read_en_o  	<= dataout1_r(0);
-			datain0_r 		<= user_input;
+            vadj_en_o       <= vadj_en_r(0);
+			led_green_o     <= vadj_en_r(0); -- Led shows VAdj ENA status 
+			spi_read_en_o  	<= spi_read_en_r(0);
+			spi_tristate_r 		<= spi_tristate_aux;
 		end if;
 	end process;
 
@@ -479,11 +450,6 @@ begin
 	led_dout1_o	<= fifo_empty_i;
 
 	-- 2s pulse generation when reset detected
-	process (fifo_rst_i)
-	begin
-		
-	end process;
-
 	process(S_AXI_ACLK,fifo_rst_i,led_prescale_ce_r)
 	begin
 		if rising_edge(S_AXI_ACLK) then
