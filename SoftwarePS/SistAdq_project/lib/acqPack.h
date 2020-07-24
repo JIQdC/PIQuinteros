@@ -16,7 +16,7 @@ typedef struct __attribute__ ((packed))
 typedef struct
 {    
     AcqPack_Header_t header;
-    uint8_t flags[PACK_SIZE];
+    uint32_t flags[PACK_SIZE];
     uint32_t data[PACK_SIZE];
 }AcqPack_t;
 

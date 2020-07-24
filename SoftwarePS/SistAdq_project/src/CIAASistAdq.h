@@ -62,11 +62,14 @@ Comments:
 #define MEM_INCR 0
 
 //masks to read FIFO flags register
-#define EMPTY_MASK 0b10000
-#define FULL_MASK 0b01000
-#define OVERFLOW_MASK 0b00100
-#define RDRSTBUSY_MASK 0b00010
-#define WRRSTBUSY_MASK 0b00001
+#define RDDATACOUNT_POS 6
+#define RDDATACOUNT_MASK (((1 << 18) -1) << RDDATACOUNT_POS)
+#define PROGFULL_MASK (1 << 5)
+#define EMPTY_MASK (1 << 4)
+#define FULL_MASK (1 << 3)
+#define OVERFLOW_MASK (1 << 2)
+#define RDRSTBUSY_MASK (1 << 1)
+#define WRRSTBUSY_MASK (1 << 0)
 
 //debug control sequences
 #define APAGADO_CTRL 0b000
@@ -91,6 +94,8 @@ typedef struct
     bool wr_rst_busy;
     bool rd_rst_busy;
     bool overflow;
+    bool prog_full;
+    uint32_t rd_data_count;
 }fifo_flags_t;
 
 struct Client_str;
@@ -149,7 +154,7 @@ int memread(uint32_t addr, uint32_t *data, size_t count);
 void print_fifo_flags(fifo_flags_t *flags);
 
 // converts FIFO flag register to FIFO flags structure
-void fifoflags_reg_to_struct(fifo_flags_t *flags, uint8_t * flag_reg);
+void fifoflags_reg_to_struct(fifo_flags_t *flags, uint32_t * flag_reg);
 
 // resets FIFO
 void fifo_reset();

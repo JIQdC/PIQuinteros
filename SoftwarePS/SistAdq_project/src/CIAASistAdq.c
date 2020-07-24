@@ -65,13 +65,15 @@ int memread(uint32_t addr, uint32_t *data, size_t count) {
 }
 
 // converts FIFO flag register to FIFO flags structure
-void fifoflags_reg_to_struct(fifo_flags_t *flags, uint8_t * flag_reg)
+void fifoflags_reg_to_struct(fifo_flags_t *flags, uint32_t * flag_reg)
 {
 	flags->empty = *flag_reg & EMPTY_MASK;
 	flags->full = *flag_reg & FULL_MASK;
 	flags->overflow = *flag_reg & OVERFLOW_MASK;
 	flags->rd_rst_busy = *flag_reg & RDRSTBUSY_MASK;
 	flags->wr_rst_busy = *flag_reg & WRRSTBUSY_MASK;
+    flags->prog_full = *flag_reg & PROGFULL_MASK;
+    flags->rd_data_count = (*flag_reg & RDDATACOUNT_MASK) >> RDDATACOUNT_POS;
 }
 
 // human readable print of FIFO flags structure
@@ -82,6 +84,8 @@ void print_fifo_flags(fifo_flags_t *flags)
 	printf("FIFO overflow: %d\n",flags->overflow);
 	printf("FIFO wr_rst busy: %d\n",flags->wr_rst_busy);
 	printf("FIFO rd_rst busy: %d\n",flags->rd_rst_busy);
+    printf("FIFO prog full: %d\n",flags->prog_full);
+    printf("FIFO read data count: %d\n",flags->rd_data_count);
 }
 
 // resets FIFO
@@ -222,7 +226,7 @@ static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
 		{
             do
             {
-                acqPack->flags[j] = *((volatile uint8_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+                acqPack->flags[j] = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
             } while (acqPack->flags[j]&EMPTY_MASK);           
 			
 			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
