@@ -16,20 +16,19 @@ void spi_reset()
 	memwrite(SPI_BASE_ADDR+SPI_SRR_ADDR,&data,1);
 }
 
-//función de configuración de registro SPI_CR
-void spi_CR_config(SPI_CR_params_t params, bool value)
+//función de configuración de registro SPI_CR. Recibe dos arrays de tamaño size, con los parámetros a configurar y el valor.
+void spi_CR_config(SPI_CR_params_t * params, bool * value, uint8_t size)
 {
-	//leo el valor actual del registro de configuración
+	uint8_t i;
+
 	uint32_t cr_data = 0;
-	memread(SPI_BASE_ADDR + SPI_CR_ADDR,&cr_data,1);
 
-	//seteo el valor del bit a configurar en 0
-	cr_data = cr_data & (~params);
-
-	//si tengo que escribir un 1, lo escribo
-	if(value)
+	for(i=0;i<size;i++)
 	{
-		cr_data = cr_data | params;
+		if(value[i])
+		{
+			cr_data = cr_data | params[i];
+		}
 	}
 
 	//escribo el registro modificado de nuevo en su lugar
@@ -118,7 +117,7 @@ int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes)
 	return 0;
 }
 
-//función de lectura por SPI al ADC, teniendo en cuenta su formato de instrucción, y la bidireccionalidad de la lectura. Recibe como argumento una dirección de 13 bits, y un puntero al lugar de memoria donde escribirá n_bytes leídos.
+//función de lectura por SPI al ADC, teniendo en cuenta su formato de instrucción, y la bidireccionalidad de la lectura. Recibe como argumento una dirección de 13 bits, y un puntero al lugar de memoria donde escribirá n_bytes leídos. NO FUNCIONA
 int spi_read(uint16_t address, uint32_t * data, uint8_t n_bytes)
 {
 	if(n_bytes<=0)

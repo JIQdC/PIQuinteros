@@ -3,7 +3,7 @@ Funciones para control de AD9249 por interfaz AXI-SPI en CIAA-ACC
 José Quinteros del Castillo
 Instituto Balseiro
 
-Versión: 2020-06-10
+Versión: 2020-07-23
 Comentarios:
 */
 
@@ -23,7 +23,7 @@ Comentarios:
 #define SPI_READ 1
 
 // direcciones de módulo SPI
-#define SPI_BASE_ADDR 0x41e00000
+#define SPI_BASE_ADDR 0x81E00000
 #define SPI_SRR_ADDR 0X40
 #define SPI_CR_ADDR 0X60
 #define SPI_SR_ADDR 0X64
@@ -73,8 +73,8 @@ typedef enum
 //función para resetear el módulo SPI
 void spi_reset();
 
-//función de configuración de registro SPI_CR
-void spi_CR_config(SPI_CR_params_t params, bool value);
+//función de configuración de registro SPI_CR. Recibe dos arrays de tamaño size, con los parámetros a configurar y el valor.
+void spi_CR_config(SPI_CR_params_t * params, bool * value, uint8_t size);
 
 //función de lectura de flags de estado de SPI_SR
 void spi_SR_get(SPI_SR_t * flags);
@@ -82,7 +82,7 @@ void spi_SR_get(SPI_SR_t * flags);
 //función de escritura por SPI al ADC, teniendo en cuenta su formato de instrucción propio. Recibe como argumento una dirección de 13 bits, y un puntero al primer elemento de un array de n_bytes elementos de 8 bits.
 int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes);
 
-//función de lectura por SPI al ADC, teniendo en cuenta su formato de instrucción, y la bidireccionalidad de la lectura. Recibe como argumento una dirección de 13 bits, y un puntero al lugar de memoria donde escribirá n_bytes leídos.
+//función de lectura por SPI al ADC, teniendo en cuenta su formato de instrucción, y la bidireccionalidad de la lectura. Recibe como argumento una dirección de 13 bits, y un puntero al lugar de memoria donde escribirá n_bytes leídos. NO FUNCIONA
 int spi_read(uint16_t address, uint32_t * data, uint8_t n_bytes);
 
 //función de selección de esclavo SPI

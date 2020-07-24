@@ -9,6 +9,12 @@ int main(int argc, char *argv[])
     uint16_t address;
     int adc_number;
 
+    if (argc != 4)
+    {
+        printf("usage: %s adc_number address(hex) data(hex)\n",argv[0]);
+        exit(1);
+    }
+
 	sscanf(argv[1], "%d", &adc_number);
 	sscanf(argv[2], "%08hX", &address);
 	sscanf(argv[3], "%08X", &data);
@@ -31,12 +37,12 @@ int main(int argc, char *argv[])
 
     //reseteo el bus SPI
     spi_reset();
-    
+
     //parámetros de configuración del bus SPI
-    spi_CR_config(ManualSSelAssertEn,0);
-    spi_CR_config(SPIsystemEn,1);
-    spi_CR_config(MasterMode,1);
-    spi_CR_config(MasterTransInhibit,0);
+    SPI_CR_params_t params[4] = {ManualSSelAssertEn, SPIsystemEn, MasterMode, MasterTransInhibit};
+    bool value[4] = {0, 1, 1, 0};
+    spi_CR_config(params,value,4);
+
     spi_ssel(slave);
 
     spi_write(address,&data,1);
@@ -44,7 +50,9 @@ int main(int argc, char *argv[])
     printf("\nSe escribió el valor 0x%02X en la dirección 0x%02X.\n",data, address);
 
     //apago sistema
-    spi_CR_config(SPIsystemEn,0);
+    // SPI_CR_params_t param = SPIsystemEn;
+    // bool val = 0;
+    // spi_CR_config(&param,&val,1);
 	
 	return 0;
 }
