@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-07-21
+-- Revision: 2020-07-23
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -101,6 +101,8 @@ entity adc_control_saxi is
 		fifo_ov_i: in std_logic;
 		fifo_rd_rst_busy_i: in std_logic;
 		fifo_wr_rst_busy_i: in std_logic;
+		fifo_prog_full_i: in std_logic;
+		fifo_rd_data_count_i: in std_logic_vector(17 downto 0);
 		fifo_rd_en_o: out std_logic;
 
 		-- Control signals
@@ -162,7 +164,7 @@ architecture rtl of adc_control_saxi is
 	--aux signals for FIFO data formatting
 	signal fifo_data_aux, fifo_flags_aux, fr_wr_clk_aux, fr_rd_en_aux: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	signal zeros_readdata: std_logic_vector (C_S_AXI_DATA_WIDTH-(2*N_ADC)-1 downto 0) := (others => '0');
-	signal zeros_flags: std_logic_vector (C_S_AXI_DATA_WIDTH-5-1 downto 0) := (others => '0');
+	signal zeros_flags: std_logic_vector (C_S_AXI_DATA_WIDTH-24-1 downto 0) := (others => '0');
 	signal zeros_16: std_logic_vector (C_S_AXI_DATA_WIDTH-16-1 downto 0) := (others => '0');
 
 begin
@@ -468,7 +470,8 @@ begin
 	-- FIFO read data
 	fifo_data_aux <= zeros_readdata & fifo_dout_i;
 	-- FIFO flags
-	fifo_flags_aux <= zeros_flags & fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
+	fifo_flags_aux <= zeros_flags & fifo_rd_data_count_i & fifo_prog_full_i &
+	fifo_empty_i & fifo_full_i & fifo_ov_i & fifo_rd_rst_busy_i & fifo_wr_rst_busy_i;
 	-- Frequency counters
 	fr_wr_clk_aux <= zeros_16 & fr_wr_clk_i;
 	fr_rd_en_aux <= zeros_16 & fr_rd_en_i;
