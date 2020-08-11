@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "Divisor de potencia resistivo 1 x 16"
 Date "2020-05-13"
-Rev "1.0"
+Rev "SCH-1.0"
 Comp "Instituto Balseiro"
 Comment1 "Ingeniería en Telecomunicaciones"
 Comment2 "Quinteros del Castillo, José Ignacio"
@@ -627,5 +627,16 @@ F 2 "" H 3825 3850 50  0001 C CNN
 F 3 "" H 3825 3850 50  0001 C CNN
 	1    3825 3850
 	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J18
+U 1 1 5F2B35BF
+P 7230 3650
+F 0 "J18" H 7202 3582 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 7202 3673 50  0000 R CNN
+F 2 "Connector_Pin:Pin_D1.0mm_L10.0mm" H 7230 3650 50  0001 C CNN
+F 3 "~" H 7230 3650 50  0001 C CNN
+	1    7230 3650
+	-1   0    0    1   
 $EndComp
 $EndSCHEMATC

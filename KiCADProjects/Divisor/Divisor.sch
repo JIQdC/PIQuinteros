@@ -576,11 +576,6 @@ Wire Wire Line
 Wire Wire Line
 	6250 4150 6250 4900
 Connection ~ 7025 3150
-Wire Wire Line
-	7025 3150 7025 3650
-Connection ~ 7025 3650
-Wire Wire Line
-	7025 3650 7025 4150
 Connection ~ 7025 4150
 Wire Wire Line
 	7025 4150 7025 4900
@@ -628,4 +623,6 @@ F 3 "" H 3825 3850 50  0001 C CNN
 	1    3825 3850
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	7025 3150 7025 4150
 $EndSCHEMATC

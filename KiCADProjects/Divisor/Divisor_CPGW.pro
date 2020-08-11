@@ -1,4 +1,4 @@
-update=Sat 09 May 2020 21:29:55 -03
+update=Wed 05 Aug 2020 19:55:29 -03
 version=1
 last_client=pcbnew
 [general]
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=
+LastNetListRead=Divisor.net
 CopperLayerCount=2
 BoardThickness=1.6
 AllowMicroVias=0
@@ -32,6 +32,8 @@ TrackWidth1=2.4
 TrackWidth2=1.5
 ViaDiameter1=0.8
 ViaDrill1=0.4
+ViaDiameter2=3.2
+ViaDrill2=3
 dPairWidth1=0.2
 dPairGap1=0.25
 dPairViaGap1=0.25
@@ -232,6 +234,17 @@ Clearance=0.5
 TrackWidth=2.4
 ViaDiameter=0.8
 ViaDrill=0.4
+uViaDiameter=0.3
+uViaDrill=0.1
+dPairWidth=0.2
+dPairGap=0.25
+dPairViaGap=0.25
+[pcbnew/Netclasses/1]
+Name=GND
+Clearance=0.5
+TrackWidth=2.4
+ViaDiameter=0.9
+ViaDrill=0.7
 uViaDiameter=0.3
 uViaDrill=0.1
 dPairWidth=0.2
