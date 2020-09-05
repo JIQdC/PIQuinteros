@@ -1,6 +1,6 @@
-update=Sat 22 Aug 2020 17:21:27 -03
+update=Sat 22 Aug 2020 17:57:26 -03
 version=1
-last_client=kicad
+last_client=pcbnew
 [general]
 version=1
 RootSch=
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=Divisor.net
+LastNetListRead=Divisor_x8.net
 CopperLayerCount=2
 BoardThickness=1.6
 AllowMicroVias=0
@@ -28,10 +28,8 @@ MinViaDrill=0.3
 MinMicroViaDiameter=0.2
 MinMicroViaDrill=0.09999999999999999
 MinHoleToHole=0.25
-TrackWidth1=2.27
+TrackWidth1=2.87
 TrackWidth2=1.5
-TrackWidth3=2.4
-TrackWidth4=2.87
 ViaDiameter1=0.8
 ViaDrill1=0.4
 ViaDiameter2=0.9
@@ -64,7 +62,7 @@ OthersTextUpright=1
 SolderMaskClearance=0.051
 SolderMaskMinWidth=0.25
 SolderPasteClearance=0
-SolderPasteRatio=-0
+SolderPasteRatio=0
 [pcbnew/Layer.F.Cu]
 Name=F.Cu
 Type=0
@@ -234,8 +232,8 @@ Enabled=0
 [pcbnew/Netclasses]
 [pcbnew/Netclasses/Default]
 Name=Default
-Clearance=0.2
-TrackWidth=2.27
+Clearance=0.5
+TrackWidth=2.87
 ViaDiameter=0.8
 ViaDrill=0.4
 uViaDiameter=0.3
@@ -243,13 +241,3 @@ uViaDrill=0.1
 dPairWidth=0.2
 dPairGap=0.25
 dPairViaGap=0.25
-[schematic_editor]
-version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=Pcbnew
-SpiceAjustPassiveValues=0
-LabSize=50
-ERC_TestSimilarLabels=1
