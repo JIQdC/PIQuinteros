@@ -1,7 +1,5 @@
 #include "src/CIAASistAdq.h"
 
-#define TX_MODE 0
-
 // // Programa principal
 int main(int argc, char *argv[]) 
 {
@@ -24,19 +22,14 @@ int main(int argc, char *argv[])
     debug_reset(10);
     fifo_reset();
 
-    //activo salida a fifo
-    uint32_t wr_data = 0xD;
-    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
-
     //run client
     ClientRun(client);
 
-    //apago salida a FIFO
-    wr_data = 0x0;
-    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
-
     //destroy all
     ClientDestroy(client);
+
+    //free
+    free(clPars);
 
 	return 0;
 }

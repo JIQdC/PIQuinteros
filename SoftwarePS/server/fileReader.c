@@ -1,4 +1,4 @@
-#include "src/CIAASistAdq.h"
+#include "../SistAdq_project/src/CIAASistAdq.h"
 
 #define WORD0_MASK ((1 << 14)-1)
 #define WORD1_MASK (WORD0_MASK << 14)
