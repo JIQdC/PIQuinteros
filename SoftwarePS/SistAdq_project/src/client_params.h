@@ -8,6 +8,13 @@
 
 typedef enum
 {
+    file,
+    TCP,
+    UDP
+} Tx_Mode_t;
+
+typedef enum
+{
     sampleNumber,
     timeInterval
 } CaptureMode_t;
@@ -25,6 +32,7 @@ typedef struct
     uint8_t ch_id;
     char * serv_addr;
     int server_portno;
+    Tx_Mode_t txMode;
     CaptureMode_t capMode;
     TriggerMode_t trigMode;
     int n_samples;

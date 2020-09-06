@@ -28,6 +28,9 @@ Comments:
 #include <time.h>
 #include <pthread.h>
 #include <sys/eventfd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #include "../lib/error.h"
 #include "../lib/acqPack.h"
@@ -117,15 +120,13 @@ typedef struct
     pthread_t th;
     int running;
     Client_t * client;
-    #if TX_MODE == 1
-    char *server_addr;
-    int server_portno;
+    struct sockaddr_in serv_addr;
     int sockfd;
-    #endif
 } Tx_Thread_t;
 
 struct Client_str
 {
+    Tx_Mode_t tx_mode;
     Rx_Queue_t *rxQ;
     Tx_Queue_t *txQ;
 
@@ -178,11 +179,7 @@ void AcqThreadStop(Acq_Thread_t * acqTh);
 
 //// TRANSMISSION THREAD
 // initializes a Tx_Thread_t
-Tx_Thread_t * TxThreadInit(Client_t * client
-#if TX_MODE == 1
-, char * server_addr, const int server_portno
-#endif
-);
+Tx_Thread_t * TxThreadInit(Client_t * client, char * server_addr, const int server_portno);
 
 // destroys a Tx_Thread_t
 void TxThreadDestroy(Tx_Thread_t * txTh);

@@ -220,6 +220,10 @@ static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
 		if(clock_gettime(CLOCK_REALTIME,&acqPack->header.acq_timestamp) < 0) error("clock_gettime in acquire_data");
 		//whatever we want to do with remaining header
 	
+    //activo salida a fifo
+    uint32_t wr_data = 0xD;
+    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
+
 	//ACQUIRE
 		//read fifo flags and data
 		for(j=0;j<PACK_SIZE;j++)
@@ -231,6 +235,10 @@ static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
 			
 			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
 		}
+
+    //apago salida a FIFO
+    wr_data = 0x0;
+    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
 }
 
 // function to be run by the acquisition thread
@@ -304,69 +312,148 @@ void AcqThreadStop(Acq_Thread_t * acqTh)
 
 //// TRANSMISSION THREAD
 // initializes a Tx_Thread_t
-Tx_Thread_t * TxThreadInit(Client_t * client
-#if TX_MODE == 1
-, char * server_addr, const int server_portno
-#endif
-)
+Tx_Thread_t * TxThreadInit(Client_t * client, char * server_addr, const int server_portno)
 {
     //allocate memory for Tx_Thread_t
     Tx_Thread_t * txTh = malloc(sizeof(Tx_Thread_t));
-
-    //assign client
-    txTh->client = client;
-
-    txTh->running = 0;
-
-	#if TX_MODE == 1
-	struct sockaddr_in serv_addr;
-	memset(&serv_addr,0,sizeof(serv_addr));
+    memset(txTh,0,sizeof(Tx_Thread_t));
 
 	struct hostent *server;
 
-	//save connection params (just in case we need them in the future)
-	txTh->server_addr = server_addr;
-	txTh->server_portno = server_portno;
+    //assign client
+    txTh->client = client;
+    txTh->running = 0;
 
-	//open TCP/IP socket
-	txTh->sockfd = socket(AF_INET,SOCK_STREAM,0);
-	if(txTh->sockfd < 0) error("socket open in txTh");
-	//find host
-	server = gethostbyname(server_addr);
-	if(server == NULL)
-	{
-		fprintf(stderr,"ERROR, no host found with that address\n");
-		exit(1);
-	}
-	//get server address from host found
-	serv_addr.sin_family = AF_INET;
-	bcopy((char *)server->h_addr_list[0], 
-		(char *)&serv_addr.sin_addr.s_addr,
-		server->h_length);    //use port passed as argument
-	serv_addr.sin_port=htons(server_portno);
-	//connect to server
-	if (connect(txTh->sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) error("connect to server in txTh");
-	printf("Client connected to %s:%d.\n",server_addr,server_portno);
-	#endif
-    
+    if(client->tx_mode == TCP || client->tx_mode == UDP)
+    {
+        //find host
+        server = gethostbyname(server_addr);
+        if(server == NULL)
+        {
+            fprintf(stderr,"ERROR, no host found with that address\n");
+            exit(1);
+        }
+        //get server address from host found
+        txTh->serv_addr.sin_family = AF_INET;
+        bcopy((char *)server->h_addr_list[0], 
+            (char *)&txTh->serv_addr.sin_addr.s_addr,
+            server->h_length);    //use port passed as argument
+        txTh->serv_addr.sin_port=htons(server_portno);
+
+        if(client->tx_mode == TCP)
+        {
+            //open TCP/IP socket
+            txTh->sockfd = socket(AF_INET,SOCK_STREAM,0);
+            if(txTh->sockfd < 0) error("txTh: TCP/IP socket open");
+
+            //connect to server
+            if (connect(txTh->sockfd,(struct sockaddr *) &txTh->serv_addr,sizeof(txTh->serv_addr)) < 0) error("txTh: connect to TCP/IP server");
+            printf("Client connected to %s:%d.\n",server_addr,server_portno);
+        }
+        else
+        {
+            //open UDP socket
+            txTh->sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+            if(txTh->sockfd < 0) error("txTh: TCP/IP socket open");
+
+            printf("Client ready to send UDP packages to %s:%d.\n",server_addr,server_portno);
+        }
+    }
+
     return txTh;
 }
 
 // destroys a Tx_Thread_t
 void TxThreadDestroy(Tx_Thread_t * txTh)
 {
-	#if TX_MODE == 1
-    //close connection with server
-    close(txTh->sockfd);
-	#endif
+	if(txTh->client->tx_mode == TCP || txTh->client->tx_mode == UDP)
+    {
+        //close connection with server
+        close(txTh->sockfd);
+    }
 
     //release memory
     free(txTh);
 }
 
-#if TX_MODE == 1
-// writes a msg to sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
-static int socketWrite(int sockfd, void * msg, size_t size_msg)
+// writes a msg to UDP sockfd and address serv_addr. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
+static int socketWriteUDP(int sockfd, void * msg, size_t size_msg, struct sockaddr * serv_addr)
+{
+    int n;
+
+    //cast msg to char * to be able to chop it
+    char * msg_c = (char *) msg;
+
+    n = sendto(sockfd,msg,size_msg,0,serv_addr,sizeof(struct sockaddr));
+
+    if(n == size_msg)
+    {
+        return 0;
+    }
+    else if(n > 0)
+    {
+        return socketWriteUDP(sockfd,msg_c+n,size_msg-n,serv_addr);
+    }
+    else if(n == 0)
+    {
+        return 1;
+    }
+    else // n < 0
+    {
+        return -1;
+    }    
+}
+
+// function to be run by a transmission thread when txMode is UDP
+static void * txTh_threadFuncUDP(void * ctx)
+{
+    Tx_Thread_t * txTh = (Tx_Thread_t *) ctx;
+    Tx_Queue_t * txQ = txTh->client->txQ;
+    Rx_Queue_t * rxQ = txTh->client->rxQ;
+    AcqPack_t * acqPack;
+
+    //transmit packets over network
+	int wr_ret;
+    while(txTh->running && txTh->client->acqTh->running)
+    {
+        //capture from Tx_Queue
+        acqPack = Tx_QueueGet(txQ);
+		
+        //send buffer to UDP socket
+        wr_ret = socketWriteUDP(txTh->sockfd,acqPack,sizeof(AcqPack_t),(struct sockaddr *)&(txTh->serv_addr));
+        if(wr_ret > 0)
+        {
+            //do something for closed server. Die perhaps?
+        }
+        if(wr_ret < 0) error("socket write in txTh");
+		
+        //release buffer
+        Rx_Queue_Release(rxQ,acqPack);
+    }
+
+    //if needed, empty Tx_Queue
+    while(Tx_QueueSize(txQ) > 0)
+    {
+        //capture from Tx_Queue
+        acqPack = Tx_QueueGet(txQ);
+
+        //send buffer to UDP socket
+        wr_ret = socketWriteUDP(txTh->sockfd,acqPack,sizeof(AcqPack_t),(struct sockaddr *)&(txTh->serv_addr));
+        if(wr_ret > 0)
+        {
+            //do something for closed server. Die perhaps?
+        }
+        if(wr_ret < 0) error("socket write in txTh");
+        //release buffer
+        Rx_Queue_Release(rxQ,acqPack);
+    }
+
+    //return to be joined
+    return NULL;
+}
+
+// writes a msg to TCP connected sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
+static int socketWriteTCP(int sockfd, void * msg, size_t size_msg)
 {
     int n;
 
@@ -381,7 +468,7 @@ static int socketWrite(int sockfd, void * msg, size_t size_msg)
     }
     else if(n > 0)
     {
-        return socketWrite(sockfd,msg_c+n,size_msg-n);
+        return socketWriteTCP(sockfd,msg_c+n,size_msg-n);
     }
     else if(n == 0)
     {
@@ -392,7 +479,55 @@ static int socketWrite(int sockfd, void * msg, size_t size_msg)
         return -1;
     }    
 }
-#else
+
+// function to be run by a transmission thread when tx_mode is TCP
+static void * txTh_threadFuncTCP(void * ctx)
+{
+    Tx_Thread_t * txTh = (Tx_Thread_t *) ctx;
+    Tx_Queue_t * txQ = txTh->client->txQ;
+    Rx_Queue_t * rxQ = txTh->client->rxQ;
+    AcqPack_t * acqPack;
+
+    //transmit packets over network
+	int wr_ret;
+    while(txTh->running && txTh->client->acqTh->running)
+    {
+        //capture from Tx_Queue
+        acqPack = Tx_QueueGet(txQ);
+		
+        //send buffer to TCP socket
+        wr_ret = socketWriteTCP(txTh->sockfd,acqPack,sizeof(AcqPack_t));
+        if(wr_ret > 0)
+        {
+            //do something for closed server. Die perhaps?
+        }
+        if(wr_ret < 0) error("socket write in txTh");
+		
+        //release buffer
+        Rx_Queue_Release(rxQ,acqPack);
+    }
+
+    //if needed, empty Tx_Queue
+    while(Tx_QueueSize(txQ) > 0)
+    {
+        //capture from Tx_Queue
+        acqPack = Tx_QueueGet(txQ);
+
+        //send buffer to TCP socket
+        wr_ret = socketWriteTCP(txTh->sockfd,acqPack,sizeof(AcqPack_t));
+        if(wr_ret > 0)
+        {
+            //do something for closed server. Die perhaps?
+        }
+        if(wr_ret < 0) error("socket write in txTh");
+
+        //release buffer
+        Rx_Queue_Release(rxQ,acqPack);
+    }
+
+    //return to be joined
+    return NULL;
+}
 
 // opens a file with current time as name, and brief description of content
 static int fileOpen()
@@ -432,36 +567,14 @@ static void fileWrite(int fout, AcqPack_t * acqPack)
 {
 	if(write(fout,acqPack,sizeof(AcqPack_t)) < 0) error("write in fileWrite");
 }
-#endif
 
-// function to be run by a transmission thread
-static void * txTh_threadFunc(void * ctx)
+// function to be run by a transmission thread when txMode is file
+static void * txTh_threadFuncFile(void * ctx)
 {
     Tx_Thread_t * txTh = (Tx_Thread_t *) ctx;
     Tx_Queue_t * txQ = txTh->client->txQ;
     Rx_Queue_t * rxQ = txTh->client->rxQ;
     AcqPack_t * acqPack;
-
-    #if TX_MODE == 1
-	int wr_ret;
-    while(txTh->running || Tx_QueueSize(txQ) < 1)
-    {
-        //capture from Tx_Queue
-        acqPack = Tx_QueueGet(txQ);
-		
-        //send buffer to socket
-        wr_ret = socketWrite(txTh->sockfd,rxBuf,sizeof(Buffer_t));
-        if(wr_ret > 0)
-        {
-            //do something for closed server. Die perhaps?
-        }
-        if(wr_ret < 0) error("socket write in txTh");
-		
-
-        //release buffer
-        Rx_Queue_Release(rxQ,acqPack);
-    }
-	#else
 
 	//open file
 	int fout = fileOpen();
@@ -493,8 +606,6 @@ static void * txTh_threadFunc(void * ctx)
 	//close file
 	close(fout);
 	
-	#endif
-
     //return to be joined
     return NULL;
 }
@@ -511,8 +622,22 @@ void TxThreadRun(Tx_Thread_t * txTh)
     //assert running flag
     txTh->running = 1;
 
-    //create thread
-    if(pthread_create(&txTh->th,NULL,txTh_threadFunc,txTh) != 0) error ("pthread_create in txTh");
+    //create thread with function according to client->txMode
+    switch (txTh->client->tx_mode)
+    {
+    case file:
+        if(pthread_create(&txTh->th,NULL,txTh_threadFuncFile,txTh) != 0) error ("pthread_create in txTh");
+        break;
+
+    case TCP:
+        if(pthread_create(&txTh->th,NULL,txTh_threadFuncTCP,txTh) != 0) error ("pthread_create in txTh");
+        break;
+    
+    default: //UDP
+        if(pthread_create(&txTh->th,NULL,txTh_threadFuncUDP,txTh) != 0) error ("pthread_create in txTh");
+        break;
+    }
+    
 }
 
 // stops a transmission thread
@@ -544,17 +669,14 @@ Client_t * ClientInit(ClParams_t * params)
     client->rxQ = Rx_QueueInit();
     client->txQ = Tx_QueueInit();
 
-    //initialize threads
-    client->acqTh = AcqThreadInit(client);
-    client->txTh = TxThreadInit(client
-	#if TX_MODE == 1
-	,params->serv_addr,params->server_portno
-	#endif
-	);
-
     //modes from params
+    client->tx_mode = params->txMode;
     client->capMode = params->capMode;
     client->trigMode = params->trigMode;
+
+    //initialize threads
+    client->acqTh = AcqThreadInit(client);
+    client->txTh = TxThreadInit(client,params->serv_addr,params->server_portno);
 
     switch (client->capMode)
     {

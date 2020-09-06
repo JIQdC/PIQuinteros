@@ -6,6 +6,7 @@
 # PARAMETER DESCRIPTION
 # BD_ID: identifier for board. Can take values 0-255
 # CH_ID: identifier for channel. Can take values 0-255
+# TX_MODE: defines output for client. Can take values 'file' (writes output to local file), 'TCP' or 'UDP' (sends output to server).
 # SERVER_ADDR: server address or name. String to be passed to gethostbyname()
 # SERVER_PORTNO: server port number
 # CAP_MODE: capture mode for client. Can take values 'sampleNumber' or 'timeInterval'
@@ -19,7 +20,9 @@
 BD_ID=0
 CH_ID=2
 
-SERVER_ADDR=0.0.0.0
+TX_MODE=UDP
+
+SERVER_ADDR=192.168.0.1
 SERVER_PORTNO=12345
 
 CAP_MODE=sampleNumber
@@ -30,7 +33,7 @@ SAMPLE_NUM=2
 STOP_SEC=2
 STOP_NSEC=0
 
-TRIG_MODE=manual
+TRIG_MODE=noDelay
 
 # valid if TRIG_MODE=timer
 # START_YEAR=2020

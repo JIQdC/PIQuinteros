@@ -24,10 +24,36 @@ static void cl_parseParam(const char * key, char *value, ClParams_t *clPars)
         return;
     }
 
+    if(!strcmp(key, "TX_MODE"))   
+    {
+        if(strstr(value,"file")!=NULL)
+        {
+            clPars->txMode = file;
+            return;
+        }
+        else if(strstr(value,"TCP")!=NULL)
+        {
+            clPars->txMode = TCP;
+            return;
+        }
+        else if(strstr(value,"UDP")!=NULL)
+        {
+            clPars->txMode = UDP;
+            return;
+        }        else
+        {
+            printf("ClParseParam: TX_MODE must be file, TCP or UDP.\n");
+            exit(1);
+        }
+    }
+
     if(!strcmp(key, "SERVER_ADDR"))
     {
-        clPars->serv_addr = malloc(strlen(value)*sizeof(char)-1);
-        memmove(clPars->serv_addr,value,strlen(value)*sizeof(char)-1);
+        //since strlen gives the length excluding the final 0 byte, serv_addr has one char less than value
+        clPars->serv_addr = malloc(strlen(value)*sizeof(char));         
+        memset(clPars->serv_addr,0,strlen(value)*sizeof(char));
+        //this copies all chars of value but the last one, while maintaining the final 0 byte
+        memcpy(clPars->serv_addr,value,strlen(value)*sizeof(char)-1);   
 		return;
     }
 
@@ -162,6 +188,7 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     clPars->ch_id = 0;
     clPars->serv_addr = NULL;       //check if set
     clPars->server_portno = -1;     //check if set
+    clPars->txMode = -1;            //check if set
     clPars->capMode = -1;           //check if set
     clPars->trigMode = manual;
     clPars->n_samples = -1;         //check if set
@@ -193,6 +220,7 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     fclose(in);
 
     //check that required values are set
+    if(clPars->txMode == -1) paramError("TX_MODE");
     if(clPars->serv_addr == NULL) paramError("SERV_ADDR");
     if(clPars->server_portno == -1) paramError("SERV_PORTNO");
     if(clPars->capMode == -1) paramError("CAP_MODE");
