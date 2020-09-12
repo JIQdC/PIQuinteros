@@ -1,10 +1,12 @@
 /*
-Funciones para control de AD9249 por interfaz AXI-SPI en CIAA-ACC
+Emulation, acquisition and data processing system for sensor matrices 
 José Quinteros del Castillo
 Instituto Balseiro
+---
+AD9249 SPI control interface using AXI Quad SPI in CIAA-ACC
 
-Versión: 2020-07-23
-Comentarios:
+Version: 2020-09-09
+Comments:
 */
 
 #ifndef SPI_CONTROL_H_
@@ -18,11 +20,7 @@ Comentarios:
 #include <stdbool.h>
 #include "CIAASistAdq.h"
 
-// valores para SPI tristate
-#define SPI_WRITE 0
-#define SPI_READ 1
-
-// direcciones de módulo SPI
+// AXI SPI addresses
 #define SPI_BASE_ADDR 0x81E00000
 #define SPI_SRR_ADDR 0X40
 #define SPI_CR_ADDR 0X60
@@ -31,7 +29,7 @@ Comentarios:
 #define SPI_DRR_ADDR 0X6C
 #define SPI_SSR_ADDR 0X70
 
-// parámetros de control en SPI_CR
+// SPI_CR control parameters
 typedef enum
 {
     LSBfirst = (1 << 9),
@@ -46,7 +44,7 @@ typedef enum
     Loop = (1 << 0)
 }SPI_CR_params_t;
 
-// parámetros de control en SPI_SR
+// SPI_SR control parameters
 typedef struct
 {
     bool commandErr;
@@ -62,7 +60,7 @@ typedef struct
     bool rxEmpty;
 }SPI_SR_t;
 
-// esclavos para seleccionar
+// slaves
 typedef enum
 {
     adc1,
@@ -70,22 +68,29 @@ typedef enum
     none
 }SPI_slaves_t;
 
-//función para resetear el módulo SPI
+// ADC SPI addresses
+#define ADC_CLOCKDIVIDE     0X0B
+#define ADC_TESTMODE        0X0D
+#define ADC_OUTPUTMODE      0X14
+#define ADC_OUTPUTADJUST    0X15
+#define ADC_VREF            0X18
+
+// resets SPI module
 void spi_reset();
 
-//función de configuración de registro SPI_CR. Recibe dos arrays de tamaño size, con los parámetros a configurar y el valor.
+// configures SPI_CR register. params and value are two arrays of specified size
 void spi_CR_config(SPI_CR_params_t * params, bool * value, uint8_t size);
 
-//función de lectura de flags de estado de SPI_SR
-void spi_SR_get(SPI_SR_t * flags);
-
-//función de escritura por SPI al ADC, teniendo en cuenta su formato de instrucción propio. Recibe como argumento una dirección de 13 bits, y un puntero al primer elemento de un array de n_bytes elementos de 8 bits.
+// writes an instruction to the ADC, complying with its instruction formats. address is a 13 bit argument, and data is an array of size n_bytes
 int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes);
 
-//función de lectura por SPI al ADC, teniendo en cuenta su formato de instrucción, y la bidireccionalidad de la lectura. Recibe como argumento una dirección de 13 bits, y un puntero al lugar de memoria donde escribirá n_bytes leídos. NO FUNCIONA
-int spi_read(uint16_t address, uint32_t * data, uint8_t n_bytes);
-
-//función de selección de esclavo SPI
+// selects active slave
 int spi_ssel(SPI_slaves_t slave);
+
+//default configuration for AXI-SPI module
+void spi_defaultConfig();
+
+//default configuration for ADC via SPI
+void adc_defaultConfig();
 
 #endif //SPI_CONTROL_H_
