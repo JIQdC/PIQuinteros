@@ -1,6 +1,8 @@
 #ifndef TCPSERVER_H_
 #define TCPSERVER_H_
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

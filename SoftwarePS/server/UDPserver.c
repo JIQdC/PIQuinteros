@@ -62,7 +62,7 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
     //concat
     strcat(word2,str_ch_id);
     //open file with name
-    chF->f = open(word1,O_CREAT|O_RDWR,0640);
+    chF->f = open(word2,O_CREAT|O_RDWR,0640);
     if(chF->f < 0) error("open in fileOpen");
 
     //notify

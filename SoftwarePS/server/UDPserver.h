@@ -1,6 +1,8 @@
 #ifndef UDPSERVER_H_
 #define UDPSERVER_H_
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

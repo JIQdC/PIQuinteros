@@ -17,10 +17,15 @@ int main(int argc, char *argv[])
     int fd = open(argv[1],O_RDONLY);
     if(fd < 0) error("open file");
 
+    char fout_name[40] = "";
+    strcat(fout_name,argv[1]);
+    strcat(fout_name,".csv");
+    FILE * fout = fopen(fout_name,"w");
+
     AcqPack_t * acqPack = malloc(sizeof(AcqPack_t));
     if(acqPack == NULL) error("malloc de acqPack");
 
-    int ret_rd, i;
+    int ret_rd, i,j=0;
     uint16_t word0,word1;
     fifo_flags_t flags;
 
@@ -41,19 +46,24 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        printf("time: %.9f\n",acqPack->header.acq_timestamp.tv_sec + 1e-9*acqPack->header.acq_timestamp.tv_nsec);
-        printf("index\tword1\tword0\tcount\tempty\tfull\tpr_full\tovflow\trdrstbs\twrrstbs\n");
+        fprintf(fout,"time: %.9f\n",acqPack->header.acq_timestamp.tv_sec + 1e-9*acqPack->header.acq_timestamp.tv_nsec);
+        fifoflags_reg_to_struct(&flags,&acqPack->header.fifo_flags);
+        fprintf(fout,"FIFO flags:\n");
+        fprintf(fout,"count\tempty\tfull\tpr_full\tovflow\trdrstbs\twrrstbs\n");
+        fprintf(fout,"%d\t%d\t%d\t%d\t%d\t%d\t%d\n",flags.rd_data_count,flags.empty,flags.full,flags.prog_full,flags.overflow,flags.rd_rst_busy,flags.wr_rst_busy);
         for(i=0;i<PACK_SIZE;i++)
         {
             word0 = acqPack->data[i] & WORD0_MASK;
             word1 = (acqPack->data[i] & WORD1_MASK) >> 14;
-            fifoflags_reg_to_struct(&flags,&acqPack->flags[i]);
-            printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",i,word1,word0,flags.rd_data_count,flags.empty,flags.full,flags.prog_full,flags.overflow,flags.rd_rst_busy,flags.wr_rst_busy);
+            fprintf(fout,"%d,%d\n",j,word1);
+            j++;
+            fprintf(fout,"%d,%d\n",j,word0);
+            j++;
         }
         printf("\n");
     }
 
-
     close(fd);
+    fclose(fout);
 	return 0;
 }
