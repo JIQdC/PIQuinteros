@@ -35,24 +35,13 @@ int main(int argc, char *argv[])
         break;
     }
 
-    //reseteo el bus SPI
-    spi_reset();
-
-    //parámetros de configuración del bus SPI
-    SPI_CR_params_t params[4] = {ManualSSelAssertEn, SPIsystemEn, MasterMode, MasterTransInhibit};
-    bool value[4] = {0, 1, 1, 0};
-    spi_CR_config(params,value,4);
-
     spi_ssel(slave);
 
     spi_write(address,&data,1);
     
     printf("\nSe escribió el valor 0x%02X en la dirección 0x%02X.\n",data, address);
 
-    //apago sistema
-    // SPI_CR_params_t param = SPIsystemEn;
-    // bool val = 0;
-    // spi_CR_config(&param,&val,1);
-	
+    usleep(10);
+
 	return 0;
 }

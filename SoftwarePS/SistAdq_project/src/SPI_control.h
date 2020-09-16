@@ -93,4 +93,7 @@ void spi_defaultConfig();
 //default configuration for ADC via SPI
 void adc_defaultConfig();
 
+//set clock divider to value divide
+void adc_clkDividerSet(uint8_t divide);
+
 #endif //SPI_CONTROL_H_

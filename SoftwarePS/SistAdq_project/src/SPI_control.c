@@ -168,3 +168,22 @@ void adc_defaultConfig()
 
 	}
 }
+
+//set clock divider to value divide
+void adc_clkDividerSet(uint8_t divide)
+{
+	//configure both ADCs equally
+	SPI_slaves_t slaves[2] = {adc1, adc2};
+
+	int i;
+	uint32_t wr_data = divide;
+
+	for(i=0;i<2;i++)
+	{
+		spi_ssel(slaves[i]);
+
+		//clock divider
+		spi_write(ADC_CLOCKDIVIDE,&wr_data,1);
+	}
+}
+
