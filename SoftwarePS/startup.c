@@ -23,7 +23,7 @@ Comments: This routine performs the following startup tasks for the acquisition 
 int main()
 {
     //enable PTP daemon
-    system("/mnt/ptpd2 -b eth0");
+    system("/mnt/ptpd2 -b eth0 -g");
 
 	//enable regulator
     regulator_enable();
