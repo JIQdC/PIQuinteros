@@ -5,12 +5,14 @@ Instituto Balseiro
 ---
 Data acquisition interface for CIAA-ACC AXI bus
 
-Version: 2020-06-11
+Version: 2020-09-09
 Comments:
 */
 
 #ifndef SRC_CIAASISTADQ_H_
 #define SRC_CIAASISTADQ_H_
+
+#define _GNU_SOURCE
 
 #include <memory.h>
 #include <stdlib.h>
@@ -36,6 +38,8 @@ Comments:
 #include "../lib/acqPack.h"
 #include "client_queues.h"
 #include "client_params.h"
+
+#include "../src/SPI_control.h"
 
 #define PAGE_SIZE getpagesize()
 
@@ -143,7 +147,12 @@ struct Client_str
     
     int eventfd_samples;
     int n_samples;
+
+    uint16_t debug_output;
+    uint16_t clk_divider;
 };
+
+// GENERAL PURPOSE FUNCTIONS
 
 // writes data to a memory register
 int memwrite(uint32_t addr, const uint32_t *data, size_t count);
@@ -161,7 +170,10 @@ void fifoflags_reg_to_struct(fifo_flags_t *flags, uint32_t * flag_reg);
 void fifo_reset();
 
 // resets debug module for duration microseconds
-void debug_reset(uint duration);
+void debug_reset(unsigned int duration);
+
+//enables bank 12 and 13 regulator, setting the potentiometer to specified value via I2C
+void regulator_enable();
 
 ////ACQUISITION THREAD
 

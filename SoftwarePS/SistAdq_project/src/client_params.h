@@ -1,3 +1,14 @@
+/*
+Emulation, acquisition and data processing system for sensor matrices 
+José Quinteros del Castillo
+Instituto Balseiro
+---
+Parameter parsing for data acquisition interface
+
+Version: 2020-09-16
+Comments:
+*/
+
 #ifndef CLIENT_PARAMS_H_
 #define CLIENT_PARAMS_H_
 
@@ -38,6 +49,8 @@ typedef struct
     int n_samples;
     struct tm timerfd_start_br;
     struct itimerspec timerfd_stop_spec;
+    uint16_t debug_output;
+    uint16_t clk_divider;
 } ClParams_t;
 
 //// PARAMETER PARSING

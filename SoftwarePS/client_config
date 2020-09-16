@@ -16,6 +16,19 @@
 # TRIG_MODE: trigger mode for client. Can take values 'manual', 'timer' or 'noDelay'. Defaults to 'manual' if not set.
 # START_YEAR, START_MONTH, START_DAY: valid if TRIG_MODE=timer. Date to start capture. Defaults to today if not set.
 # START_HOUR, START_MIN, START_SEC: valid if TRIG_MODE=timer. Time to start capture.
+# CLK_DIVIDER: sets divider for ADC sampling clock via SPI. Can take integer values in range 0-7. Defaults to 0 if not set.
+# DEBUG_OUTPUT: selects debug module output to FIFO. Can take the following values:
+#   0:    Off
+#   1:    midscale short
+#   2:    +full-scale short
+#   3:    -full-scale short
+#   8:    usr_w1
+#   9:    usr_w2
+#   A:    1x sync
+#   B:    one bit high
+#   C:    mixed frequency
+#   D:    deserializer output (default)
+#   F:    14-bit binary counter
 
 BD_ID=0
 CH_ID=2
@@ -42,5 +55,8 @@ TRIG_MODE=noDelay
 START_HOUR=15
 START_MIN=53
 START_SEC=00
+
+CLK_DIVIDER=0
+DEBUG_OUTPUT=D
 
 # END CLIENT CONFIG FILE

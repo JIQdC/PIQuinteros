@@ -5,12 +5,13 @@ Instituto Balseiro
 ---
 Data acquisition interface for CIAA-ACC AXI bus
 
-Version: 2020-06-11
+Version: 2020-09-16
 Comments:
 */
 
 #include "CIAASistAdq.h"
 
+// GENERAL PURPOSE FUNCTIONS
 // writes data to a memory register
 int memwrite(uint32_t addr, const uint32_t *data, size_t count) {
 	int result = -1;
@@ -118,7 +119,7 @@ void fifo_reset()
 }
 
 // resets debug module for duration microseconds
-void debug_reset(uint duration)
+void debug_reset(unsigned int duration)
 {
     uint32_t wr_data;
 
@@ -128,6 +129,31 @@ void debug_reset(uint duration)
     wr_data = 0;
     memwrite(AXI_BASE_ADDR + DEBRST_ADDR,&wr_data,1);
 }
+
+//enables bank 12 and 13 regulator, setting the potentiometer to specified value via I2C
+void regulator_enable()
+{
+	//regulator enable value
+	uint32_t data = 1;
+
+	//set potentiometer to POT_VALUE
+	char command[20]="i2cset -y 1 2f ";
+	char value_str[20]="0";
+	sprintf(value_str,"%d",POT_VALUE);
+	strcat(command,value_str);
+	system(command);
+
+	//enable regulator
+	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data,1)==0)
+	{
+		printf("\nPotenciómetro seteado en 0x%d. Regulador encendido correctamente.\n\n",POT_VALUE);
+	}
+	else
+	{
+		printf("\nFallo en encendido de regulador.\n\n");
+	}
+}
+
 
 //// MULTI MEM POINTER
 //a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
@@ -184,7 +210,6 @@ static void multi_mdestroy(Multi_MemPtr_t * multiPtr)
 }
 
 ////ACQUISITION THREAD
-
 // initializes an Acq_Thread_t
 Acq_Thread_t * AcqThreadInit(Client_t * client)
 {
@@ -214,31 +239,32 @@ void AcqThreadDestroy(Acq_Thread_t * acqTh)
 static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
 {
 	int j = 0;
+    uint32_t flags;
+
+    struct timespec t;
 	
 	//HEADER
 		//timestamp
-		if(clock_gettime(CLOCK_REALTIME,&acqPack->header.acq_timestamp) < 0) error("clock_gettime in acquire_data");
+		if(clock_gettime(CLOCK_REALTIME,&t) < 0) error("clock_gettime in acquire_data");
+        acqPack->header.acq_timestamp_sec = t.tv_sec;
+        acqPack->header.acq_timestamp_nsec = t.tv_nsec;
+        //FIFO flags
+        acqPack->header.fifo_flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
 		//whatever we want to do with remaining header
 	
-    //activo salida a fifo
-    uint32_t wr_data = 0xD;
-    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
+    //wait until prog_full is asserted
+    do
+    {
+        flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+    } while (!(flags & PROGFULL_MASK));
+    
 
 	//ACQUIRE
-		//read fifo flags and data
+		//read data
 		for(j=0;j<PACK_SIZE;j++)
 		{
-            do
-            {
-                acqPack->flags[j] = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
-            } while (acqPack->flags[j]&EMPTY_MASK);           
-			
 			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
 		}
-
-    //apago salida a FIFO
-    wr_data = 0x0;
-    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
 }
 
 // function to be run by the acquisition thread
@@ -250,6 +276,11 @@ static void * acqTh_threadFunc(void * ctx)
 
 	int count = acqTh->client->n_samples;
 
+    //activate FIFO data input from debug_control
+    uint32_t wr_data = 0;
+    wr_data = acqTh->client->debug_output;
+    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
+
     if(acqTh->client->capMode == sampleNumber)
     {
         //capture until reaching the required number of samples or thread is stopped
@@ -257,6 +288,8 @@ static void * acqTh_threadFunc(void * ctx)
 		{
 			acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
 			acquire_data(acqPack,acqTh->multiPtr);
+            //clk_divider
+            acqPack->header.clk_divider = acqTh->client->clk_divider;
 			Tx_QueuePut(acqTh->client->txQ,acqPack);
 		}
         //notify client
@@ -273,6 +306,10 @@ static void * acqTh_threadFunc(void * ctx)
 			Tx_QueuePut(acqTh->client->txQ,acqPack);
 		}
     }
+
+    //apago salida a FIFO
+    wr_data = 0x0;
+    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&wr_data,1);
 
     //return to be joined
     return NULL;
@@ -674,9 +711,15 @@ Client_t * ClientInit(ClParams_t * params)
     client->capMode = params->capMode;
     client->trigMode = params->trigMode;
 
+    client->debug_output = params->debug_output;
+    client->clk_divider = params->clk_divider;
+
     //initialize threads
     client->acqTh = AcqThreadInit(client);
     client->txTh = TxThreadInit(client,params->serv_addr,params->server_portno);
+
+    //set clock divider in ADC
+    adc_clkDividerSet(params->clk_divider);
 
     switch (client->capMode)
     {

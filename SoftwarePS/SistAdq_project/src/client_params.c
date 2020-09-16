@@ -1,3 +1,14 @@
+/*
+Emulation, acquisition and data processing system for sensor matrices 
+José Quinteros del Castillo
+Instituto Balseiro
+---
+Parameter parsing for data acquisition interface
+
+Version: 2020-09-16
+Comments:
+*/
+
 #include "CIAASistAdq.h"
 
 static void cl_parseParam(const char * key, char *value, ClParams_t *clPars)
@@ -160,6 +171,28 @@ static void cl_parseParam(const char * key, char *value, ClParams_t *clPars)
         return;
     }
 
+    if(!strcmp(key, "CLK_DIVIDER"))
+    {
+		sscanf(value, "%hd", &clPars->clk_divider);
+        if((clPars->clk_divider < 0) || (clPars->clk_divider > 7))
+        {
+            printf("ClParseParam: CLK_DIVIDER out of range.\n");
+            exit(1);
+        }		
+        return;
+    }
+
+    if(!strcmp(key, "DEBUG_OUTPUT"))
+    {
+		sscanf(value, "%08hX", &clPars->debug_output);
+        if((clPars->debug_output < 0x0) || (clPars->debug_output > 0xF))
+        {
+            printf("ClParseParam: DEBUG_OUTPUT out of range.\n");
+            exit(1);
+        }		
+        return;
+    }
+
     //if key not valid, print it
     printf("ClParseParam: invalid key %s detected.\n",key);
     return;
@@ -192,6 +225,8 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     clPars->capMode = -1;           //check if set
     clPars->trigMode = manual;
     clPars->n_samples = -1;         //check if set
+    clPars->clk_divider = -1;        //check if set
+    clPars->debug_output = -1;      //check if set     
     //default start date = today
     struct timespec tspec;
     clock_gettime(CLOCK_REALTIME,&tspec);
@@ -224,6 +259,8 @@ void ClientParseFile(const char *fname, ClParams_t *clPars)
     if(clPars->serv_addr == NULL) paramError("SERV_ADDR");
     if(clPars->server_portno == -1) paramError("SERV_PORTNO");
     if(clPars->capMode == -1) paramError("CAP_MODE");
+    if(clPars->debug_output == -1) paramError("DEBUG_OUTPUT");
+    if(clPars->clk_divider == -1) paramError("CLK_DIVIDER");
     if(clPars->capMode == sampleNumber && clPars->n_samples == -1) paramError("SAMPLE_NUM");
     if(clPars->trigMode == timer)
     {
