@@ -19,8 +19,6 @@ typedef struct __attribute__ ((packed))
     uint16_t payload_size;
 }AcqPack_Header_t;
 
-
-// typedef struct __attribute__ ((packed))
 typedef struct __attribute__ ((packed))
 {
     AcqPack_Header_t header;
