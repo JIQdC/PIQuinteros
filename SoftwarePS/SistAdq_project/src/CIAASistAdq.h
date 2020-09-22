@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Data acquisition interface for CIAA-ACC AXI bus
 
-Version: 2020-09-09
+Version: 2020-09-16
 Comments:
 */
 
