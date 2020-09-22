@@ -4,6 +4,7 @@ struct Ch_File_Str
 {
     uint8_t ch_id;
     int f;
+    char filename[100];
     Ch_File_t * chList_next;
 };
 
@@ -32,7 +33,6 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
     Ch_File_t * chF = malloc(sizeof(Ch_File_t));
     struct timespec t;
     char * word1;
-    char word2[40] = "";
     char str_ch_id[10] = "";
 
     //identify chFile with ch_id
@@ -56,17 +56,17 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
         *target = '_';
     }
     //place in word2
-    strncpy(word2,word1,strlen(word1));
+    strncpy(chF->filename,word1,strlen(word1));
     //convert int ch_id into str ch_id
-    sprintf(str_ch_id," ch%d",ch_id);
+    sprintf(str_ch_id,"ch%d",ch_id);
     //concat
-    strcat(word2,str_ch_id);
+    strcat(chF->filename,str_ch_id);
     //open file with name
-    chF->f = open(word2,O_CREAT|O_RDWR,0640);
+    chF->f = open(chF->filename,O_CREAT|O_RDWR,0640);
     if(chF->f < 0) error("open in fileOpen");
 
     //notify
-    printf("prTh: opened file with name %s\n",word2);
+    printf("prTh: opened file with name %s\n",chF->filename);
 
     return chF;
 }
@@ -75,6 +75,65 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
 static void chFileWritePack(const AcqPack_t * pack,Ch_File_t * chF)
 {
     if(write(chF->f,pack,sizeof(AcqPack_t)) < 0) error("write in chFileWritePack");
+}
+
+// read from channel file, write csv file, pass as argument to plotter
+static void readCsvPlot(Ch_File_t * chF)
+{
+    char fout_name[200] = "";
+    char command[200] = "";
+    char value_clkdiv[10] = "";
+    strcat(fout_name,chF->filename);
+    strcat(fout_name,".csv");
+    FILE * fout = fopen(fout_name,"w");
+
+    AcqPack_t * acqPack = malloc(sizeof(AcqPack_t));
+    if(acqPack == NULL) error("malloc de acqPack");
+
+    int ret_rd, i,j=0;
+    uint16_t word0,word1,clk_divider;
+
+    while(1)
+    {
+        ret_rd = read(chF->f,acqPack,sizeof(AcqPack_t));
+        if(ret_rd == 0)
+        {
+            break;
+        }
+        else if(ret_rd < 0)
+        {
+            error("read file");
+        }
+        else if(ret_rd < sizeof(AcqPack_t))
+        {
+            printf("Corrupted data!\n");
+            exit(1);
+        }
+
+        for(i=0;i<PACK_SIZE;i++)
+        {
+            word0 = acqPack->data[i] & WORD0_MASK;
+            word1 = (acqPack->data[i] & WORD1_MASK) >> 14;
+            fprintf(fout,"%d,%d\n",j,word1);
+            j++;
+            fprintf(fout,"%d,%d\n",j,word0);
+            j++;
+        }
+        printf("\n");
+    }
+
+    clk_divider = acqPack->header.clk_divider;
+
+    fclose(fout);
+
+    //send to plotter
+    strcat(command,"python plotter.py ");
+    strcat(command,fout_name);
+    sprintf(value_clkdiv," %d",clk_divider);
+    strcat(command,value_clkdiv);
+    printf("%s\n",command);
+    system(command);
+
 }
 
 // function to be run by the processing thread
@@ -119,10 +178,18 @@ static void * procTh_threadFunc(void * ctx)
         }
     }
 
-    //once stopped, close all open files
+    //once stopped, write csv files, send to plotter, and close all open files
     chF = pTh->chList_head;
+
     while(chF != NULL)
     {
+        //reposition file offset to the beginning of file
+        if(lseek(chF->f,0,SEEK_SET) < 0) error("prTh: lseek\n");
+
+        //read from file, generate csv, and trigger plotter
+        readCsvPlot(chF);
+
+        //close file
         close(chF->f);
         chF = chF->chList_next;
     }    
