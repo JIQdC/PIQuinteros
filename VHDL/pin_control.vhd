@@ -7,11 +7,11 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Módulo de control AXI para salidas externas
+-- Description: AXI control module for general inputs/outputs
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-07-21
+-- Revision: 2020-09-25
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -402,7 +402,7 @@ begin
             vadj_en_o       <= vadj_en_r(0);
 			led_green_o     <= vadj_en_r(0); -- Led shows VAdj ENA status 
 			spi_read_en_o  	<= spi_read_en_r(0);
-			spi_tristate_r 		<= spi_tristate_aux;
+			spi_tristate_r  <= spi_tristate_aux;
 		end if;
 	end process;
 
@@ -443,11 +443,11 @@ begin
     end process;
 
 	-- Drive led output
-	led_red_o <= led_toggle_r;
+	led_red_o <= led_toggle_r and vadj_en_r(0);
 
 	-- LEDs for FIFO flags
-	led_dout0_o <= fifo_full_i;
-	led_dout1_o	<= fifo_empty_i;
+	led_dout0_o <= fifo_full_i and vadj_en_r(0);
+	led_dout1_o	<= fifo_empty_i and vadj_en_r(0);
 
 	-- 2s pulse generation when reset detected
 	process(S_AXI_ACLK,fifo_rst_i,led_prescale_ce_r)
@@ -466,6 +466,6 @@ begin
 		end if;
 	end process;
 
-	led_dout3_o <= led_rst_en;
+	led_dout3_o <= led_rst_en and vadj_en_r(0);
     
 end rtl;
