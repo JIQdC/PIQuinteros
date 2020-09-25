@@ -7,12 +7,12 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Deserializador
+-- Description: Deserializer
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-03-06
--- Additional Comments: Este modelo DEBE SER SINTETIZABLE!!
+-- Revision: 2020-09-24
+-- Additional Comments:
 -- Corregido para 
 -- 
 ----------------------------------------------------------------------------------
@@ -36,30 +36,37 @@ end deserializer;
 
 architecture arch of deserializer is
 
-    signal d_reg, d_next: std_logic_vector((N-1) downto 0) := (others => '0');
-    signal f_reg, f_next: std_logic;
+    signal d_reg, d_next:       std_logic_vector((N-1) downto 0) := (others => '0');
+    signal out_reg, out_next:   std_logic_vector((N-1) downto 0) := (others => '0');
+    signal f_reg, f_next:       std_logic;
 
     begin
 
         process(d_clk_in)
         begin
             if(rising_edge(d_clk_in)) then
-                d_reg <= d_next;
-                f_reg <= f_next;
+                d_reg   <= d_next;
+                out_reg <= out_next;
+                f_reg   <= f_next;
             end if;
         end process;
 
-        process(d_reg,f_reg,d_in,d_frame)
+        process(d_reg,f_reg,out_reg,d_in,d_frame)
         begin
             d_next <= d_reg((N-3) downto 0) & d_in(1) & d_in(0);
             f_next <= d_frame;
             if(f_reg = '0' and d_frame = '1') then --rising edge del frame
-                d_out <= d_reg;
+                out_next <= d_reg;
+            else
+                out_next <= out_reg;
+            end if;
+            if(f_reg = '1' and d_frame = '0') then --falling edge del frame
                 d_valid <= '1';
             else
-                d_out <= (others => '0');
                 d_valid <= '0';
             end if;
         end process;
+
+        d_out   <= out_reg;
    
 end arch; -- arch
