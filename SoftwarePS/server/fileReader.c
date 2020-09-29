@@ -1,8 +1,5 @@
 #include "../SistAdq_project/src/CIAASistAdq.h"
 
-#define WORD0_MASK ((1 << 14)-1)
-#define WORD1_MASK (WORD0_MASK << 14)
-
 // // Programa principal
 int main(int argc, char *argv[]) 
 {
@@ -54,7 +51,7 @@ int main(int argc, char *argv[])
 
         j=0;
         
-        for(i=0;i<PACK_SIZE;i++)
+        for(i=0;i<CHDATA_SIZE;i++)
         {
             word0 = acqPack->data[i] & WORD0_MASK;
             word1 = (acqPack->data[i] & WORD1_MASK) >> 14;

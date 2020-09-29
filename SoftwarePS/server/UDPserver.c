@@ -33,7 +33,7 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
     Ch_File_t * chF = malloc(sizeof(Ch_File_t));
     struct timespec t;
     char * word1;
-    char str_ch_id[10] = "";
+    char aux[15] = "";
 
     //identify chFile with ch_id
     chF->ch_id = ch_id;
@@ -55,12 +55,18 @@ static Ch_File_t * chFileOpen(Proc_Thread_t * prTh, uint8_t ch_id)
     {
         *target = '_';
     }
-    //place in word2
-    strncpy(chF->filename,word1,strlen(word1));
-    //convert int ch_id into str ch_id
-    sprintf(str_ch_id,"ch%d",ch_id);
+    //place captures in folder captures/
+    sprintf(aux,"captures/");
     //concat
-    strcat(chF->filename,str_ch_id);
+    strcat(chF->filename,aux);
+    //concat word1
+    strcat(chF->filename,word1);
+    //strncpy(chF->filename,word1,strlen(word1));
+    //convert int ch_id into aux
+    memset(aux,0,15*sizeof(char));
+    sprintf(aux,"ch%d",ch_id);
+    //concat
+    strcat(chF->filename,aux);
     //open file with name
     chF->f = open(chF->filename,O_CREAT|O_RDWR,0640);
     if(chF->f < 0) error("open in fileOpen");
@@ -110,7 +116,7 @@ static void readCsvPlot(Ch_File_t * chF)
             exit(1);
         }
 
-        for(i=0;i<PACK_SIZE;i++)
+        for(i=0;i<CHDATA_SIZE;i++)
         {
             word0 = acqPack->data[i] & WORD0_MASK;
             word1 = (acqPack->data[i] & WORD1_MASK) >> 14;

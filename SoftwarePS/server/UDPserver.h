@@ -29,9 +29,6 @@
 
 #define STDIN_BUF_LENGTH 32
 
-#define WORD0_MASK ((1 << 14)-1)
-#define WORD1_MASK (WORD0_MASK << 14)
-
 struct Server_str;
 typedef struct Server_str Server_t;
 
