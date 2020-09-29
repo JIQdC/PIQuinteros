@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Data acquisition interface for CIAA-ACC AXI bus
 
-Version: 2020-09-16
+Version: 2020-09-23
 Comments:
 */
 
@@ -154,19 +154,17 @@ void regulator_enable()
 	}
 }
 
-
-//// MULTI MEM POINTER
-//a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
-struct Multi_MemPtr_str
+// sets debug output to desired value
+void debug_output(uint8_t value)
 {
-	uint32_t * addr;
-	uint8_t ** ptr;
-	off_t * align_offset;
-	uint8_t mem_num;
-};
+    uint32_t data = value;
+    memwrite(AXI_BASE_ADDR+CONTROL_ADDR,&data,1);
+}
+
+//// AXI INTERFACE
 
 // initializes a Multi_MemPtr_t, mapping the memory addresses passed as argument
-static Multi_MemPtr_t * multi_minit(uint32_t * addr, uint8_t mem_num)
+Multi_MemPtr_t * multi_minit(uint32_t * addr, uint8_t mem_num)
 {
 	Multi_MemPtr_t * multiPtr = malloc(sizeof(Multi_MemPtr_t));
 
@@ -195,7 +193,7 @@ static Multi_MemPtr_t * multi_minit(uint32_t * addr, uint8_t mem_num)
 }
 
 // destroys a Multi_MemPtr_t, unmapping its memory spaces
-static void multi_mdestroy(Multi_MemPtr_t * multiPtr)
+void multi_mdestroy(Multi_MemPtr_t * multiPtr)
 {
 	int i;
 	for(i=0;i<multiPtr->mem_num;i++)
@@ -207,6 +205,38 @@ static void multi_mdestroy(Multi_MemPtr_t * multiPtr)
 	free(multiPtr->ptr);
 	free(multiPtr->align_offset);
 	free(multiPtr);
+}
+
+// fills an AcqPack_t with external data from Acquisition System
+void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
+{
+	int j = 0;
+    uint32_t flags;
+
+    struct timespec t;
+	
+	//HEADER
+		//timestamp
+		if(clock_gettime(CLOCK_REALTIME,&t) < 0) error("clock_gettime in acquire_data");
+        acqPack->header.acq_timestamp_sec = t.tv_sec;
+        acqPack->header.acq_timestamp_nsec = t.tv_nsec;
+        //FIFO flags
+        acqPack->header.fifo_flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+		//whatever we want to do with remaining header
+	
+    //wait until prog_full is asserted
+    do
+    {
+        flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
+    } while (!(flags & PROGFULL_MASK));
+    
+
+	//ACQUIRE
+		//read data
+		for(j=0;j<CHDATA_SIZE;j++)
+		{
+			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
+		}
 }
 
 ////ACQUISITION THREAD
@@ -233,38 +263,6 @@ void AcqThreadDestroy(Acq_Thread_t * acqTh)
 {
 	multi_mdestroy(acqTh->multiPtr);
     free(acqTh);
-}
-
-// fills an AcqPack_t with external data from Acquisition System
-static void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr)
-{
-	int j = 0;
-    uint32_t flags;
-
-    struct timespec t;
-	
-	//HEADER
-		//timestamp
-		if(clock_gettime(CLOCK_REALTIME,&t) < 0) error("clock_gettime in acquire_data");
-        acqPack->header.acq_timestamp_sec = t.tv_sec;
-        acqPack->header.acq_timestamp_nsec = t.tv_nsec;
-        //FIFO flags
-        acqPack->header.fifo_flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
-		//whatever we want to do with remaining header
-	
-    //wait until prog_full is asserted
-    do
-    {
-        flags = *((volatile uint32_t*) (multiPtr->ptr[0] + multiPtr->align_offset[0]));
-    } while (!(flags & PROGFULL_MASK));
-    
-
-	//ACQUIRE
-		//read data
-		for(j=0;j<PACK_SIZE;j++)
-		{
-			acqPack->data[j] = *((volatile uint32_t*) (multiPtr->ptr[1] + multiPtr->align_offset[1]));
-		}
 }
 
 // function to be run by the acquisition thread
@@ -843,4 +841,56 @@ void ClientRun(Client_t * client)
         break;
     }
 
+}
+
+////INPUT DELAY CONTROL
+// changes the input delay of pin i to value taps
+void inputDelaySet(uint8_t i, uint8_t taps)
+{
+    uint32_t rd_val=0, wr_val=0;
+	if(taps < 0 || taps > 31)
+    {
+        printf("inputDelaySet: taps must be between 0 and 31.\n");
+        exit(1);
+    }	
+
+    //assert DELAY CTRL is locked
+    memread(DELAY_BASE_ADDR+LOCKED_RESET_ADDR,&rd_val,1);
+    if(rd_val != 1)
+    {
+        printf("inputDelaySet: DELAY CTRL is not locked!\n");
+        exit(1);
+    }
+
+    //set input delay values
+    wr_val = taps;
+    memwrite(DELAY_BASE_ADDR+DELAY_TAP0_ADDR+4*i,&wr_val,1);
+
+    //trigger reset for 20 us
+    wr_val = 1;
+    memwrite(DELAY_BASE_ADDR+LOCKED_RESET_ADDR,&wr_val,1);
+    usleep(20);
+    wr_val = 0;
+    memwrite(DELAY_BASE_ADDR+LOCKED_RESET_ADDR,&wr_val,1);
+    rd_val = 0;
+    memread(DELAY_BASE_ADDR+DELAY_TAP0_ADDR+4*i,&rd_val,1);
+    if(rd_val != taps)
+    {
+        printf("inputDelaySet: tap %d not set to desired value.\n",i);
+        exit(1);
+    }
+    {
+        memread(DELAY_BASE_ADDR+LOCKED_RESET_ADDR,&rd_val,1);
+    } while (rd_val != 1);
+
+    //assert desired value is set
+    rd_val = 0;
+    memread(DELAY_BASE_ADDR+DELAY_TAP0_ADDR+4*i,&rd_val,1);
+    if(rd_val != taps)
+    {
+        printf("inputDelaySet: tap %d not set to desired value.\n",i);
+        exit(1);
+    }
+
+    usleep(10);    
 }

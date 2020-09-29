@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Data acquisition interface for CIAA-ACC AXI bus
 
-Version: 2020-09-16
+Version: 2020-09-23
 Comments:
 */
 
@@ -62,6 +62,12 @@ Comments:
 #define REG_ADDR            (0x0<<2)
 #define SPI_TRISTATE_ADDR   (0x1<<2)
 
+//delay control module register addresses
+#define DELAY_BASE_ADDR     0x43C20000
+#define LOCKED_RESET_ADDR   (0x0<<2)
+#define DELAY_TAP0_ADDR     (0x1<<2)
+#define DELAY_TAP_NUMBER    2
+
 //potentiometer value for required VADJ voltage
 #define POT_VALUE 29
 
@@ -79,20 +85,17 @@ Comments:
 #define WRRSTBUSY_MASK (1 << 0)
 
 //debug control sequences
-#define APAGADO_CTRL 0b000
-#define MIDSCALE_SH_CTRL 0b001
-#define PLUS_FULLSCALE_SH_CTRL 0b0010
-#define MINUS_FULLSCALE_SH_CTRL 0b0011
-#define CHECKERBOARD_CTRL 0b0100
-#define ONEZERO_WORDTOGGLE_CTRL 0b0111
-#define USER_WORDTOGGLE_CTRL 0b1000
-#define ONEZERO_BITTOGGLE_CTRL 0b1001
-#define ONEX_BITSYNC_CTRL 0b1010
-#define ONEBIT_HIGH_CTRL 0b1011
-#define MIXED_FREQ_CTRL 0b1100
-#define DESERIALIZER_CTRL 0b1101
-#define LIBRE_CTRL 0b1100
-#define CONT_NBITS_CTRL 0b1111
+#define DISABLED_CTRL           0x0
+#define MIDSCALE_SH_CTRL        0x1
+#define PLUS_FULLSCALE_SH_CTRL  0x2
+#define MINUS_FULLSCALE_SH_CTRL 0x3
+#define USR_W1_CTRL             0x8
+#define USR_W2_CTRL             0x9
+#define ONEX_BITSYNC_CTRL       0xA
+#define ONEBIT_HIGH_CTRL        0xB
+#define MIXED_FREQ_CTRL         0xC
+#define DESERIALIZER_CTRL       0xD
+#define CONT_NBITS_CTRL         0xF
 
 typedef struct
 {
@@ -108,8 +111,14 @@ typedef struct
 struct Client_str;
 typedef struct Client_str Client_t;
 
-struct Multi_MemPtr_str;
-typedef struct Multi_MemPtr_str Multi_MemPtr_t;
+//a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
+typedef struct
+{
+	uint32_t * addr;
+	uint8_t ** ptr;
+	off_t * align_offset;
+	uint8_t mem_num;
+}Multi_MemPtr_t;
 
 typedef struct
 {
@@ -175,6 +184,20 @@ void debug_reset(unsigned int duration);
 //enables bank 12 and 13 regulator, setting the potentiometer to specified value via I2C
 void regulator_enable();
 
+// sets debug output to desired value
+void debug_output(uint8_t value);
+
+//// AXI INTERFACE
+
+// initializes a Multi_MemPtr_t, mapping the memory addresses passed as argument
+Multi_MemPtr_t * multi_minit(uint32_t * addr, uint8_t mem_num);
+
+// destroys a Multi_MemPtr_t, unmapping its memory spaces
+void multi_mdestroy(Multi_MemPtr_t * multiPtr);
+
+// fills an AcqPack_t with external data from Acquisition System
+void acquire_data(AcqPack_t * acqPack, Multi_MemPtr_t * multiPtr);
+
 ////ACQUISITION THREAD
 
 // initializes an Acq_Thread_t
@@ -214,4 +237,9 @@ void ClientStop(Client_t * client);
 
 // runs a Client_t
 void ClientRun(Client_t * client);
+
+////INPUT DELAY CONTROL
+// changes the input delay of pin i to value taps
+void inputDelaySet(uint8_t i, uint8_t taps);
+
 #endif /* SRC_CIAASISTADQ_H_ */

@@ -5,7 +5,10 @@
 #include <stdint.h>
 
 //PACK SIZE MUST BE EQUAL TO PROG_FULL LEVEL/2 IN FIFO
-#define PACK_SIZE 5000
+#define CHDATA_SIZE 1000
+
+#define WORD0_MASK ((1 << 14)-1)
+#define WORD1_MASK (WORD0_MASK << 14)
 
 typedef struct __attribute__ ((packed))
 {
@@ -22,7 +25,7 @@ typedef struct __attribute__ ((packed))
 typedef struct __attribute__ ((packed))
 {
     AcqPack_Header_t header;
-    uint32_t data[PACK_SIZE];
+    uint32_t data[CHDATA_SIZE];
 }AcqPack_t;
 
 #endif //ACQPACK_H_
