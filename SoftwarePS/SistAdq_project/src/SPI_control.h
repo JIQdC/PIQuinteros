@@ -74,6 +74,31 @@ typedef enum
 #define ADC_OUTPUTMODE      0X14
 #define ADC_OUTPUTADJUST    0X15
 #define ADC_VREF            0X18
+#define ADC_W1_LSB          0X19
+#define ADC_W1_MSB          0X1A
+#define ADC_W2_LSB          0X1B
+#define ADC_W2_MSB          0X1C
+
+// masks for MSB/LSB word separation
+#define MSB_MASK (((1<<6)-1)<<8)
+#define LSB_MASK ((1<<8)-1)
+
+// test pattern codes
+typedef enum
+{
+    off                 = 0b0000,
+    midShort            = 0b0001,
+    posFullScale        = 0b0010,
+    negFullScale        = 0b0011,
+    checkerboard        = 0b0100,
+    PNseqLong           = 0b0101,
+    PNseqShort          = 0b0110,
+    oneZeroWordToggle   = 0b0111,
+    oneZeroBitToggle    = 0b1001,
+    oneXsync            = 0b1010,
+    oneBitHigh          = 0b1011,
+    mixedFrequency      = 0b1100
+}adc_testPattern_t;
 
 // resets SPI module
 void spi_reset();
@@ -95,5 +120,11 @@ void adc_defaultConfig();
 
 //set clock divider to value divide
 void adc_clkDividerSet(uint8_t divide);
+
+//sets test pattern to specified testPattern
+void adc_testPattern(adc_testPattern_t testPattern);
+
+//configures ADC user test pattern to alternate between word1 and word2
+void adc_userTestPattern(uint16_t word1,uint16_t word2);
 
 #endif //SPI_CONTROL_H_

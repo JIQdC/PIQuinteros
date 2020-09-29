@@ -131,6 +131,8 @@ void spi_defaultConfig()
     SPI_CR_params_t params[4] = {ManualSSelAssertEn, SPIsystemEn, MasterMode, MasterTransInhibit};
     bool value[4] = {0, 1, 1, 0};
     spi_CR_config(params,value,4);	
+
+	usleep(10);
 }
 
 //default configuration for ADC via SPI
@@ -167,16 +169,24 @@ void adc_defaultConfig()
 		spi_write(ADC_VREF,&wr_data,1);
 
 	}
+
+	usleep(10);
 }
 
-//set clock divider to value divide
+//sets clock divider to value divide
 void adc_clkDividerSet(uint8_t divide)
 {
+
+	if(divide < 1 || divide > 8)
+    {
+        printf("adc_clkDividerSet: divide must be in range 1-8.\n");
+        exit(1);
+    }	
 	//configure both ADCs equally
 	SPI_slaves_t slaves[2] = {adc1, adc2};
 
 	int i;
-	uint32_t wr_data = divide;
+	uint32_t wr_data = divide-1;
 
 	for(i=0;i<2;i++)
 	{
@@ -185,5 +195,63 @@ void adc_clkDividerSet(uint8_t divide)
 		//clock divider
 		spi_write(ADC_CLOCKDIVIDE,&wr_data,1);
 	}
+
+	usleep(10);
 }
 
+//sets test pattern to specified testPattern
+void adc_testPattern(adc_testPattern_t testPattern)
+{
+	int i;
+	uint32_t wr_data = testPattern;
+
+	//configure both ADCs equally
+	SPI_slaves_t slaves[2] = {adc1, adc2};
+
+	for(i=0;i<2;i++)
+	{
+		spi_ssel(slaves[i]);
+
+		//output test pattern
+		spi_write(ADC_TESTMODE,&wr_data,1);
+	}   
+
+    usleep(10);
+}
+
+//configures ADC user test pattern to alternate between word1 and word2
+void adc_userTestPattern(uint16_t word1,uint16_t word2)
+{
+	if(word1 > ((1<<14)-1) || word2 > ((1<<14)-1))
+	{
+		printf("adc_userTestPattern: words out of range.\n");
+		exit(1);
+	}
+
+	uint32_t wr_data = 0;
+	int i;
+
+	//configure both ADCs equally
+	SPI_slaves_t slaves[2] = {adc1, adc2};
+
+	for(i=0;i<2;i++)
+	{
+		spi_ssel(slaves[i]);
+
+		//write user words to registers, separating in MSB and LSB
+		wr_data = (word1 & MSB_MASK) >> 8;
+		spi_write(ADC_W1_MSB,&wr_data,1);
+		wr_data = (word1 & LSB_MASK);
+		spi_write(ADC_W1_LSB,&wr_data,1);
+		wr_data = (word2 & MSB_MASK) >> 8;
+		spi_write(ADC_W2_MSB,&wr_data,1);
+		wr_data = (word2 & LSB_MASK);
+		spi_write(ADC_W2_LSB,&wr_data,1);
+
+		//output test pattern set to user, with alternate enabled
+		wr_data = 8 + (1<<6);
+		spi_write(ADC_TESTMODE,&wr_data,1);
+	}   
+
+    usleep(10);
+}

@@ -3,37 +3,40 @@
 // // Programa principal
 int main(int argc, char *argv[]) 
 {
-    uint8_t value;
+    adc_testPattern_t testPattern;
 
     if (argc != 2)
     {
-        printf("usage: %s test_pattern_code\n",argv[0]);
+        printf("usage: %s test_pattern_value\n",argv[0]);
+        printf("Supported test pattern values are:\n");
+        printf("\toff \n\tmidShort \n\tposFullScale \n\tnegFullScale \n");
+        printf("\tcheckerboard \n\tPNseqLong \n\tPNseqShort \n\toneZeroWordToggle\n");
+        printf("\toneZeroBitToggle \n\toneXsync \n\toneBitHigh \n\tmixedFrequency\n");
         exit(1);
     }
 
-    sscanf(argv[1], "%08hhX", &value);
-
-    if(value < 0 || value > 12)
+    if(!strcmp(argv[1],"off")) testPattern=off;
+    else if(!strcmp(argv[1],"midShort")) testPattern=midShort;
+    else if(!strcmp(argv[1],"posFullScale")) testPattern=posFullScale;
+    else if(!strcmp(argv[1],"negFullScale")) testPattern=negFullScale;
+    else if(!strcmp(argv[1],"checkerboard")) testPattern=checkerboard;
+    else if(!strcmp(argv[1],"PNseqLong")) testPattern=PNseqLong;
+    else if(!strcmp(argv[1],"PNseqShort")) testPattern=PNseqShort;
+    else if(!strcmp(argv[1],"oneZeroWordToggle")) testPattern=oneZeroWordToggle;
+    else if(!strcmp(argv[1],"oneZeroBitToggle")) testPattern=oneZeroBitToggle;
+    else if(!strcmp(argv[1],"oneXsync")) testPattern=oneXsync;
+    else if(!strcmp(argv[1],"oneBitHigh")) testPattern=oneBitHigh;
+    else if(!strcmp(argv[1],"mixedFrequency")) testPattern=mixedFrequency;
+    else
     {
-        printf("test_pattern_code must be between 0x0 and 0xC.\n");
-        exit(1);
-    }	
-	
-    //configure both ADCs equally
-	SPI_slaves_t slaves[2] = {adc1, adc2};
-
-	int i;
-	uint32_t wr_data = value;
-
-	for(i=0;i<2;i++)
-	{
-		spi_ssel(slaves[i]);
-
-		//output test pattern
-		spi_write(ADC_TESTMODE,&wr_data,1);
-	}   
-
-    usleep(10);
+        printf("Invalid test pattern entered.\n");
+        printf("Supported test pattern values are:\n");
+        printf("\toff \n\tmidShort \n\tposFullScale \n\tnegFullScale \n");
+        printf("\tcheckerboard \n\tPNseqLong \n\tPNseqShort \n\toneZeroWordToggle\n");
+        printf("\toneZeroBitToggle \n\toneXsync \n\toneBitHigh \n\tmixedFrequency\n");
+    }
+    
+    adc_testPattern(testPattern);
 
 	return 0;
 }
