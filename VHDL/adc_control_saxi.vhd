@@ -99,10 +99,10 @@ entity adc_control_saxi is
 		fifo_empty_i: in std_logic;
 		fifo_full_i: in std_logic;
 		fifo_ov_i: in std_logic;
-		fifo_rd_rst_busy_i: in std_logic;
-		fifo_wr_rst_busy_i: in std_logic;
-		fifo_prog_full_i: in std_logic;
 		fifo_rd_data_count_i: in std_logic_vector(17 downto 0);
+		fifo_prog_full_i: in std_logic;
+		fifo_wr_rst_busy_i: in std_logic;
+		fifo_rd_rst_busy_i: in std_logic;		
 		fifo_rd_en_o: out std_logic;
 
 		-- Control signals
@@ -122,6 +122,14 @@ entity adc_control_saxi is
 end adc_control_saxi;
 
 architecture rtl of adc_control_saxi is
+    --Xilinx attributes
+    ATTRIBUTE X_INTERFACE_INFO : STRING;
+    ATTRIBUTE X_INTERFACE_INFO of fifo_rst_o: SIGNAL is "xilinx.com:signal:reset:1.0 fifo_rst_o RST";
+	ATTRIBUTE X_INTERFACE_INFO of deb_rst_o: SIGNAL is "xilinx.com:signal:reset:1.0 deb_rst_o RST";
+	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+    ATTRIBUTE X_INTERFACE_PARAMETER of fifo_rst_o: SIGNAL is "POLARITY ACTIVE_HIGH";
+	ATTRIBUTE X_INTERFACE_PARAMETER of deb_rst_o: SIGNAL is "POLARITY ACTIVE_HIGH";
+	
 	-- Register inputs
 	signal fifo_data_r, fifo_flags_r, fr_wr_clk_r, fr_rd_en_r: 
 	std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
