@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: 
 -- 
--- Revision: 2020-07-23
+-- Revision: 2020-07-29
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ entity debug_control is
         control_i: in std_logic_vector(3 downto 0);             --señal de control
         usr_w1_i, usr_w2_i: in std_logic_vector((N-1) downto 0);--palabras configurables por el usuario
         d_out_i: in std_logic_vector((N-1) downto 0);           --datos del deserializador
-        d_valid_i: in std_logic;                                --trigger del deserializador
+        --d_valid_i: in std_logic;                                --trigger del deserializador
 
         --entrada de counter
         counter_count_i: in std_logic_vector((N-1) downto 0);
@@ -70,7 +70,8 @@ begin
     --multiplexo wr_en.         
     wr_en_o <=
         '0' when control_i="0000" else
-        d_valid_i;
+        '1';
+        --d_valid_i;
 
     --clock enable para contador
     counter_ce_o <= '1' when control_i="1111" else
