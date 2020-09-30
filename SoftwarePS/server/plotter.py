@@ -1,9 +1,10 @@
 import numpy as np
 import sys
 from matplotlib import pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
 
 filename = sys.argv[1]
-clk_divider = int(sys.argv[2]) + 1
+clk_divider = int(sys.argv[2])
 f_sample = 65e6/clk_divider
 t_sample = 1/f_sample
 
@@ -12,9 +13,9 @@ data=np.loadtxt(filename,delimiter=",",skiprows=0,usecols=[1])
 
 t=t*t_sample
 
-data=2*data/16383 - 1
+#data=2*data/16383 - 1
 
-plt.figure(1)
+fig, ax = plt.subplots()
 #plt.plot(t*1e6,data,color='black')
 plt.scatter(t*1e6,data,color='red',marker='.')
 plt.grid()

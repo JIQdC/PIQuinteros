@@ -16,7 +16,7 @@
 # TRIG_MODE: trigger mode for client. Can take values 'manual', 'timer' or 'noDelay'. Defaults to 'manual' if not set.
 # START_YEAR, START_MONTH, START_DAY: valid if TRIG_MODE=timer. Date to start capture. Defaults to today if not set.
 # START_HOUR, START_MIN, START_SEC: valid if TRIG_MODE=timer. Time to start capture.
-# CLK_DIVIDER: sets divider for ADC sampling clock via SPI. Can take integer values in range 0-7. Defaults to 0 if not set.
+# CLK_DIVIDER: sets divider for ADC sampling clock via SPI. Can take integer values in range 1-8.
 # DEBUG_OUTPUT: selects debug module output to FIFO. Can take the following values:
 #   0:    Off
 #   1:    midscale short
