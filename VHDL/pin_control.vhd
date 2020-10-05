@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-09-25
+-- Revision: 2020-09-30
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -25,9 +25,10 @@ entity pin_control is
 		C_S_AXI_DATA_WIDTH	: integer	:= 32;
 		-- Width of S_AXI address bus
 		C_S_AXI_ADDR_WIDTH	: integer	:= 6;
-		-- USer constants
-		MAX_COUNT_1MS       : integer    := 100000;					--1ms/S_AXI_ACLK_period
-		LED_BLINK_PERIOD_MS	: unsigned(15 downto 0) := x"01f4"	 	--LED blink period in ms
+		-- User constants
+		MAX_COUNT_1MS       : integer    := 200000;					--1ms/S_AXI_ACLK_period
+		LED_BLINK_PERIOD_MS	: unsigned(15 downto 0) := x"01f4"; 	--LED blink period in ms
+		FIFO_RESET_LED_DUR	: integer	 := 1000					--duration of FIFO reset blink in ms
 	);
 	port (
 		-- Global Clock Signal
@@ -102,21 +103,23 @@ entity pin_control is
 		led_dout1_o		: out std_logic;
 		-- led_dout2_o		: out std_logic;
 		led_dout3_o		: out std_logic;
-		spi_tristate_i	: in std_logic;	
-		spi_read_en_o  	: out std_logic
+
+		fmc_present_i	: in std_logic;	
+		adc_FCOlock_i 	: in std_logic
 	);
 end pin_control;
 
 architecture rtl of pin_control is
 
     -- Led blink regsters
-    signal prescale_1ms_r                                   : integer range 0 to MAX_COUNT_1MS;
-	signal led_prescale_ce_r, led_toggle_r                  : std_logic;
-    signal led_count_r, led_max_cnt_r                       : unsigned(15 downto 0);
+    signal prescale_1ms_r                	: integer range 0 to MAX_COUNT_1MS;
+	signal led_prescale_ce_r, led_toggle_r  : std_logic;
+    signal led_count_r, led_max_cnt_r       : unsigned(15 downto 0);
 	-- Register inputs
-	signal spi_tristate_r, spi_tristate_aux							: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal fmc_present_r, adc_FCOlock_r		: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal fmc_present_aux, adc_FCOlock_aux	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
-	signal vadj_en_r, spi_read_en_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal vadj_en_r						: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -152,7 +155,7 @@ architecture rtl of pin_control is
 	signal led_rst_en: std_logic := '0';
 
 	--Aux for input formatting
-	signal zeros_spitr: std_logic_vector(C_S_AXI_DATA_WIDTH-2 downto 0) := (others => '0');
+	signal zeros1: std_logic_vector((C_S_AXI_DATA_WIDTH-1)-1 downto 0) := (others => '0');
 
 begin
 	-- I/O Connections assignments
@@ -251,7 +254,6 @@ begin
 	  if rising_edge(S_AXI_ACLK) then 
 		if S_AXI_ARESETN = '0' then
 			vadj_en_r    <= (others => '0');
-			spi_read_en_r    <= (others => '0');
 
 	    else
 	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
@@ -263,14 +265,6 @@ begin
 	                -- Respective byte enables are asserted as per write strobes                   
 	                -- slave register 0
 					vadj_en_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when x"1" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave register 1
-					spi_read_en_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
 	          when others =>
@@ -360,7 +354,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (axi_araddr, vadj_en_r, spi_read_en_r, spi_tristate_r,S_AXI_ACLK)
+	process (axi_araddr, vadj_en_r, fmc_present_r, adc_FCOlock_r, S_AXI_ACLK)
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -369,7 +363,9 @@ begin
 			when x"0" =>
 				reg_data_out <= vadj_en_r; 
 			when x"1" =>
-				reg_data_out <= spi_tristate_r; 
+				reg_data_out <= fmc_present_r; 
+			when x"2" =>
+				reg_data_out <= adc_FCOlock_r;
 			when others =>
 				reg_data_out <= (others => '0');
 		end case;
@@ -394,15 +390,17 @@ begin
 	end process;
 		
 	---- USER LOGIC
-	spi_tristate_aux <= zeros_spitr & spi_tristate_i;
+	adc_FCOlock_aux <= zeros1 & adc_FCOlock_i;
+	fmc_present_aux <= zeros1 & fmc_present_i;
+
 	-- Register outputs and inputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
             vadj_en_o       <= vadj_en_r(0);
 			led_green_o     <= vadj_en_r(0); -- Led shows VAdj ENA status 
-			spi_read_en_o  	<= spi_read_en_r(0);
-			spi_tristate_r  <= spi_tristate_aux;
+			fmc_present_r  	<= fmc_present_aux;
+			adc_FCOlock_r	<= adc_FCOlock_aux;
 		end if;
 	end process;
 
@@ -459,7 +457,7 @@ begin
 			end if;
 			if (led_prescale_ce_r = '1' and led_rst_en = '1') then
 				led_pulse_count <= led_pulse_count + 1;
-				if led_pulse_count = (2000 - 1) then
+				if led_pulse_count = (FIFO_RESET_LED_DUR - 1) then
 					led_rst_en <= '0';
 				end if;
 			end if;
