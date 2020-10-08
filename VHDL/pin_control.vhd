@@ -21,10 +21,6 @@ use ieee.numeric_std.all;
 
 entity pin_control is
 	generic (
-		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH	: integer	:= 32;
-		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 6;
 		-- User constants
 		MAX_COUNT_1MS       : integer    := 200000;					--1ms/S_AXI_ACLK_period
 		LED_BLINK_PERIOD_MS	: unsigned(15 downto 0) := x"01f4"; 	--LED blink period in ms
@@ -36,7 +32,7 @@ entity pin_control is
 		-- Global Reset Signal. This Signal is Active LOW
 		S_AXI_ARESETN	: in std_logic;
 		-- Write address (issued by master, acceped by Slave)
-		S_AXI_AWADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_AWADDR	: in std_logic_vector(6-1 downto 0);
 		-- Write channel Protection type. This signal indicates the
     		-- privilege and security level of the transaction, and whether
     		-- the transaction is a data access or an instruction access.
@@ -48,11 +44,11 @@ entity pin_control is
     		-- to accept an address and associated control signals.
 		S_AXI_AWREADY	: out std_logic;
 		-- Write data (issued by master, acceped by Slave) 
-		S_AXI_WDATA	: in std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_WDATA	: in std_logic_vector(32-1 downto 0);
 		-- Write strobes. This signal indicates which byte lanes hold
     		-- valid data. There is one write strobe bit for each eight
     		-- bits of the write data bus.    
-		S_AXI_WSTRB	: in std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
+		S_AXI_WSTRB	: in std_logic_vector((32/8)-1 downto 0);
 		-- Write valid. This signal indicates that valid write
     		-- data and strobes are available.
 		S_AXI_WVALID	: in std_logic;
@@ -69,7 +65,7 @@ entity pin_control is
     		-- can accept a write response.
 		S_AXI_BREADY	: in std_logic;
 		-- Read address (issued by master, acceped by Slave)
-		S_AXI_ARADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_ARADDR	: in std_logic_vector(6-1 downto 0);
 		-- Protection type. This signal indicates the privilege
     		-- and security level of the transaction, and whether the
     		-- transaction is a data access or an instruction access.
@@ -81,7 +77,7 @@ entity pin_control is
     		-- ready to accept an address and associated control signals.
 		S_AXI_ARREADY	: out std_logic;
 		-- Read data (issued by slave)
-		S_AXI_RDATA	: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_RDATA	: out std_logic_vector(32-1 downto 0);
 		-- Read response. This signal indicates the status of the
     		-- read transfer.
 		S_AXI_RRESP	: out std_logic_vector(1 downto 0);
@@ -105,19 +101,20 @@ entity pin_control is
 		led_dout3_o		: out std_logic;
 
 		fmc_present_i	: in std_logic;	
-		adc_FCOlock_i 	: in std_logic
+		adc_FCO1lock_i 	: in std_logic;
+		adc_FCO2lock_i 	: in std_logic
 	);
 end pin_control;
-
+			
 architecture rtl of pin_control is
-
+	constant C_S_AXI_ADDR_WIDTH	: integer	:= 6;
+	constant C_S_AXI_DATA_WIDTH	: integer	:= 32;
     -- Led blink regsters
     signal prescale_1ms_r                	: integer range 0 to MAX_COUNT_1MS;
 	signal led_prescale_ce_r, led_toggle_r  : std_logic;
     signal led_count_r, led_max_cnt_r       : unsigned(15 downto 0);
 	-- Register inputs
-	signal fmc_present_r, adc_FCOlock_r		: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal fmc_present_aux, adc_FCOlock_aux	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal fmc_present_r, adc_FCO1lock_r, adc_FCO2lock_r		: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	-- Register outputs
 	signal vadj_en_r						: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
@@ -354,7 +351,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (axi_araddr, vadj_en_r, fmc_present_r, adc_FCOlock_r, S_AXI_ACLK)
+	process (axi_araddr, vadj_en_r, fmc_present_r, adc_FCO1lock_r, adc_FCO2lock_r, S_AXI_ACLK)
 	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -365,7 +362,9 @@ begin
 			when x"1" =>
 				reg_data_out <= fmc_present_r; 
 			when x"2" =>
-				reg_data_out <= adc_FCOlock_r;
+				reg_data_out <= adc_FCO1lock_r;
+			when x"3" =>
+				reg_data_out <= adc_FCO2lock_r;
 			when others =>
 				reg_data_out <= (others => '0');
 		end case;
@@ -390,17 +389,15 @@ begin
 	end process;
 		
 	---- USER LOGIC
-	adc_FCOlock_aux <= zeros1 & adc_FCOlock_i;
-	fmc_present_aux <= zeros1 & fmc_present_i;
-
 	-- Register outputs and inputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
             vadj_en_o       <= vadj_en_r(0);
 			led_green_o     <= vadj_en_r(0); -- Led shows VAdj ENA status 
-			fmc_present_r  	<= fmc_present_aux;
-			adc_FCOlock_r	<= adc_FCOlock_aux;
+			fmc_present_r(0)  	<= fmc_present_i;
+			adc_FCO1lock_r(0)	<= adc_FCO1lock_i;
+			adc_FCO2lock_r(0)	<= adc_FCO2lock_i;
 		end if;
 	end process;
 
