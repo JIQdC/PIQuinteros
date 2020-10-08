@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-09-30
+-- Revision: 2020-10-08
 -- Additional Comments: Version with external treshold
 -- 
 ----------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ entity downsampler is
         d_valid_i:      in std_logic;
         treshold_reg_i: in std_logic_vector((N_tr_b-1) downto 0);
         treshold_ld_i:  in std_logic;
-        data_o:         out std_logic_vector(13 downto 0);
+        data_o:         out std_logic_vector(15 downto 0);
         d_valid_o:      out std_logic
     );
 end downsampler;
@@ -40,6 +40,7 @@ architecture arch of downsampler is
 
     signal d_reg, d_next:           std_logic_vector(13 downto 0) := (others => '0');
     signal cnt_reg, cnt_next:       unsigned((N_tr_b - 1) downto 0) := (others => '0');
+    signal zeros2:                  std_logic_vector(1 downto 0) := (others => '0');
 
     --Xilinx attributes
     ATTRIBUTE X_INTERFACE_INFO : STRING;
@@ -68,7 +69,7 @@ architecture arch of downsampler is
             cnt_next <= cnt_reg;
 
             d_valid_o <= '0';
-            data_o <= d_reg;
+            data_o <= zeros2 & d_reg;
 
             if(d_valid_i = '1') then
                 cnt_next <= cnt_reg + 1;
