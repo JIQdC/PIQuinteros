@@ -21,10 +21,7 @@ use ieee.numeric_std.all;
 
 entity delay_control is
 	generic (
-		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH	: integer	:= 32;
-		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 10
+		N : integer := 16		--number of ADC signals present
 	);
 	port (
 		-- Global Clock Signal
@@ -32,7 +29,7 @@ entity delay_control is
 		-- Global Reset Signal. This Signal is Active LOW
 		S_AXI_ARESETN	: in std_logic;
 		-- Write address (issued by master, acceped by Slave)
-		S_AXI_AWADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_AWADDR	: in std_logic_vector(10-1 downto 0);
 		-- Write channel Protection type. This signal indicates the
     		-- privilege and security level of the transaction, and whether
     		-- the transaction is a data access or an instruction access.
@@ -44,11 +41,11 @@ entity delay_control is
     		-- to accept an address and associated control signals.
 		S_AXI_AWREADY	: out std_logic;
 		-- Write data (issued by master, acceped by Slave) 
-		S_AXI_WDATA	: in std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_WDATA	: in std_logic_vector(32-1 downto 0);
 		-- Write strobes. This signal indicates which byte lanes hold
     		-- valid data. There is one write strobe bit for each eight
     		-- bits of the write data bus.    
-		S_AXI_WSTRB	: in std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
+		S_AXI_WSTRB	: in std_logic_vector((32/8)-1 downto 0);
 		-- Write valid. This signal indicates that valid write
     		-- data and strobes are available.
 		S_AXI_WVALID	: in std_logic;
@@ -65,7 +62,7 @@ entity delay_control is
     		-- can accept a write response.
 		S_AXI_BREADY	: in std_logic;
 		-- Read address (issued by master, acceped by Slave)
-		S_AXI_ARADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_ARADDR	: in std_logic_vector(10-1 downto 0);
 		-- Protection type. This signal indicates the privilege
     		-- and security level of the transaction, and whether the
     		-- transaction is a data access or an instruction access.
@@ -77,7 +74,7 @@ entity delay_control is
     		-- ready to accept an address and associated control signals.
 		S_AXI_ARREADY	: out std_logic;
 		-- Read data (issued by slave)
-		S_AXI_RDATA	: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_RDATA	: out std_logic_vector(32-1 downto 0);
 		-- Read response. This signal indicates the status of the
     		-- read transfer.
 		S_AXI_RRESP	: out std_logic_vector(1 downto 0);
@@ -87,30 +84,37 @@ entity delay_control is
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
 		S_AXI_RREADY	: in std_logic;
-        
+		
 		-- User I/O
-		delay_locked_i: in std_logic;
-		delay_tap_out_i: in std_logic_vector(9 downto 0);
-
-		delay_reset_o: out std_logic;
-		delay_tap_in_o: out std_logic_vector(9 downto 0)
+		delay_locked1_i:         in std_logic;
+		delay_locked2_i:		in std_logic;
+        delay_data_ld_o:        out std_logic_vector((N-1) downto 0);
+        delay_data_input_o:     out std_logic_vector((5*N-1) downto 0);
+        delay_data_output_i:    in std_logic_vector((5*N-1) downto 0);
+        delay_frame1_ld_o:       out std_logic;
+        delay_frame1_input_o:    out std_logic_vector((5-1) downto 0);
+		delay_frame1_output_i:   in std_logic_vector((5-1) downto 0);
+		delay_frame2_ld_o:       out std_logic;
+        delay_frame2_input_o:    out std_logic_vector((5-1) downto 0);
+		delay_frame2_output_i:   in std_logic_vector((5-1) downto 0)
 	);
 end delay_control;
 
 architecture rtl of delay_control is
 
-	-- Register inputs
-	signal delay_locked_r, delay_tap_out1_r, delay_tap_out0_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	
-	-- Register outputs
-	signal delay_reset_r, delay_tap_in1_r, delay_tap_in0_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	-- Width of S_AXI address bus
+	constant C_S_AXI_ADDR_WIDTH	: integer	:= 10;
 
-	--aux
-	signal delay_tap_in_aux: std_logic_vector(9 downto 0);
-	signal delay_locked_aux, delay_tap_out1_aux, delay_tap_out0_aux: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal zeros10: std_logic_vector(C_S_AXI_DATA_WIDTH-10-1 downto 0);
-	signal zeros5: std_logic_vector(C_S_AXI_DATA_WIDTH-5-1 downto 0);
-	signal zeros1: std_logic_vector(C_S_AXI_DATA_WIDTH-1-1 downto 0);
+	-- Input registers
+	signal delay_locked_r: std_logic_vector(32-1 downto 0) := (others => '0');
+	signal delay_frame1_output_r: std_logic_vector(32-1 downto 0) := (others => '0');
+	signal delay_frame2_output_r: std_logic_vector(32-1 downto 0) := (others => '0');
+	signal delay_data_output_r: std_logic_vector(16*32-1 downto 0) := (others => '0');
+	
+	-- Output registers
+	signal delay_frame1_ld_r, delay_frame1_input_r: std_logic_vector(32-1 downto 0) := (others => '0');
+	signal delay_frame2_ld_r, delay_frame2_input_r: std_logic_vector(32-1 downto 0) := (others => '0');
+	signal delay_data_ld_r, delay_data_input_r: std_logic_vector(16*32-1 downto 0) := (others => '0');
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -120,15 +124,15 @@ architecture rtl of delay_control is
 	signal axi_bvalid	: std_logic;
 	signal axi_araddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
 	signal axi_arready	: std_logic;
-	signal axi_rdata	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal axi_rdata	: std_logic_vector(32-1 downto 0);
 	signal axi_rresp	: std_logic_vector(1 downto 0);
 	signal axi_rvalid	: std_logic;
 
-	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
+	-- local parameter for addressing 32 bit / 64 bit 32
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
-	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
+	constant ADDR_LSB  : integer := (32/32)+ 1;
 	constant OPT_MEM_ADDR_BITS : integer := 7; --memory address width -1 (max 7)
 	------------------------------------------------
 	---- Signals for user logic register space example
@@ -136,7 +140,7 @@ architecture rtl of delay_control is
 	---- Number of Slave Registers 4
 	signal slv_reg_rden	: std_logic;
 	signal slv_reg_wren	: std_logic;
-	signal reg_data_out	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal reg_data_out	: std_logic_vector(32-1 downto 0);
 	signal byte_index	: integer;
 	signal aw_en	    : std_logic;
 
@@ -238,35 +242,271 @@ begin
 	begin
 	  	if rising_edge(S_AXI_ACLK) then 
 			if S_AXI_ARESETN = '0' then
-				delay_reset_r 	    <= (others => '0');
-				delay_tap_in1_r    	<= (others => '0');
-				delay_tap_in0_r    	<= (others => '0');
+				delay_frame1_ld_r 		<= (others => '0');
+				delay_frame2_ld_r 		<= (others => '0');
+				delay_frame1_input_r	<= (others => '0');
+				delay_frame2_input_r	<= (others => '0');
+				delay_data_ld_r			<= (others => '0');
+				delay_data_input_r  	<= (others => '0');
 			else
 				loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 				if (slv_reg_wren = '1') then
 					case loc_addr_w is
-						--reset output
-						when x"00" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-								if ( S_AXI_WSTRB(byte_index) = '1' ) then
-									delay_reset_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-								end if;
-							end loop;						
-						--delay tap 0
+						--frame1 load
 						when x"01" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
-									delay_tap_in0_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+									delay_frame1_ld_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--delay tap 1
+						--frame2 load
 						when x"02" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-								if ( S_AXI_WSTRB(byte_index) = '1' ) then        
-									delay_tap_in1_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_frame1_ld_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--frame1 value
+						when x"03" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_frame1_input_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--frame2 value
+						when x"04" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_frame2_input_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 
+						--delay load for data 1
+						when x"07" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(0+byte_index*8+7 downto 0+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 2
+						when x"08" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(32+byte_index*8+7 downto 32+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 3
+						when x"09" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(64+byte_index*8+7 downto 64+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 4
+						when x"0a" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(96+byte_index*8+7 downto 96+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 5
+						when x"0b" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(128+byte_index*8+7 downto 128+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 6
+						when x"0c" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(160+byte_index*8+7 downto 160+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 7
+						when x"0d" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(192+byte_index*8+7 downto 192+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 8
+						when x"0e" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(224+byte_index*8+7 downto 224+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 9
+						when x"0f" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(256+byte_index*8+7 downto 256+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 10
+						when x"10" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(288+byte_index*8+7 downto 288+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 11
+						when x"11" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(320+byte_index*8+7 downto 320+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 12
+						when x"12" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(352+byte_index*8+7 downto 352+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 13
+						when x"13" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(384+byte_index*8+7 downto 384+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 14
+						when x"14" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(416+byte_index*8+7 downto 416+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 15
+						when x"15" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(448+byte_index*8+7 downto 448+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+						--delay load for data 16
+						when x"16" =>
+						for byte_index in 0 to (32/8-1) loop
+							if ( S_AXI_WSTRB(byte_index) = '1' ) then
+								delay_data_ld_r(480+byte_index*8+7 downto 480+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+
+						--delay value for data 1
+						when x"17" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(0+byte_index*8+7 downto 0+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 2
+						when x"18" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(32+byte_index*8+7 downto 32+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 3
+						when x"19" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(64+byte_index*8+7 downto 64+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 4
+						when x"1a" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(96+byte_index*8+7 downto 96+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 5
+						when x"1b" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(128+byte_index*8+7 downto 128+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 6
+						when x"1c" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(160+byte_index*8+7 downto 160+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 7
+						when x"1d" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(192+byte_index*8+7 downto 192+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 8
+						when x"1e" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(224+byte_index*8+7 downto 224+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 9
+						when x"1f" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(256+byte_index*8+7 downto 256+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 10
+						when x"20" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(288+byte_index*8+7 downto 288+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 11
+						when x"21" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(320+byte_index*8+7 downto 320+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 12
+						when x"22" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(352+byte_index*8+7 downto 352+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 13
+						when x"23" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(384+byte_index*8+7 downto 384+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 14
+						when x"24" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(416+byte_index*8+7 downto 416+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 15
+						when x"25" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(448+byte_index*8+7 downto 448+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+						--delay value for data 16
+						when x"26" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then
+									delay_data_input_r(480+byte_index*8+7 downto 480+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+	
 						--other cases include read-only registers and invalid addresses
 						when others =>
 							null; -- Maintain actual values
@@ -372,13 +612,175 @@ begin
 					--locked state
 					when x"00" =>
 						axi_rdata <= delay_locked_r;
-					--delay tap 0
-					when x"01" =>
-						axi_rdata <= delay_tap_out0_r;
-					--delay tap 1
-					when x"02" =>
-						axi_rdata <= delay_tap_out1_r;
 
+					--delay frame1 load readback
+					when x"01" =>
+						axi_rdata <= delay_frame1_ld_r;
+					--delay frame2 load readback
+					when x"02" =>
+						axi_rdata <= delay_frame2_ld_r;
+
+					--delay frame1 input readback
+					when x"03" =>
+						axi_rdata <= delay_frame1_input_r;
+					--delay frame2 input readback
+					when x"04" =>
+						axi_rdata <= delay_frame2_input_r;
+
+					--delay frame1 output
+					when x"05" =>
+						axi_rdata <= delay_frame1_output_r;
+					--delay frame2 output
+					when x"06" =>
+						axi_rdata <= delay_frame2_output_r;	
+
+					--delay load for data 1 readback
+					when x"07" =>
+						axi_rdata <= delay_data_ld_r(31 downto 0);
+					--delay load for data 2 readback
+					when x"08" =>
+						axi_rdata <= delay_data_ld_r(63 downto 32);
+					--delay load for data 3 readback
+					when x"09" =>
+						axi_rdata <= delay_data_ld_r(95 downto 64);
+					--delay load for data 4 readback
+					when x"0a" =>
+						axi_rdata <= delay_data_ld_r(127 downto 96);
+					--delay load for data 5 readback
+					when x"0b" =>
+						axi_rdata <= delay_data_ld_r(159 downto 128);
+					--delay load for data 6 readback
+					when x"0c" =>
+						axi_rdata <= delay_data_ld_r(191 downto 160);
+					--delay load for data 7 readback
+					when x"0d" =>
+						axi_rdata <= delay_data_ld_r(223 downto 192);
+					--delay load for data 8 readback
+					when x"0e" =>
+						axi_rdata <= delay_data_ld_r(255 downto 224);
+					--delay load for data 9 readback
+					when x"0f" =>
+						axi_rdata <= delay_data_ld_r(287 downto 256);
+					--delay load for data 10 readback
+					when x"10" =>
+						axi_rdata <= delay_data_ld_r(319 downto 288);
+					--delay load for data 11 readback
+					when x"11" =>
+						axi_rdata <= delay_data_ld_r(351 downto 320);
+					--delay load for data 12 readback
+					when x"12" =>
+						axi_rdata <= delay_data_ld_r(383 downto 352);
+					--delay load for data 13 readback
+					when x"13" =>
+						axi_rdata <= delay_data_ld_r(415 downto 384);
+					--delay load for data 14 readback
+					when x"14" =>
+						axi_rdata <= delay_data_ld_r(447 downto 416);
+					--delay load for data 15 readback
+					when x"15" =>
+						axi_rdata <= delay_data_ld_r(479 downto 448);
+					--delay load for data 16 readback
+					when x"16" =>
+						axi_rdata <= delay_data_ld_r(511 downto 480);
+						
+					--delay input for data 1 readback
+					when x"17" =>
+						axi_rdata <= delay_data_input_r(31 downto 0);
+					--delay input for data 2 readback
+					when x"18" =>
+						axi_rdata <= delay_data_input_r(63 downto 32);
+					--delay input for data 3 readback
+					when x"19" =>
+						axi_rdata <= delay_data_input_r(95 downto 64);
+					--delay input for data 4 readback
+					when x"1a" =>
+						axi_rdata <= delay_data_input_r(127 downto 96);
+					--delay input for data 5 readback
+					when x"1b" =>
+						axi_rdata <= delay_data_input_r(159 downto 128);
+					--delay input for data 6 readback
+					when x"1c" =>
+						axi_rdata <= delay_data_input_r(191 downto 160);
+					--delay input for data 7 readback
+					when x"1d" =>
+						axi_rdata <= delay_data_input_r(223 downto 192);
+					--delay input for data 8 readback
+					when x"1e" =>
+						axi_rdata <= delay_data_input_r(255 downto 224);
+					--delay input for data 9 readback
+					when x"1f" =>
+						axi_rdata <= delay_data_input_r(287 downto 256);
+					--delay input for data 10 readback
+					when x"20" =>
+						axi_rdata <= delay_data_input_r(319 downto 288);
+					--delay input for data 11 readback
+					when x"21" =>
+						axi_rdata <= delay_data_input_r(351 downto 320);
+					--delay input for data 12 readback
+					when x"22" =>
+						axi_rdata <= delay_data_input_r(383 downto 352);
+					--delay input for data 13 readback
+					when x"23" =>
+						axi_rdata <= delay_data_input_r(415 downto 384);
+					--delay input for data 14 readback
+					when x"24" =>
+						axi_rdata <= delay_data_input_r(447 downto 416);
+					--delay input for data 15 readback
+					when x"25" =>
+						axi_rdata <= delay_data_input_r(479 downto 448);
+					--delay input for data 16 readback
+					when x"26" =>
+						axi_rdata <= delay_data_input_r(511 downto 480);
+
+					--delay output for data 1
+					when x"27" =>
+						axi_rdata <= delay_data_output_r(31 downto 0);
+					--delay output for data 2
+					when x"28" =>
+						axi_rdata <= delay_data_output_r(63 downto 32);
+					--delay output for data 3
+					when x"29" =>
+						axi_rdata <= delay_data_output_r(95 downto 64);
+					--delay output for data 4
+					when x"2a" =>
+						axi_rdata <= delay_data_output_r(127 downto 96);
+					--delay output for data 5
+					when x"2b" =>
+						axi_rdata <= delay_data_output_r(159 downto 128);
+					--delay output for data 6
+					when x"2c" =>
+						axi_rdata <= delay_data_output_r(191 downto 160);
+					--delay output for data 7
+					when x"2d" =>
+						axi_rdata <= delay_data_output_r(223 downto 192);
+					--delay output for data 8
+					when x"2e" =>
+						axi_rdata <= delay_data_output_r(255 downto 224);
+					--delay output for data 9
+					when x"2f" =>
+						axi_rdata <= delay_data_output_r(287 downto 256);
+					--delay output for data 10
+					when x"30" =>
+						axi_rdata <= delay_data_output_r(319 downto 288);
+					--delay output for data 11
+					when x"31" =>
+						axi_rdata <= delay_data_output_r(351 downto 320);
+					--delay output for data 12
+					when x"32" =>
+						axi_rdata <= delay_data_output_r(383 downto 352);
+					--delay output for data 13
+					when x"33" =>
+						axi_rdata <= delay_data_output_r(415 downto 384);
+					--delay output for data 14
+					when x"34" =>
+						axi_rdata <= delay_data_output_r(447 downto 416);
+					--delay output for data 15
+					when x"35" =>
+						axi_rdata <= delay_data_output_r(479 downto 448);
+					--delay output for data 16
+					when x"36" =>
+						axi_rdata <= delay_data_output_r(511 downto 480);
+						
 					when others =>
 						axi_rdata  <= (others => '0');
 				  end case;
@@ -388,26 +790,37 @@ begin
 
 	-- User logic
 
-	-- Data formatting to fit (C_S_AXI_DATA_WIDTH-1 downto 0) length
-	delay_tap_in_aux <= delay_tap_in1_r(4 downto 0) & delay_tap_in0_r(4 downto 0);
-	delay_locked_aux <= zeros1 & delay_locked_i;
-	delay_tap_out1_aux <= zeros5 & delay_tap_out_i(9 downto 5);
-	delay_tap_out0_aux <= zeros5 & delay_tap_out_i(4 downto 0);
-
 	-- Register inputs and outputs
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
-			--Outputs
-			delay_reset_o	<= delay_reset_r(0);
-			delay_tap_in_o	<= delay_tap_in_aux;
-
+			-- --Outputs
+			delay_frame1_ld_o		<= delay_frame1_ld_r(0);
+			delay_frame1_input_o	<= delay_frame1_input_r((5-1) downto 0);
+			delay_frame2_ld_o		<= delay_frame2_ld_r(0);
+			delay_frame2_input_o	<= delay_frame2_input_r((5-1) downto 0);
 			--Inputs
-			delay_locked_r	<= delay_locked_aux;
-			delay_tap_out1_r <= delay_tap_out1_aux;
-			delay_tap_out0_r <= delay_tap_out0_aux;
-
+			delay_locked_r(0)						<= delay_locked1_i;
+			delay_locked_r(1)						<= delay_locked2_i;
+			delay_frame1_output_r((5-1) downto 0) 	<= delay_frame1_output_i;
+			delay_frame2_output_r((5-1) downto 0) 	<= delay_frame2_output_i;
 		end if;
 	end process;
+
+	--generate input/output register mapping
+	inout_reg_map: for i in 0 to (N-1) generate
+		process (S_AXI_ACLK)
+		begin
+			if rising_edge(S_AXI_ACLK) then 
+				--outputs
+				delay_data_ld_o(i) <= delay_data_ld_r(32*i);
+				delay_data_input_o((5*(i+1)-1) downto (5*i)) <= delay_data_input_r((32*i+5-1) downto (32*i));
+				--inputs
+				delay_data_output_r((32*i+5-1) downto (32*i)) <= delay_data_output_i((5*(i+1)-1) downto (5*i));
+			end if;
+		end process;
+
+
+	end generate inout_reg_map;
    
 end rtl;
