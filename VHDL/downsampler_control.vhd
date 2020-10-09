@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-09-28
+-- Revision: 2020-10-08
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -21,10 +21,7 @@ use ieee.numeric_std.all;
 
 entity downsampler_control is
 	generic (
-		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH	: integer	:= 32;
-		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 10
+		N_tr_b: integer := 10 --bits for treshold register
 	);
 	port (
 		-- Global Clock Signal
@@ -32,7 +29,7 @@ entity downsampler_control is
 		-- Global Reset Signal. This Signal is Active LOW
 		S_AXI_ARESETN	: in std_logic;
 		-- Write address (issued by master, acceped by Slave)
-		S_AXI_AWADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_AWADDR	: in std_logic_vector(10-1 downto 0);
 		-- Write channel Protection type. This signal indicates the
     		-- privilege and security level of the transaction, and whether
     		-- the transaction is a data access or an instruction access.
@@ -44,11 +41,11 @@ entity downsampler_control is
     		-- to accept an address and associated control signals.
 		S_AXI_AWREADY	: out std_logic;
 		-- Write data (issued by master, acceped by Slave) 
-		S_AXI_WDATA	: in std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_WDATA	: in std_logic_vector(32-1 downto 0);
 		-- Write strobes. This signal indicates which byte lanes hold
     		-- valid data. There is one write strobe bit for each eight
     		-- bits of the write data bus.    
-		S_AXI_WSTRB	: in std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
+		S_AXI_WSTRB	: in std_logic_vector((32/8)-1 downto 0);
 		-- Write valid. This signal indicates that valid write
     		-- data and strobes are available.
 		S_AXI_WVALID	: in std_logic;
@@ -65,7 +62,7 @@ entity downsampler_control is
     		-- can accept a write response.
 		S_AXI_BREADY	: in std_logic;
 		-- Read address (issued by master, acceped by Slave)
-		S_AXI_ARADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+		S_AXI_ARADDR	: in std_logic_vector(10-1 downto 0);
 		-- Protection type. This signal indicates the privilege
     		-- and security level of the transaction, and whether the
     		-- transaction is a data access or an instruction access.
@@ -77,7 +74,7 @@ entity downsampler_control is
     		-- ready to accept an address and associated control signals.
 		S_AXI_ARREADY	: out std_logic;
 		-- Read data (issued by slave)
-		S_AXI_RDATA	: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		S_AXI_RDATA	: out std_logic_vector(32-1 downto 0);
 		-- Read response. This signal indicates the status of the
     		-- read transfer.
 		S_AXI_RRESP	: out std_logic_vector(1 downto 0);
@@ -89,12 +86,17 @@ entity downsampler_control is
 		S_AXI_RREADY	: in std_logic;
         
 		-- User I/O
-		downsampler_tresh_o: 	out std_logic_vector(9 downto 0);
+		downsampler_tresh_o: 	out std_logic_vector((N_tr_b-1) downto 0);
 		downsampler_tresh_ld_o: out std_logic
 	);
 end downsampler_control;
 
 architecture rtl of downsampler_control is
+
+	-- Width of S_AXI data bus
+	constant C_S_AXI_DATA_WIDTH	: integer	:= 32;
+	-- Width of S_AXI address bus
+	constant C_S_AXI_ADDR_WIDTH	: integer	:= 10;
 
 	-- Register outputs
 	signal downsampler_tresh_r, downsampler_tresh_ld_r: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
@@ -370,7 +372,7 @@ begin
 	begin
 		if rising_edge(S_AXI_ACLK) then 
 			--Outputs
-			downsampler_tresh_o		<= downsampler_tresh_r(9 downto 0);
+			downsampler_tresh_o		<= downsampler_tresh_r((N_tr_b-1) downto 0);
 			downsampler_tresh_ld_o	<= downsampler_tresh_ld_r(0);
 		end if;
 	end process;

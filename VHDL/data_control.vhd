@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-05
+-- Revision: 2020-10-08
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -269,113 +269,114 @@ begin
 									fifo_rst_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 1
-						when x"03" =>
+
+						--debug control 1
+						when x"20" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(0+byte_index*8+7 downto 0+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 2
-						when x"04" =>
+						--debug control 2
+						when x"21" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(32+byte_index*8+7 downto 32+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 3
-						when x"05" =>
+						--debug control 3
+						when x"22" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(64+byte_index*8+7 downto 64+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 4
-						when x"06" =>
+						--debug control 4
+						when x"23" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(96+byte_index*8+7 downto 96+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 5
-						when x"07" =>
+						--debug control 5
+						when x"24" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(128+byte_index*8+7 downto 128+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 6
-						when x"08" =>
+						--debug control 6
+						when x"25" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(160+byte_index*8+7 downto 160+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 7
-						when x"09" =>
+						--debug control 7
+						when x"26" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(192+byte_index*8+7 downto 192+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 8
-						when x"00a" =>
+						--debug control 8
+						when x"27" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(224+byte_index*8+7 downto 224+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 9
-						when x"0b" =>
+						--debug control 9
+						when x"28" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(256+byte_index*8+7 downto 256+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 10
-						when x"0c" =>
+						--debug control 10
+						when x"29" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(288+byte_index*8+7 downto 288+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 11
-						when x"0d" =>
+						--debug control 11
+						when x"2a" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(320+byte_index*8+7 downto 320+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 12
-						when x"0e" =>
+						--debug control 12
+						when x"2b" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(352+byte_index*8+7 downto 352+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 13
-						when x"0f" =>
+						--debug control 13
+						when x"2c" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(384+byte_index*8+7 downto 384+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 14
-						when x"10" =>
+						--debug control 14
+						when x"2d" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(416+byte_index*8+7 downto 416+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 15
-						when x"11" =>
+						--debug control 15
+						when x"2e" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(448+byte_index*8+7 downto 448+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						--debug control sequence 16
-						when x"12" =>
+						--debug control 16
+						when x"2f" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_control_r(480+byte_index*8+7 downto 480+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
@@ -383,118 +384,118 @@ begin
 							end loop;
 
 						--debug w2w1 1
-						when x"13" =>
+						when x"40" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(0+byte_index*8+7 downto 0+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 2
-						when x"14" =>
+						when x"41" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(32+byte_index*8+7 downto 32+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 3
-						when x"15" =>
+						when x"42" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(64+byte_index*8+7 downto 64+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 4
-						when x"16" =>
+						when x"43" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(96+byte_index*8+7 downto 96+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 5
-						when x"17" =>
+						when x"44" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(128+byte_index*8+7 downto 128+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 6
-						when x"18" =>
+						when x"45" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(160+byte_index*8+7 downto 160+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 7
-						when x"19" =>
+						when x"46" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(192+byte_index*8+7 downto 192+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 8
-						when x"1a" =>
+						when x"47" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(224+byte_index*8+7 downto 224+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 9
-						when x"1b" =>
+						when x"48" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(256+byte_index*8+7 downto 256+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 10
-						when x"1c" =>
+						when x"49" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(288+byte_index*8+7 downto 288+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 11
-						when x"1d" =>
+						when x"4a" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(320+byte_index*8+7 downto 320+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 12
-						when x"1e" =>
+						when x"4b" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(352+byte_index*8+7 downto 352+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 13
-						when x"1f" =>
+						when x"4c" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(384+byte_index*8+7 downto 384+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 14
-						when x"20" =>
+						when x"4d" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(416+byte_index*8+7 downto 416+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 15
-						when x"21" =>
+						when x"4e" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(448+byte_index*8+7 downto 448+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 						--debug w2w1 16
-						when x"22" =>
+						when x"4f" =>
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then
 									debug_w2w1_r(480+byte_index*8+7 downto 480+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-
+		
 						--usr aux
 						when x"FF" =>
 							for byte_index in 0 to (32/8-1) loop
@@ -619,284 +620,284 @@ begin
 					when x"02" =>
 						axi_rdata <= fifo_rst_r;
 
-					--debug control sequence 1 readback
-					when x"03" =>
+					--debug control 1 readback
+					when x"20" =>
 						axi_rdata <= debug_control_r(31 downto 0);
-					--debug control sequence 2 readback
-					when x"04" =>
+					--debug control 2 readback
+					when x"21" =>
 						axi_rdata <= debug_control_r(63 downto 32);
-					--debug control sequence 3 readback
-					when x"05" =>
+					--debug control 3 readback
+					when x"22" =>
 						axi_rdata <= debug_control_r(95 downto 64);
-					--debug control sequence 4 readback
-					when x"06" =>
+					--debug control 4 readback
+					when x"23" =>
 						axi_rdata <= debug_control_r(127 downto 96);
-					--debug control sequence 5 readback
-					when x"07" =>
+					--debug control 5 readback
+					when x"24" =>
 						axi_rdata <= debug_control_r(159 downto 128);
-					--debug control sequence 6 readback
-					when x"08" =>
+					--debug control 6 readback
+					when x"25" =>
 						axi_rdata <= debug_control_r(191 downto 160);
-					--debug control sequence 7 readback
-					when x"09" =>
+					--debug control 7 readback
+					when x"26" =>
 						axi_rdata <= debug_control_r(223 downto 192);
-					--debug control sequence 8 readback
-					when x"0a" =>
+					--debug control 8 readback
+					when x"27" =>
 						axi_rdata <= debug_control_r(255 downto 224);
-					--debug control sequence 9 readback
-					when x"0b" =>
+					--debug control 9 readback
+					when x"28" =>
 						axi_rdata <= debug_control_r(287 downto 256);
-					--debug control sequence 10 readback
-					when x"0c" =>
+					--debug control 10 readback
+					when x"29" =>
 						axi_rdata <= debug_control_r(319 downto 288);
-					--debug control sequence 11 readback
-					when x"0d" =>
+					--debug control 11 readback
+					when x"2a" =>
 						axi_rdata <= debug_control_r(351 downto 320);
-					--debug control sequence 12 readback
-					when x"0e" =>
+					--debug control 12 readback
+					when x"2b" =>
 						axi_rdata <= debug_control_r(383 downto 352);
-					--debug control sequence 13 readback
-					when x"0f" =>
+					--debug control 13 readback
+					when x"2c" =>
 						axi_rdata <= debug_control_r(415 downto 384);
-					--debug control sequence 14 readback
-					when x"10" =>
+					--debug control 14 readback
+					when x"2d" =>
 						axi_rdata <= debug_control_r(447 downto 416);
-					--debug control sequence 15 readback
-					when x"11" =>
+					--debug control 15 readback
+					when x"2e" =>
 						axi_rdata <= debug_control_r(479 downto 448);
-					--debug control sequence 16 readback
-					when x"12" =>
-						axi_rdata <= debug_control_r(511 downto 480);		
-						
+					--debug control 16 readback
+					when x"2f" =>
+						axi_rdata <= debug_control_r(511 downto 480);			
+					
 					--debug w2w1 1 readback
-					when x"13" =>
+					when x"40" =>
 						axi_rdata <= debug_w2w1_r(31 downto 0);
 					--debug w2w1 2 readback
-					when x"14" =>
+					when x"41" =>
 						axi_rdata <= debug_w2w1_r(63 downto 32);
 					--debug w2w1 3 readback
-					when x"15" =>
+					when x"42" =>
 						axi_rdata <= debug_w2w1_r(95 downto 64);
 					--debug w2w1 4 readback
-					when x"16" =>
+					when x"43" =>
 						axi_rdata <= debug_w2w1_r(127 downto 96);
 					--debug w2w1 5 readback
-					when x"17" =>
+					when x"44" =>
 						axi_rdata <= debug_w2w1_r(159 downto 128);
 					--debug w2w1 6 readback
-					when x"18" =>
+					when x"45" =>
 						axi_rdata <= debug_w2w1_r(191 downto 160);
 					--debug w2w1 7 readback
-					when x"19" =>
+					when x"46" =>
 						axi_rdata <= debug_w2w1_r(223 downto 192);
 					--debug w2w1 8 readback
-					when x"1a" =>
+					when x"47" =>
 						axi_rdata <= debug_w2w1_r(255 downto 224);
 					--debug w2w1 9 readback
-					when x"1b" =>
+					when x"48" =>
 						axi_rdata <= debug_w2w1_r(287 downto 256);
 					--debug w2w1 10 readback
-					when x"1c" =>
+					when x"49" =>
 						axi_rdata <= debug_w2w1_r(319 downto 288);
 					--debug w2w1 11 readback
-					when x"1d" =>
+					when x"4a" =>
 						axi_rdata <= debug_w2w1_r(351 downto 320);
 					--debug w2w1 12 readback
-					when x"1e" =>
+					when x"4b" =>
 						axi_rdata <= debug_w2w1_r(383 downto 352);
 					--debug w2w1 13 readback
-					when x"1f" =>
+					when x"4c" =>
 						axi_rdata <= debug_w2w1_r(415 downto 384);
 					--debug w2w1 14 readback
-					when x"20" =>
+					when x"4d" =>
 						axi_rdata <= debug_w2w1_r(447 downto 416);
 					--debug w2w1 15 readback
-					when x"21" =>
+					when x"4e" =>
 						axi_rdata <= debug_w2w1_r(479 downto 448);
 					--debug w2w1 16 readback
-					when x"22" =>
+					when x"4f" =>
 						axi_rdata <= debug_w2w1_r(511 downto 480);
-
+							
 					--fifo flags 1
-					when x"23" =>
+					when x"60" =>
 						axi_rdata <= fifo_flags_r(31 downto 0);
 					--fifo flags 2
-					when x"24" =>
+					when x"61" =>
 						axi_rdata <= fifo_flags_r(63 downto 32);
 					--fifo flags 3
-					when x"25" =>
+					when x"62" =>
 						axi_rdata <= fifo_flags_r(95 downto 64);
 					--fifo flags 4
-					when x"26" =>
+					when x"63" =>
 						axi_rdata <= fifo_flags_r(127 downto 96);
 					--fifo flags 5
-					when x"27" =>
+					when x"64" =>
 						axi_rdata <= fifo_flags_r(159 downto 128);
 					--fifo flags 6
-					when x"28" =>
+					when x"65" =>
 						axi_rdata <= fifo_flags_r(191 downto 160);
 					--fifo flags 7
-					when x"29" =>
+					when x"66" =>
 						axi_rdata <= fifo_flags_r(223 downto 192);
 					--fifo flags 8
-					when x"2a" =>
+					when x"67" =>
 						axi_rdata <= fifo_flags_r(255 downto 224);
 					--fifo flags 9
-					when x"2b" =>
+					when x"68" =>
 						axi_rdata <= fifo_flags_r(287 downto 256);
 					--fifo flags 10
-					when x"2c" =>
+					when x"69" =>
 						axi_rdata <= fifo_flags_r(319 downto 288);
 					--fifo flags 11
-					when x"2d" =>
+					when x"6a" =>
 						axi_rdata <= fifo_flags_r(351 downto 320);
 					--fifo flags 12
-					when x"2e" =>
+					when x"6b" =>
 						axi_rdata <= fifo_flags_r(383 downto 352);
 					--fifo flags 13
-					when x"2f" =>
+					when x"6c" =>
 						axi_rdata <= fifo_flags_r(415 downto 384);
 					--fifo flags 14
-					when x"30" =>
+					when x"6d" =>
 						axi_rdata <= fifo_flags_r(447 downto 416);
 					--fifo flags 15
-					when x"31" =>
+					when x"6e" =>
 						axi_rdata <= fifo_flags_r(479 downto 448);
 					--fifo flags 16
-					when x"32" =>
+					when x"6f" =>
 						axi_rdata <= fifo_flags_r(511 downto 480);
 
 					--if FIFO is not empty, read data and generate rd_en. Else, output FIFO_EMPTY_VAL
 
 					--FIFO data1 input
-					when x"33" =>
+					when x"80" =>
 						if (fifo_out_i(0).empty = '0') then
-							axi_rdata <= fifo_data_out_r(31 downto 0);
+							axi_rdata <= fifo_data_r(31 downto 0);
 							fifo_rd_en_o(0) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data2 input
-					when x"34" =>
+					when x"81" =>
 						if (fifo_out_i(1).empty = '0') then
-							axi_rdata <= fifo_data_out_r(63 downto 32);
+							axi_rdata <= fifo_data_r(63 downto 32);
 							fifo_rd_en_o(1) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data3 input
-					when x"35" =>
+					when x"82" =>
 						if (fifo_out_i(2).empty = '0') then
-							axi_rdata <= fifo_data_out_r(95 downto 64);
+							axi_rdata <= fifo_data_r(95 downto 64);
 							fifo_rd_en_o(2) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data4 input
-					when x"36" =>
+					when x"83" =>
 						if (fifo_out_i(3).empty = '0') then
-							axi_rdata <= fifo_data_out_r(127 downto 96);
+							axi_rdata <= fifo_data_r(127 downto 96);
 							fifo_rd_en_o(3) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data5 input
-					when x"37" =>
+					when x"84" =>
 						if (fifo_out_i(4).empty = '0') then
-							axi_rdata <= fifo_data_out_r(159 downto 128);
+							axi_rdata <= fifo_data_r(159 downto 128);
 							fifo_rd_en_o(4) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data6 input
-					when x"38" =>
+					when x"85" =>
 						if (fifo_out_i(5).empty = '0') then
-							axi_rdata <= fifo_data_out_r(191 downto 160);
+							axi_rdata <= fifo_data_r(191 downto 160);
 							fifo_rd_en_o(5) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data7 input
-					when x"39" =>
+					when x"86" =>
 						if (fifo_out_i(6).empty = '0') then
-							axi_rdata <= fifo_data_out_r(223 downto 192);
+							axi_rdata <= fifo_data_r(223 downto 192);
 							fifo_rd_en_o(6) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data8 input
-					when x"3a" =>
+					when x"87" =>
 						if (fifo_out_i(7).empty = '0') then
-							axi_rdata <= fifo_data_out_r(255 downto 224);
+							axi_rdata <= fifo_data_r(255 downto 224);
 							fifo_rd_en_o(7) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data9 input
-					when x"3b" =>
+					when x"88" =>
 						if (fifo_out_i(8).empty = '0') then
-							axi_rdata <= fifo_data_out_r(287 downto 256);
+							axi_rdata <= fifo_data_r(287 downto 256);
 							fifo_rd_en_o(8) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data10 input
-					when x"3c" =>
+					when x"89" =>
 						if (fifo_out_i(9).empty = '0') then
-							axi_rdata <= fifo_data_out_r(319 downto 288);
+							axi_rdata <= fifo_data_r(319 downto 288);
 							fifo_rd_en_o(9) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data11 input
-					when x"3d" =>
+					when x"8a" =>
 						if (fifo_out_i(10).empty = '0') then
-							axi_rdata <= fifo_data_out_r(351 downto 320);
+							axi_rdata <= fifo_data_r(351 downto 320);
 							fifo_rd_en_o(10) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data12 input
-					when x"3e" =>
+					when x"8b" =>
 						if (fifo_out_i(11).empty = '0') then
-							axi_rdata <= fifo_data_out_r(383 downto 352);
+							axi_rdata <= fifo_data_r(383 downto 352);
 							fifo_rd_en_o(11) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data13 input
-					when x"3f" =>
+					when x"8c" =>
 						if (fifo_out_i(12).empty = '0') then
-							axi_rdata <= fifo_data_out_r(415 downto 384);
+							axi_rdata <= fifo_data_r(415 downto 384);
 							fifo_rd_en_o(12) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data14 input
-					when x"40" =>
+					when x"8d" =>
 						if (fifo_out_i(13).empty = '0') then
-							axi_rdata <= fifo_data_out_r(447 downto 416);
+							axi_rdata <= fifo_data_r(447 downto 416);
 							fifo_rd_en_o(13) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data15 input
-					when x"41" =>
+					when x"8e" =>
 						if (fifo_out_i(14).empty = '0') then
-							axi_rdata <= fifo_data_out_r(479 downto 448);
+							axi_rdata <= fifo_data_r(479 downto 448);
 							fifo_rd_en_o(14) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
 					--FIFO data16 input
-					when x"42" =>
+					when x"8f" =>
 						if (fifo_out_i(15).empty = '0') then
-							axi_rdata <= fifo_data_out_r(511 downto 480);
+							axi_rdata <= fifo_data_r(511 downto 480);
 							fifo_rd_en_o(15) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
 						end if;
-			
+							
 					--usr aux
 					when x"FF" =>
 						axi_rdata <= usr_aux_r;		
@@ -941,7 +942,6 @@ begin
 				fifo_flags_r(17 + 32*i) <= fifo_out_i(i).full;
 			end if;
 		end process;
-
 
 	end generate inout_reg_map;
    
