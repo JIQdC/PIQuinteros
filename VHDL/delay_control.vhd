@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-08
+-- Revision: 2020-10-10
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -804,8 +804,8 @@ begin
 			delay_frame2_ld_o		<= delay_frame2_ld_r(0);
 			delay_frame2_input_o	<= delay_frame2_input_r((5-1) downto 0);
 			--Inputs
-			delay_locked1_r							<= delay_locked1_i;
-			delay_locked2_r							<= delay_locked2_i;
+			delay_locked1_r(0)						<= delay_locked1_i;
+			delay_locked2_r(0)						<= delay_locked2_i;
 			delay_frame1_output_r((5-1) downto 0) 	<= delay_frame1_output_i;
 			delay_frame2_output_r((5-1) downto 0) 	<= delay_frame2_output_i;
 		end if;
