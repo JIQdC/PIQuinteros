@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-09-30
+-- Revision: 2020-10-10
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ use ieee.numeric_std.all;
 entity pin_control is
 	generic (
 		-- User constants
-		MAX_COUNT_1MS       : integer    := 200000;					--1ms/S_AXI_ACLK_period
+		MAX_COUNT_1MS       : integer    := 50000;					--1ms/S_AXI_ACLK_period
 		LED_BLINK_PERIOD_MS	: unsigned(15 downto 0) := x"01f4"; 	--LED blink period in ms
 		FIFO_RESET_LED_DUR	: integer	 := 1000					--duration of FIFO reset blink in ms
 	);
