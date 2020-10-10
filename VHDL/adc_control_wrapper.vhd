@@ -108,9 +108,13 @@ architecture arch of adc_control_wrapper is
     ATTRIBUTE X_INTERFACE_INFO of adc_FCO2_n_i: SIGNAL is "xilinx.com:interface:diff_analog_io:1.0 adc_FCO2_i V_N";
     ATTRIBUTE X_INTERFACE_INFO of adc_data_p_i: SIGNAL is "xilinx.com:interface:diff_analog_io:1.0 adc_data_i V_P";
     ATTRIBUTE X_INTERFACE_INFO of adc_data_n_i: SIGNAL is "xilinx.com:interface:diff_analog_io:1.0 adc_data_i V_N";
+    ATTRIBUTE X_INTERFACE_INFO of rst_peripherals_i: SIGNAL is "xilinx.com:signal:reset:1.0 rst_peripherals_i RST";
+	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+	ATTRIBUTE X_INTERFACE_PARAMETER of rst_peripherals_i: SIGNAL is "POLARITY ACTIVE_HIGH";
 
 
     signal async_rst_from_AXI, fifo_rst_from_AXI, fifo_rst, debug_rst: std_logic := '0';
+    signal debug_enable_from_AXI: std_logic := '0';
     signal debug_control_from_AXI: std_logic_vector((N*4-1) downto 0) := (others => '0');
     signal debug_control_to_r1: std_logic_vector((N1*4-1) downto 0) := (others => '0');
     signal debug_control_to_r2: std_logic_vector((N2*4-1) downto 0) := (others => '0');
@@ -162,6 +166,7 @@ begin
         S_AXI_RREADY    => S_AXI_RREADY,
         async_rst_o  	=> async_rst_from_AXI,
         fifo_rst_o  	=> fifo_rst_from_AXI,
+        debug_enable_o  => debug_enable_from_AXI,
         debug_control_o => debug_control_from_AXI,
         debug_w2w1_o    => debug_w2w1_from_AXI, 
         fifo_rd_en_o    => fifo_rd_en_from_AXI,
@@ -191,6 +196,7 @@ begin
         treshold_value_i    => treshold_value_i,
         treshold_ld_i       => treshold_ld_i,
 
+        debug_enable_i      => debug_enable_from_AXI,
         debug_control_i     => debug_control_to_r1,
         debug_w2w1_i        => debug_w2w1_to_r1,
         
@@ -230,6 +236,7 @@ begin
         treshold_value_i    => treshold_value_i,
         treshold_ld_i       => treshold_ld_i,
 
+        debug_enable_i      => debug_enable_from_AXI,
         debug_control_i     => debug_control_to_r2,
         debug_w2w1_i        => debug_w2w1_to_r2,
         

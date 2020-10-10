@@ -45,6 +45,7 @@ entity adc_receiver is
         treshold_value_i:   in std_logic_vector((N_tr_b - 1) downto 0);
         treshold_ld_i:      in std_logic;
 
+        debug_enable_i:     in std_logic;
         debug_control_i:    in std_logic_vector((N*4-1) downto 0);
         debug_w2w1_i:       in std_logic_vector((28*N-1) downto 0);
         
@@ -350,6 +351,7 @@ architecture arch of adc_receiver is
                 RES_ADC     => RES_ADC
             )
             port map(
+                enable_i        => debug_enable_i,
                 control_i       => debug_control_i(((4*(i+1))-1) downto (4*i)),
                 usr_w2w1_i      => debug_w2w1_i(((28*(i+1))-1) downto (28*i)),
                 data_i          => data_from_deser((14*(i+1)-1) downto (14*i)),
