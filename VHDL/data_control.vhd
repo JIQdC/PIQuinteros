@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-08
+-- Revision: 2020-10-09
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -95,6 +95,7 @@ entity data_control is
 		fifo_rst_o: 		out std_logic;
 
 		-- Control signals
+		debug_enable_o:		out std_logic;
         debug_control_o:	out std_logic_vector((4*N-1) downto 0);
         debug_w2w1_o:       out std_logic_vector((28*N-1) downto 0);
 		
@@ -108,10 +109,12 @@ architecture rtl of data_control is
 
 	-- Register inputs
 	signal fifo_data_out_r, fifo_flags_r: std_logic_vector(16*32-1 downto 0) := (others => '0');
+	signal fifo_progfull_r: std_logic_vector(32-1 downto 0) := (others => '0');
 	
 	-- Register outputs
 	signal async_rst_r, fifo_rst_r: std_logic_vector(32-1 downto 0) := (others => '0');
 	signal debug_control_r, debug_w2w1_r: std_logic_vector(16*32-1 downto 0) := (others => '0');
+	signal debug_enable_r: std_logic_vector(32-1 downto 0);
 	-- Aux user register
 	signal usr_aux_r: std_logic_vector(32-1 downto 0) := (others => '0');
 
@@ -248,6 +251,7 @@ begin
 			if S_AXI_ARESETN = '0' then
 				async_rst_r 	    <= (others => '0');
 				fifo_rst_r    		<= (others => '0');
+				debug_enable_r		<= (others => '0');
 				debug_control_r    	<= (others => '0');
 				debug_w2w1_r    	<= (others => '0');
 				usr_aux_r			<= (others => '0');
@@ -267,6 +271,14 @@ begin
 							for byte_index in 0 to (32/8-1) loop
 								if ( S_AXI_WSTRB(byte_index) = '1' ) then        
 									fifo_rst_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+								end if;
+							end loop;
+
+						--debug enable
+						when x"04" =>
+							for byte_index in 0 to (32/8-1) loop
+								if ( S_AXI_WSTRB(byte_index) = '1' ) then        
+									debug_enable_r(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
 
@@ -620,6 +632,14 @@ begin
 					when x"02" =>
 						axi_rdata <= fifo_rst_r;
 
+					--FIFO prog full flags register
+					when x"03" =>
+						axi_rdata <= fifo_progfull_r;
+
+					--debug enable readback
+					when x"04" =>
+						axi_rdata <= debug_enable_r;
+
 					--debug control 1 readback
 					when x"20" =>
 						axi_rdata <= debug_control_r(31 downto 0);
@@ -772,7 +792,7 @@ begin
 					--FIFO data1 input
 					when x"80" =>
 						if (fifo_out_i(0).empty = '0') then
-							axi_rdata <= fifo_data_r(31 downto 0);
+							axi_rdata <= fifo_data_out_r(31 downto 0);
 							fifo_rd_en_o(0) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -780,7 +800,7 @@ begin
 					--FIFO data2 input
 					when x"81" =>
 						if (fifo_out_i(1).empty = '0') then
-							axi_rdata <= fifo_data_r(63 downto 32);
+							axi_rdata <= fifo_data_out_r(63 downto 32);
 							fifo_rd_en_o(1) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -788,7 +808,7 @@ begin
 					--FIFO data3 input
 					when x"82" =>
 						if (fifo_out_i(2).empty = '0') then
-							axi_rdata <= fifo_data_r(95 downto 64);
+							axi_rdata <= fifo_data_out_r(95 downto 64);
 							fifo_rd_en_o(2) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -796,7 +816,7 @@ begin
 					--FIFO data4 input
 					when x"83" =>
 						if (fifo_out_i(3).empty = '0') then
-							axi_rdata <= fifo_data_r(127 downto 96);
+							axi_rdata <= fifo_data_out_r(127 downto 96);
 							fifo_rd_en_o(3) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -804,7 +824,7 @@ begin
 					--FIFO data5 input
 					when x"84" =>
 						if (fifo_out_i(4).empty = '0') then
-							axi_rdata <= fifo_data_r(159 downto 128);
+							axi_rdata <= fifo_data_out_r(159 downto 128);
 							fifo_rd_en_o(4) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -812,7 +832,7 @@ begin
 					--FIFO data6 input
 					when x"85" =>
 						if (fifo_out_i(5).empty = '0') then
-							axi_rdata <= fifo_data_r(191 downto 160);
+							axi_rdata <= fifo_data_out_r(191 downto 160);
 							fifo_rd_en_o(5) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -820,7 +840,7 @@ begin
 					--FIFO data7 input
 					when x"86" =>
 						if (fifo_out_i(6).empty = '0') then
-							axi_rdata <= fifo_data_r(223 downto 192);
+							axi_rdata <= fifo_data_out_r(223 downto 192);
 							fifo_rd_en_o(6) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -828,7 +848,7 @@ begin
 					--FIFO data8 input
 					when x"87" =>
 						if (fifo_out_i(7).empty = '0') then
-							axi_rdata <= fifo_data_r(255 downto 224);
+							axi_rdata <= fifo_data_out_r(255 downto 224);
 							fifo_rd_en_o(7) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -836,7 +856,7 @@ begin
 					--FIFO data9 input
 					when x"88" =>
 						if (fifo_out_i(8).empty = '0') then
-							axi_rdata <= fifo_data_r(287 downto 256);
+							axi_rdata <= fifo_data_out_r(287 downto 256);
 							fifo_rd_en_o(8) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -844,7 +864,7 @@ begin
 					--FIFO data10 input
 					when x"89" =>
 						if (fifo_out_i(9).empty = '0') then
-							axi_rdata <= fifo_data_r(319 downto 288);
+							axi_rdata <= fifo_data_out_r(319 downto 288);
 							fifo_rd_en_o(9) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -852,7 +872,7 @@ begin
 					--FIFO data11 input
 					when x"8a" =>
 						if (fifo_out_i(10).empty = '0') then
-							axi_rdata <= fifo_data_r(351 downto 320);
+							axi_rdata <= fifo_data_out_r(351 downto 320);
 							fifo_rd_en_o(10) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -860,7 +880,7 @@ begin
 					--FIFO data12 input
 					when x"8b" =>
 						if (fifo_out_i(11).empty = '0') then
-							axi_rdata <= fifo_data_r(383 downto 352);
+							axi_rdata <= fifo_data_out_r(383 downto 352);
 							fifo_rd_en_o(11) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -868,7 +888,7 @@ begin
 					--FIFO data13 input
 					when x"8c" =>
 						if (fifo_out_i(12).empty = '0') then
-							axi_rdata <= fifo_data_r(415 downto 384);
+							axi_rdata <= fifo_data_out_r(415 downto 384);
 							fifo_rd_en_o(12) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -876,7 +896,7 @@ begin
 					--FIFO data14 input
 					when x"8d" =>
 						if (fifo_out_i(13).empty = '0') then
-							axi_rdata <= fifo_data_r(447 downto 416);
+							axi_rdata <= fifo_data_out_r(447 downto 416);
 							fifo_rd_en_o(13) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -884,7 +904,7 @@ begin
 					--FIFO data15 input
 					when x"8e" =>
 						if (fifo_out_i(14).empty = '0') then
-							axi_rdata <= fifo_data_r(479 downto 448);
+							axi_rdata <= fifo_data_out_r(479 downto 448);
 							fifo_rd_en_o(14) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -892,7 +912,7 @@ begin
 					--FIFO data16 input
 					when x"8f" =>
 						if (fifo_out_i(15).empty = '0') then
-							axi_rdata <= fifo_data_r(511 downto 480);
+							axi_rdata <= fifo_data_out_r(511 downto 480);
 							fifo_rd_en_o(15) <= '1';
 						else
 							axi_rdata <= FIFO_EMPTY_VAL;
@@ -927,6 +947,7 @@ begin
 		begin
 			if rising_edge(S_AXI_ACLK) then 
 				--outputs
+				debug_enable_o <= debug_enable_r(0);
 				debug_control_o((4*(i+1)-1) downto (4*i)) <= debug_control_r((32*i+4-1) downto (32*i));
 				debug_w2w1_o((28*(i+1)-1) downto (28*i)) <= debug_w2w1_r((32*i+28-1) downto (32*i));
 
@@ -936,10 +957,12 @@ begin
 				fifo_flags_r((32*i + 12 - 1) downto (32*i)) <= fifo_out_i(i).rd_data_cnt;
 				fifo_flags_r(12 + 32*i) <= fifo_out_i(i).rd_rst_bsy;
 				fifo_flags_r(13 + 32*i) <= fifo_out_i(i).wr_rst_bsy;
-				fifo_flags_r(14 + 32*i) <= fifo_out_i(i).prog_full;
-				fifo_flags_r(15 + 32*i) <= fifo_out_i(i).overflow;
-				fifo_flags_r(16 + 32*i) <= fifo_out_i(i).empty;
-				fifo_flags_r(17 + 32*i) <= fifo_out_i(i).full;
+				fifo_flags_r(14 + 32*i) <= fifo_out_i(i).overflow;
+				fifo_flags_r(15 + 32*i) <= fifo_out_i(i).empty;
+				fifo_flags_r(16 + 32*i) <= fifo_out_i(i).full;
+				fifo_flags_r(17 + 32*i) <= fifo_out_i(i).prog_full;
+
+				fifo_progfull_r(i) 		<= fifo_out_i(i).prog_full;
 			end if;
 		end process;
 
