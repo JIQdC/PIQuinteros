@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AD9249 SPI control interface using AXI Quad SPI in CIAA-ACC
 
-Version: 2020-09-09
+Version: 2020-10-13
 Comments:
 */
 
@@ -21,13 +21,13 @@ Comments:
 #include "CIAASistAdq.h"
 
 // AXI SPI addresses
-#define SPI_BASE_ADDR 0x81E00000
-#define SPI_SRR_ADDR 0X40
-#define SPI_CR_ADDR 0X60
-#define SPI_SR_ADDR 0X64
-#define SPI_DTR_ADDR 0X68
-#define SPI_DRR_ADDR 0X6C
-#define SPI_SSR_ADDR 0X70
+#define SPI_BASE_ADDR 0x83C00000
+#define SPI_SRR_OFF 0X40
+#define SPI_CR_OFF 0X60
+#define SPI_SR_OFF 0X64
+#define SPI_DTR_OFF 0X68
+#define SPI_DRR_OFF 0X6C
+#define SPI_SSR_OFF 0X70
 
 // SPI_CR control parameters
 typedef enum

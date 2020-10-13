@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AD9249 SPI control interface using AXI Quad SPI in CIAA-ACC
 
-Version: 2020-09-09
+Version: 2020-10-13
 Comments:
 */
 
@@ -14,8 +14,8 @@ Comments:
 // resets SPI module
 void spi_reset()
 {
-	uint32_t data = 0xa;
-	memwrite(SPI_BASE_ADDR+SPI_SRR_ADDR,&data,1);
+	uint32_t data = 0xA;
+	memwrite(SPI_BASE_ADDR+SPI_SRR_OFF,&data,1);
 }
 
 // configures SPI_CR register. params and value are two arrays of specified size
@@ -34,7 +34,7 @@ void spi_CR_config(SPI_CR_params_t * params, bool * value, uint8_t size)
 	}
 
 	//escribo el registro modificado de nuevo en su lugar
-	memwrite(SPI_BASE_ADDR + SPI_CR_ADDR,&cr_data,1);
+	memwrite(SPI_BASE_ADDR + SPI_CR_OFF,&cr_data,1);
 }
 
 // writes an instruction to the ADC, complying with its instruction formats. address is a 13 bit argument, and data is an array of size n_bytes
@@ -51,10 +51,6 @@ int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes)
 		printf("\nSPI write: La dirección de escritura no puede ser de más de 13 bits.\n");
 		return 1;
 	}
-
-	//posiciono el tristate que controla la salida, en modo escritura
-	uint32_t data_tr = 0;
-	memwrite(CONTROL_BASE_ADDR+SPI_TRISTATE_ADDR,&data_tr,1);
 
 	//transmito los bytes en grupos de a 3
 	int i;
@@ -88,11 +84,11 @@ int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes)
 			//separo la instrucción en MSByte y LSByte y transmito
 			instructionMSByte = (instruction & 0xff00) >> 8;
 			instructionLSByte = (instruction & 0x00ff);
-			memwrite(SPI_BASE_ADDR+SPI_DTR_ADDR,&instructionMSByte,1);
-			memwrite(SPI_BASE_ADDR+SPI_DTR_ADDR,&instructionLSByte,1);
+			memwrite(SPI_BASE_ADDR+SPI_DTR_OFF,&instructionMSByte,1);
+			memwrite(SPI_BASE_ADDR+SPI_DTR_OFF,&instructionLSByte,1);
 		}
 		//transmito el byte i
-		memwrite(SPI_BASE_ADDR+SPI_DTR_ADDR,&(data[i]),1);
+		memwrite(SPI_BASE_ADDR+SPI_DTR_OFF,&(data[i]),1);
 	}
 
 	return 0;
@@ -118,7 +114,7 @@ int spi_ssel(SPI_slaves_t slave)
 			break;
 	}
 
-	return memwrite(SPI_BASE_ADDR+SPI_SSR_ADDR,&data,1);	
+	return memwrite(SPI_BASE_ADDR+SPI_SSR_OFF,&data,1);	
 }
 
 //default configuration for AXI-SPI module
@@ -133,6 +129,13 @@ void spi_defaultConfig()
     spi_CR_config(params,value,4);	
 
 	usleep(10);
+
+	printf("AXI Quad SPI configured as follows:\n");
+	printf("\tManualSSelAssertEn %d\n",value[0]);
+	printf("\tSPIsystemEn %d\n",value[1]);
+	printf("\tMasterMode %d\n",value[2]);
+	printf("\tMasterTransInhibit %d\n",value[3]);
+	printf("\n");
 }
 
 //default configuration for ADC via SPI
@@ -171,6 +174,14 @@ void adc_defaultConfig()
 	}
 
 	usleep(10);
+
+	printf("ADC default configuration:\n");
+	printf("\tOutput adjust drive 1\n");
+	printf("\tClock divider 0\n");
+	printf("\tTest pattern 0\n");
+	printf("\tOutput mode offset binary\n");
+	printf("\tVref 2 Vpp\n");
+	printf("\n");
 }
 
 //sets clock divider to value divide
