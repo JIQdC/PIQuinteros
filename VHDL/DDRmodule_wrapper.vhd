@@ -8,42 +8,42 @@
 --Purpose     : IP block netlist
 ----------------------------------------------------------------------------------
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_1164.all;
 library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VCOMPONENTS.all;
 entity DDRmodule_wrapper is
   port (
-    clk_in : in STD_LOGIC;
-    clk_out : out STD_LOGIC;
-    data_in : in STD_LOGIC_VECTOR ( 0 to 0 );
-    data_out : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    frame_in : in STD_LOGIC_VECTOR ( 0 to 0 );
-    frame_out : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    rst : in STD_LOGIC
+    clk_in    : in std_logic;
+    clk_out   : out std_logic;
+    data_in   : in std_logic_vector (0 to 0);
+    data_out  : out std_logic_vector (1 downto 0);
+    frame_in  : in std_logic_vector (0 to 0);
+    frame_out : out std_logic_vector (1 downto 0);
+    rst       : in std_logic
   );
 end DDRmodule_wrapper;
 
 architecture STRUCTURE of DDRmodule_wrapper is
   component DDRmodule is
-  port (
-    clk_in : in STD_LOGIC;
-    clk_out : out STD_LOGIC;
-    data_in : in STD_LOGIC_VECTOR ( 0 to 0 );
-    data_out : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    rst : in STD_LOGIC;
-    frame_out : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    frame_in : in STD_LOGIC_VECTOR ( 0 to 0 )
-  );
+    port (
+      clk_in    : in std_logic;
+      clk_out   : out std_logic;
+      data_in   : in std_logic_vector (0 to 0);
+      data_out  : out std_logic_vector (1 downto 0);
+      rst       : in std_logic;
+      frame_out : out std_logic_vector (1 downto 0);
+      frame_in  : in std_logic_vector (0 to 0)
+    );
   end component DDRmodule;
 begin
-DDRmodule_i: component DDRmodule
-     port map (
-      clk_in => clk_in,
-      clk_out => clk_out,
-      data_in(0) => data_in(0),
-      data_out(1 downto 0) => data_out(1 downto 0),
-      frame_in(0) => frame_in(0),
+  DDRmodule_i : component DDRmodule
+    port map(
+      clk_in                => clk_in,
+      clk_out               => clk_out,
+      data_in(0)            => data_in(0),
+      data_out(1 downto 0)  => data_out(1 downto 0),
+      frame_in(0)           => frame_in(0),
       frame_out(1 downto 0) => frame_out(1 downto 0),
-      rst => rst
+      rst                   => rst
     );
-end STRUCTURE;
+  end STRUCTURE;
