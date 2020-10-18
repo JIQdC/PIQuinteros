@@ -1,5 +1,5 @@
 /*
-Emulation, acquisition and data processing system for sensor matrices 
+Emulation, acquisition and data processing system for sensor matrices
 José Quinteros del Castillo
 Instituto Balseiro
 ---
@@ -19,7 +19,7 @@ Comments: This routine performs the following startup tasks for the acquisition 
 
 */
 
-#include "src/CIAASistAdq.h"
+#include "src/AXI_control.h"
 #include "src/SPI_control.h"
 
 // Programa principal
@@ -29,20 +29,20 @@ int main()
     system("/mnt/ptpd2 -b eth0 -g");
     printf("PTPD daemon started.\n");
 
-	//enable regulator
+    //enable regulator
     regulator_enable();
 
     //detect AD9249 eval board
-    
+
     //check if FMC is connected
-    if(fmc_present())
+    if (fmc_present())
     {
         printf("FMC connector detected.\n");
         //check if both FCOs are locked
-        if(locked_FCO1())
+        if (locked_FCO1())
         {
             printf("ADC FCO1 signal locked.\n");
-            if(locked_FCO2())
+            if (locked_FCO2())
             {
                 printf("ADC FCO2 signal locked.\n");
             }
@@ -51,7 +51,6 @@ int main()
                 printf("ADC FCO2 signal not locked. Skipping SPI and ADC default configuration.\n");
                 exit(1);
             }
-            
         }
         else
         {
@@ -71,5 +70,5 @@ int main()
     spi_defaultConfig();
     adc_defaultConfig();
 
-	return 0;
+    return 0;
 }
