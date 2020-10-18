@@ -1,29 +1,20 @@
 /*
-Programa de apagado de regulador de placa CIAA-ACC
+Emulation, acquisition and data processing system for sensor matrices
 José Quinteros del Castillo
 Instituto Balseiro
+---
+Regulator disable script
 
-Versión: 2020-03-13
-Comentarios: Este programa apaga el regulador de alimentación de los bancos 12 y 13 de la FPGA.
+Version: 2020-10-18
+Comments:
 */
 
-#include "src/CIAASistAdq.h"
+#include "src/AXI_control.h"
 
 // Programa principal
 int main()
 {
-	//valor de encendido del regulador
-	uint32_t data = 0;
+    regulator_disable();
 
-	//apago el regulador
-	if(memwrite(CONTROL_BASE_ADDR+REG_ADDR,&data,1)==0)
-	{
-		printf("\nRegulador apagado correctamente.\n\n");
-	}
-	else
-	{
-		printf("\nFallo en apagado de regulador.\n\n");
-	}
-
-	return 0;
+    return 0;
 }
