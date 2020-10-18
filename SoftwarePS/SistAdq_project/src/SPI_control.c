@@ -188,16 +188,16 @@ void adc_defaultConfig()
 void adc_clkDividerSet(uint8_t divide)
 {
 
-	if(divide < 1 || divide > 8)
+	if(divide < 0 || divide > 7)
     {
-        printf("adc_clkDividerSet: divide must be in range 1-8.\n");
+        printf("adc_clkDividerSet: divide must be in range 0-7.\n");
         exit(1);
     }	
 	//configure both ADCs equally
 	SPI_slaves_t slaves[2] = {adc1, adc2};
 
 	int i;
-	uint32_t wr_data = divide-1;
+	uint32_t wr_data = divide;
 
 	for(i=0;i<2;i++)
 	{

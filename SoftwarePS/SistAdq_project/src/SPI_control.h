@@ -1,5 +1,5 @@
 /*
-Emulation, acquisition and data processing system for sensor matrices 
+Emulation, acquisition and data processing system for sensor matrices
 José Quinteros del Castillo
 Instituto Balseiro
 ---
@@ -18,7 +18,8 @@ Comments:
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include "CIAASistAdq.h"
+
+#include "AXI_control.h"
 
 // AXI SPI addresses
 #define SPI_BASE_ADDR 0x83C00000
@@ -86,28 +87,28 @@ typedef enum
 // test pattern codes
 typedef enum
 {
-    off                 = 0b0000,
-    midShort            = 0b0001,
-    posFullScale        = 0b0010,
-    negFullScale        = 0b0011,
-    checkerboard        = 0b0100,
-    PNseqLong           = 0b0101,
-    PNseqShort          = 0b0110,
-    oneZeroWordToggle   = 0b0111,
-    oneZeroBitToggle    = 0b1001,
-    oneXsync            = 0b1010,
-    oneBitHigh          = 0b1011,
-    mixedFrequency      = 0b1100
+    off = 0b0000,
+    midShort = 0b0001,
+    posFullScale = 0b0010,
+    negFullScale = 0b0011,
+    checkerboard = 0b0100,
+    PNseqLong = 0b0101,
+    PNseqShort = 0b0110,
+    oneZeroWordToggle = 0b0111,
+    oneZeroBitToggle = 0b1001,
+    oneXsync = 0b1010,
+    oneBitHigh = 0b1011,
+    mixedFrequency = 0b1100
 }adc_testPattern_t;
 
 // resets SPI module
 void spi_reset();
 
 // configures SPI_CR register. params and value are two arrays of specified size
-void spi_CR_config(SPI_CR_params_t * params, bool * value, uint8_t size);
+void spi_CR_config(SPI_CR_params_t* params, bool* value, uint8_t size);
 
 // writes an instruction to the ADC, complying with its instruction formats. address is a 13 bit argument, and data is an array of size n_bytes
-int spi_write(uint16_t address, const uint32_t * data, uint8_t n_bytes);
+int spi_write(uint16_t address, const uint32_t* data, uint8_t n_bytes);
 
 // selects active slave
 int spi_ssel(SPI_slaves_t slave);
@@ -125,6 +126,6 @@ void adc_clkDividerSet(uint8_t divide);
 void adc_testPattern(adc_testPattern_t testPattern);
 
 //configures ADC user test pattern to alternate between word1 and word2
-void adc_userTestPattern(uint16_t word1,uint16_t word2);
+void adc_userTestPattern(uint16_t word1, uint16_t word2);
 
 #endif //SPI_CONTROL_H_
