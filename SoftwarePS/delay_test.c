@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Delay test script for specified data channel
 
-Version: 2020-10-17
+Version: 2020-10-20
 Comments:
 */
 
@@ -37,12 +37,7 @@ int main(int argc, char* argv[])
     //use frame corresponding to adc_ch position
     frame = g_adcPinPositions[adc_ch];
 
-    Multi_MemPtr_t* mPtr_flags = malloc(sizeof(Multi_MemPtr_t));
-    memset(mPtr_flags, 0, sizeof(Multi_MemPtr_t));
-    Multi_MemPtr_t* mPtr_data = malloc(sizeof(Multi_MemPtr_t));
-    memset(mPtr_flags, 0, sizeof(Multi_MemPtr_t));
-    Multi_MemPtr_t* mPtr_progFull = malloc(sizeof(Multi_MemPtr_t));
-    memset(mPtr_flags, 0, sizeof(Multi_MemPtr_t));
+    Multi_MemPtr_t* mPtr_flags, * mPtr_data, * mPtr_progFull;
 
     AcqPack_t* acqPack = malloc(sizeof(AcqPack_t));
     memset(acqPack, 0, sizeof(AcqPack_t));
