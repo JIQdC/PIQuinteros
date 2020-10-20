@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Startup routine for CIAA-ACC and AD9249
 
-Version: 2020-10-13
+Version: 2020-10-20
 Comments: This routine performs the following startup tasks for the acquisition system:
 1. Enables PTP daemon.
 2. Writes a specified value to potentiometer via I2C.
@@ -16,6 +16,7 @@ Comments: This routine performs the following startup tasks for the acquisition 
 4. If AD9249 evaluation board is connected and powered:
     a. Configures AXI SPI module.
     b. Configures ADC to default operation values.
+    c. Runs input delay calibration routine.
 
 */
 
@@ -69,6 +70,9 @@ int main()
     //default configuration for AXI module and ADC
     spi_defaultConfig();
     adc_defaultConfig();
+
+    //run input delay calibration routine
+    printf("Running input delay calibration routine...\n");
 
     return 0;
 }
