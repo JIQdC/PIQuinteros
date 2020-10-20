@@ -22,6 +22,7 @@ Comments: This routine performs the following startup tasks for the acquisition 
 
 #include "src/AXI_control.h"
 #include "src/SPI_control.h"
+#include "src/delay_functions.h"
 
 // Programa principal
 int main()
@@ -73,6 +74,7 @@ int main()
 
     //run input delay calibration routine
     printf("Running input delay calibration routine...\n");
+    inputDelayCalibrate();
 
     return 0;
 }
