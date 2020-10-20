@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AXI control functions for CIAA-ACC
 
-Version: 2020-10-17
+Version: 2020-10-20
 Comments:
 */
 
@@ -48,23 +48,6 @@ Comments:
 #define FIFODATA_OFF    (0x80<<2)
 
 #define USRAUX_OFF      (0xFF<<2)
-
-//delay control module register addresses
-#define DELAY_BASE_ADDR     0x43C10000
-
-#define LOCKED12_OFF        (0x0<<2)
-#define LOCKED13_OFF        (0x1<<2)
-
-#define FRAME_LD_12_OFF     (0x2<<2)
-#define FRAME_LD_13_OFF     (0x3<<2)
-#define FRAME_IN_12_OFF     (0x4<<2)
-#define FRAME_IN_13_OFF     (0x5<<2)
-#define FRAME_OUT_12_OFF    (0x6<<2)
-#define FRAME_OUT_13_OFF    (0x7<<2)
-
-#define DATA_LD_OFF         (0x20<<2)
-#define DATA_IN_OFF         (0x40<<2)
-#define DATA_OUT_OFF        (0x60<<2)
 
 //downsampling control module register addresses
 #define DOWNSMPL_BASE_ADDR  0x43c20000
@@ -185,11 +168,6 @@ void multi_mdestroy(Multi_MemPtr_t* multiPtr);
 // fills an AcqPack_t with external data from Acquisition System
 void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull);
 
-////INPUT DELAY CONTROL
-// changes the input delay of frame pin i (0 for BANK12, 1 for BANK13) to value taps.
-int inputDelaySet_frame(uint8_t i, uint8_t taps);
 
-// changes the input delay of data pin i to value taps
-int inputDelaySet_data(uint8_t i, uint8_t taps);
 
 #endif /* SRC_AXI_CONTROL_H_ */

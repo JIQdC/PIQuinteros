@@ -1,0 +1,51 @@
+/*
+Emulation, acquisition and data processing system for sensor matrices
+José Quinteros del Castillo
+Instituto Balseiro
+---
+Control functions for input delays and calibration
+
+Version: 2020-10-20
+Comments:
+*/
+
+#ifndef SRC_DELAY_FUNCTIONS_H_
+#define SRC_DELAY_FUNCTIONS_H_
+
+#include "AXI_control.h"
+#include "SPI_control.h"
+
+//delay control module register addresses
+#define DELAY_BASE_ADDR     0x43C10000
+
+#define LOCKED12_OFF        (0x0<<2)
+#define LOCKED13_OFF        (0x1<<2)
+
+#define FRAME_LD_12_OFF     (0x2<<2)
+#define FRAME_LD_13_OFF     (0x3<<2)
+#define FRAME_IN_12_OFF     (0x4<<2)
+#define FRAME_IN_13_OFF     (0x5<<2)
+#define FRAME_OUT_12_OFF    (0x6<<2)
+#define FRAME_OUT_13_OFF    (0x7<<2)
+
+#define DATA_LD_OFF         (0x20<<2)
+#define DATA_IN_OFF         (0x40<<2)
+#define DATA_OUT_OFF        (0x60<<2)
+
+//parameters for calibration
+#define TAP_MAX 32
+#define CAL_PATTERN checkerboard
+#define CAL_DIFF (0b10101010101010 - 0b01010101010101)
+#define BAD_SAMPLES_TRESHOLD 2
+
+////INPUT DELAY CONTROL
+// changes the input delay of frame pin i (0 for BANK12, 1 for BANK13) to value taps.
+int inputDelaySet_frame(uint8_t i, uint8_t taps);
+
+// changes the input delay of adc_ch to value taps
+int inputDelaySet_data(uint8_t adc_ch, uint8_t taps);
+
+//sets input delays to optimal values
+int inputDelayCalibrate();
+
+#endif //SRC_DELAY_FUNCTIONS_H_
