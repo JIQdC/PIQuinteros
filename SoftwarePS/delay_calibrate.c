@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Delay calibration script
 
-Version: 2020-10-20
+Version: 2020-10-21
 Comments:
 */
 
@@ -13,7 +13,7 @@ Comments:
 
 int main()
 {
-    delay_calibrate();
+    inputDelayCalibrate();
 
     return 0;
 }
