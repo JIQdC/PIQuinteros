@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-10-20
+Version: 2020-10-21
 Comments:
 */
 
@@ -100,7 +100,7 @@ int inputDelaySet_data(uint8_t adc_ch, uint8_t taps)
 
     //assert DELAY CTRL is locked for corresponding FPGA bank
     if (g_adcPinPositions[adc_ch]) locked_addr = DELAY_BASE_ADDR + LOCKED13_OFF;
-    else locked_addr = DELAY_BASE_ADDR + LOCKED13_OFF;
+    else locked_addr = DELAY_BASE_ADDR + LOCKED12_OFF;
     memread(locked_addr, &rd_val, 1);
     if (rd_val != 1)
     {
@@ -265,7 +265,7 @@ int inputDelayCalibrate()
             {
                 //set frame delay to k and data delay to l
                 inputDelaySet_frame(frame, k);
-                inputDelaySet_data(j, l);
+                inputDelaySet_data(active_list[j], l);
 
                 //compute bad samples and save to matrix
                 bad_samples_matrix[k][l] = computeBadSamples(j);
