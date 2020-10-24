@@ -49,11 +49,6 @@ Comments:
 
 #define USRAUX_OFF      (0xFF<<2)
 
-//downsampling control module register addresses
-#define DOWNSMPL_BASE_ADDR  0x43c20000
-#define TRESH_LD_OFF        (0x00<<2)
-#define TRESH_VAL_OFF       (0x01<<2)
-
 //pin control module register addresses`
 #define CONTROL_BASE_ADDR   0x83C10000
 #define REG_OFF             (0x0<<2)
