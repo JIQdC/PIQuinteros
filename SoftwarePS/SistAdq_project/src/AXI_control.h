@@ -3,9 +3,9 @@ Emulation, acquisition and data processing system for sensor matrices
 José Quinteros del Castillo
 Instituto Balseiro
 ---
-AXI control functions for CIAA-ACC
+AXI data and control functions for CIAA-ACC
 
-Version: 2020-10-20
+Version: 2020-10-24
 Comments:
 */
 
@@ -67,16 +67,6 @@ Comments:
 //memwrite and memread do not require memory increase
 #define MEM_INCR 0
 
-//masks to read FIFO flags register
-#define RDDATACOUNT_MASK ((1 << 12) - 1)
-#define RDRSTBUSY_MASK  (1 << 12)
-#define WRRSTBUSY_MASK  (1 << 13)
-#define OVERFLOW_MASK   (1 << 14)
-#define EMPTY_MASK      (1 << 15)
-#define FULL_MASK       (1 << 16)
-#define PROGFULL_MASK   (1 << 17)
-#define PROGFULL_ASSERT ((1 << 16) - 1)
-
 //debug control sequences
 #define DISABLED_CTRL           0x0
 #define MIDSCALE_SH_CTRL        0x1
@@ -89,17 +79,6 @@ Comments:
 #define MIXED_FREQ_CTRL         0xC
 #define DESERIALIZER_CTRL       0xD
 #define CONT_NBITS_CTRL         0xF
-
-typedef struct
-{
-    bool full;
-    bool empty;
-    bool wr_rst_busy;
-    bool rd_rst_busy;
-    bool overflow;
-    bool prog_full;
-    uint32_t rd_data_count;
-}fifo_flags_t;
 
 //a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
 typedef struct
@@ -132,12 +111,6 @@ bool locked_FCO1();
 // checks if FCO2 is locked
 bool locked_FCO2();
 
-// human readable print of FIFO flags structure
-void print_fifo_flags(fifo_flags_t* flags);
-
-// converts FIFO flag register to FIFO flags structure
-void fifoflags_reg_to_struct(fifo_flags_t* flags, uint32_t* flag_reg);
-
 // resets FIFO
 void fifo_reset();
 
@@ -167,7 +140,5 @@ void multi_mdestroy(Multi_MemPtr_t* multiPtr);
 
 // fills an AcqPack_t with external data from Acquisition System
 void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull);
-
-
 
 #endif /* SRC_AXI_CONTROL_H_ */
