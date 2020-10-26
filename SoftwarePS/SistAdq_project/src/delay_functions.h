@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-10-20
+Version: 2020-10-25
 Comments:
 */
 
@@ -18,8 +18,7 @@ Comments:
 //delay control module register addresses
 #define DELAY_BASE_ADDR     0x43C10000
 
-#define LOCKED12_OFF        (0x0<<2)
-#define LOCKED13_OFF        (0x1<<2)
+#define DELAY_LOCKED_OFF    (0x0<<2)
 
 #define FRAME_LD_12_OFF     (0x2<<2)
 #define FRAME_LD_13_OFF     (0x3<<2)

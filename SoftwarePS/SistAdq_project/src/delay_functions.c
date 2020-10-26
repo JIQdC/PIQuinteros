@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-10-21
+Version: 2020-10-25
 Comments:
 */
 
@@ -33,20 +33,19 @@ int inputDelaySet_frame(uint8_t i, uint8_t taps)
 
     if (i)
     {
-        locked_addr = DELAY_BASE_ADDR + LOCKED13_OFF;
         ld_addr = DELAY_BASE_ADDR + FRAME_LD_13_OFF;
         in_addr = DELAY_BASE_ADDR + FRAME_IN_13_OFF;
         out_addr = DELAY_BASE_ADDR + FRAME_OUT_13_OFF;
     }
     else
     {
-        locked_addr = DELAY_BASE_ADDR + LOCKED12_OFF;
         ld_addr = DELAY_BASE_ADDR + FRAME_LD_12_OFF;
         in_addr = DELAY_BASE_ADDR + FRAME_IN_12_OFF;
         out_addr = DELAY_BASE_ADDR + FRAME_OUT_12_OFF;
     }
 
-    //assert DELAY CTRL is locked for corresponding FPGA bank
+    //assert DELAY CTRL is locked
+    locked_addr = DELAY_BASE_ADDR + DELAY_LOCKED_OFF;
     memread(locked_addr, &rd_val, 1);
     if (rd_val != 1)
     {
@@ -98,9 +97,8 @@ int inputDelaySet_data(uint8_t adc_ch, uint8_t taps)
         exit(1);
     }
 
-    //assert DELAY CTRL is locked for corresponding FPGA bank
-    if (g_adcPinPositions[adc_ch]) locked_addr = DELAY_BASE_ADDR + LOCKED13_OFF;
-    else locked_addr = DELAY_BASE_ADDR + LOCKED12_OFF;
+    //assert DELAY CTRL is locked
+    locked_addr = DELAY_BASE_ADDR + DELAY_LOCKED_OFF;
     memread(locked_addr, &rd_val, 1);
     if (rd_val != 1)
     {
