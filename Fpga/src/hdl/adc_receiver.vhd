@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-25
+-- Revision: 2020-11-11
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -80,6 +80,7 @@ architecture arch of adc_receiver is
       clk_in1        : in std_logic;
       clk_to_counter : out std_logic;
       clk_to_preproc : out std_logic;
+      clk_to_debug   : out std_logic;
       fifo_wr_clk    : out std_logic;
       locked         : out std_logic;
       reset          : in std_logic
@@ -106,7 +107,7 @@ architecture arch of adc_receiver is
   end component;
 
   signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_div,
-  clk_to_preproc, clk_to_counter, fifo_wr_clk                          : std_logic;
+  clk_to_preproc, clk_to_counter, fifo_wr_clk, clk_to_debug            : std_logic;
   signal data_to_idelays, data_to_iddr, data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
   signal data_from_deser, data_from_debug                              : std_logic_vector((RES_ADC * N - 1) downto 0);
   signal data_from_dwsamp                                              : std_logic_vector(16 * N - 1 downto 0);
@@ -225,6 +226,7 @@ begin
     clk_to_preproc => clk_to_preproc,
     fifo_wr_clk    => fifo_wr_clk,
     clk_to_counter => clk_to_counter,
+    clk_to_debug   => clk_to_debug,
     -- Status and control signals                
     reset  => async_rst_i,
     locked => adc_FCOlck_o,
@@ -316,6 +318,8 @@ begin
         RES_ADC => RES_ADC
       )
       port map(
+        clock_i    => clk_to_debug,
+        rst_i      => async_rst_i,
         enable_i   => debug_enable_i,
         control_i  => debug_control_i(((4 * (i + 1)) - 1) downto (4 * i)),
         usr_w2w1_i => debug_w2w1_i(((28 * (i + 1)) - 1) downto (28 * i)),

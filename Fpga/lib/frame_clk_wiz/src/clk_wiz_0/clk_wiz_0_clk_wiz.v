@@ -59,6 +59,7 @@
 // clk_to_preproc____65.000______0.000______50.0______162.682____109.791
 // fifo_wr_clk____65.000______0.000______50.0______162.682____109.791
 // clk_to_counter____65.000______0.000______50.0______162.682____109.791
+// clk_to_debug____65.000______0.000______50.0______162.682____109.791
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -74,6 +75,7 @@ module clk_wiz_0_clk_wiz
   output        clk_to_preproc,
   output        fifo_wr_clk,
   output        clk_to_counter,
+  output        clk_to_debug,
   // Status and control signals
   input         reset,
   output        locked,
@@ -98,7 +100,7 @@ wire clk_in2_clk_wiz_0;
   wire        clk_to_preproc_clk_wiz_0;
   wire        fifo_wr_clk_clk_wiz_0;
   wire        clk_to_counter_clk_wiz_0;
-  wire        clk_out4_clk_wiz_0;
+  wire        clk_to_debug_clk_wiz_0;
   wire        clk_out5_clk_wiz_0;
   wire        clk_out6_clk_wiz_0;
   wire        clk_out7_clk_wiz_0;
@@ -113,7 +115,6 @@ wire clk_in2_clk_wiz_0;
     wire clkout0b_unused;
    wire clkout1b_unused;
    wire clkout2b_unused;
-   wire clkout3_unused;
    wire clkout3b_unused;
    wire clkout4_unused;
   wire        clkout5_unused;
@@ -143,6 +144,10 @@ wire clk_in2_clk_wiz_0;
     .CLKOUT2_PHASE        (0.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
     .CLKOUT2_USE_FINE_PS  ("FALSE"),
+    .CLKOUT3_DIVIDE       (15),
+    .CLKOUT3_PHASE        (0.000),
+    .CLKOUT3_DUTY_CYCLE   (0.500),
+    .CLKOUT3_USE_FINE_PS  ("FALSE"),
     .CLKIN1_PERIOD        (15.385))
   mmcm_adv_inst
     // Output clocks
@@ -155,7 +160,7 @@ wire clk_in2_clk_wiz_0;
     .CLKOUT1B            (clkout1b_unused),
     .CLKOUT2             (clk_to_counter_clk_wiz_0),
     .CLKOUT2B            (clkout2b_unused),
-    .CLKOUT3             (clkout3_unused),
+    .CLKOUT3             (clk_to_debug_clk_wiz_0),
     .CLKOUT3B            (clkout3b_unused),
     .CLKOUT4             (clkout4_unused),
     .CLKOUT5             (clkout5_unused),
@@ -214,6 +219,10 @@ wire clk_in2_clk_wiz_0;
   BUFG clkout3_buf
    (.O   (clk_to_counter),
     .I   (clk_to_counter_clk_wiz_0));
+
+  BUFG clkout4_buf
+   (.O   (clk_to_debug),
+    .I   (clk_to_debug_clk_wiz_0));
 
 
 

@@ -9,3 +9,4 @@ VHDL/adc_control_saxi_bak.vhd
 SoftwarePS/server/captured_data
 SoftwarePS/server/fileReader
 SoftwarePS/server/server_main
+*/__pycache__

@@ -109,6 +109,28 @@
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
+    <spirit:busInterface>
+      <spirit:name>clk_to_debug</spirit:name>
+      <spirit:busType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="clock" spirit:version="1.0"/>
+      <spirit:abstractionType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="clock_rtl" spirit:version="1.0"/>
+      <spirit:master/>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>CLK</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>clk_to_debug</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>ASSOCIATED_RESET</spirit:name>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_TO_DEBUG.ASSOCIATED_RESET">reset</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
   </spirit:busInterfaces>
   <spirit:model>
     <spirit:views>
@@ -127,7 +149,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>251acfa9</spirit:value>
+            <spirit:value>d5fd2827</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +168,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>251acfa9</spirit:value>
+            <spirit:value>d5fd2827</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -164,7 +186,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>5860ccc8</spirit:value>
+            <spirit:value>a29142d6</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -212,6 +234,19 @@
       </spirit:port>
       <spirit:port>
         <spirit:name>clk_to_counter</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>std_logic</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>clk_to_debug</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -275,7 +310,7 @@
       <spirit:file>
         <spirit:name>hdl/frame_clk_wiz.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_de9d97ee</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_8a049a90</spirit:userFileType>
         <spirit:logicalName>frame_clk_wiz</spirit:logicalName>
       </spirit:file>
     </spirit:fileSet>
@@ -363,11 +398,11 @@
       </xilinx:xpmLibraries>
       <xilinx:vendorDisplayName>Instituto Balseiro</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://www.ib.edu.ar</xilinx:vendorURL>
-      <xilinx:coreRevision>1</xilinx:coreRevision>
+      <xilinx:coreRevision>2</xilinx:coreRevision>
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>Emtech:transceiver_xku:frame_clk_wiz:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2020-10-25T20:46:51Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2020-11-11T13:25:10Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@41bb3779_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/VHDL/lib/frame_clk_wiz</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@15c2faa8_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/VHDL/lib/frame_clk_wiz</xilinx:tag>
@@ -395,13 +430,35 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@d0255f8_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/VHDL/lib/frame_clk_wiz</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@78348df8_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/VHDL/lib/frame_clk_wiz</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@2a22f9b6_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/VHDL/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6842570a_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@bae96ce_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2378aca_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2e6f8b4e_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7e5fa63_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@618b4283_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@61a3998d_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@738b10f1_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4768c7ec_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@55ebfebc_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@a142920_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1610a295_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@21b29147_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3121d9e3_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@360dc3ec_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3c67c5b0_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@66b2a4f4_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2aae9ed_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@76c8bcd8_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@172f81e8_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1fe714fb_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@b9f6a95_ARCHIVE_LOCATION">/home/jiqdc/Documents/PI/PIQuinteros_repo/Fpga/lib/frame_clk_wiz</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2019.1</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="77ff8180"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="045012b7"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="ca25997d"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="efb2ca58"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="0928c67e"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="4950a147"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="1e0115ba"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>

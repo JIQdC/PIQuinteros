@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-25
+-- Revision: 2020-11-11
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -28,6 +28,7 @@ entity frame_clk_wiz is
     clk_to_preproc : out std_logic;
     fifo_wr_clk    : out std_logic;
     clk_to_counter : out std_logic;
+    clk_to_debug   : out std_logic;
     -- Status and control signals
     reset   : in std_logic;
     locked  : out std_logic;
@@ -42,6 +43,7 @@ architecture rtl of frame_clk_wiz is
       clk_to_preproc : out std_logic;
       fifo_wr_clk    : out std_logic;
       clk_to_counter : out std_logic;
+      clk_to_debug   : out std_logic;
       -- Status and control signals
       reset   : in std_logic;
       locked  : out std_logic;
@@ -55,6 +57,7 @@ begin
     clk_to_preproc => clk_to_preproc,
     fifo_wr_clk    => fifo_wr_clk,
     clk_to_counter => clk_to_counter,
+    clk_to_debug   => clk_to_debug,
     -- Status and control signals                
     reset  => reset,
     locked => locked,

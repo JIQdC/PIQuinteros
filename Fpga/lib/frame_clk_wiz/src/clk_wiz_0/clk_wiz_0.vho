@@ -58,6 +58,7 @@
 -- clk_to_preproc____65.000______0.000______50.0______162.682____109.791
 -- fifo_wr_clk____65.000______0.000______50.0______162.682____109.791
 -- clk_to_counter____65.000______0.000______50.0______162.682____109.791
+-- clk_to_debug____65.000______0.000______50.0______162.682____109.791
 --
 ------------------------------------------------------------------------------
 -- Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -74,6 +75,7 @@ port
   clk_to_preproc          : out    std_logic;
   fifo_wr_clk          : out    std_logic;
   clk_to_counter          : out    std_logic;
+  clk_to_debug          : out    std_logic;
   -- Status and control signals
   reset             : in     std_logic;
   locked            : out    std_logic;
@@ -91,6 +93,7 @@ your_instance_name : clk_wiz_0
    clk_to_preproc => clk_to_preproc,
    fifo_wr_clk => fifo_wr_clk,
    clk_to_counter => clk_to_counter,
+   clk_to_debug => clk_to_debug,
   -- Status and control signals                
    reset => reset,
    locked => locked,
