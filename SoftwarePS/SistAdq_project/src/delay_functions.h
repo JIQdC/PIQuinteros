@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-10-25
+Version: 2020-11-11
 Comments:
 */
 
@@ -33,8 +33,8 @@ Comments:
 
 //parameters for calibration
 #define TAP_MAX 32
-#define CAL_PATTERN checkerboard
-#define CAL_DIFF (0b10101010101010 - 0b01010101010101)
+#define CAL_DIFF_CHK (0b10101010101010 - 0b01010101010101)
+#define CAL_DIFF_WT (0b11111111111111)
 #define BAD_SAMPLES_TRESHOLD 2
 
 ////INPUT DELAY CONTROL
@@ -44,7 +44,10 @@ int inputDelaySet_frame(uint8_t i, uint8_t taps);
 // changes the input delay of adc_ch to value taps
 int inputDelaySet_data(uint8_t adc_ch, uint8_t taps);
 
+// prints bad samples matrix for a specified adc_ch, using a testPattern for ADC
+int inputDelayTest(adc_testPattern_t testPattern, uint8_t adc_ch);
+
 //sets input delays to optimal values
-int inputDelayCalibrate();
+int inputDelayCalibrate(adc_testPattern_t testPattern);
 
 #endif //SRC_DELAY_FUNCTIONS_H_

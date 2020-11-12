@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Startup routine for CIAA-ACC and AD9249
 
-Version: 2020-10-20
+Version: 2020-11-11
 Comments: This routine performs the following startup tasks for the acquisition system:
 1. Enables PTP daemon.
 2. Writes a specified value to potentiometer via I2C.
@@ -73,8 +73,8 @@ int main()
     adc_defaultConfig();
 
     //run input delay calibration routine
-    printf("Running input delay calibration routine...\n");
-    inputDelayCalibrate();
+    printf("Running input delay calibration routine with testPattern checkerboard...\n");
+    inputDelayCalibrate(checkerboard);
 
     return 0;
 }

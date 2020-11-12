@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-10-25
+Version: 2020-11-11
 Comments:
 */
 
@@ -139,7 +139,7 @@ int inputDelaySet_data(uint8_t adc_ch, uint8_t taps)
 }
 
 // computes bad samples acquired when compared to a calibration pattern
-static int computeBadSamples(uint8_t adc_ch)
+static int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
 {
     int result;
     uint16_t expanded_data[2*CHDATA_SIZE];
@@ -180,10 +180,10 @@ static int computeBadSamples(uint8_t adc_ch)
     }
 
     result = 0;
-    //compute bad samples checking if the difference between them differs from CAL_DIFF
+    //compute bad samples checking if the difference between them differs from cal_diff
     for (j = 1; j<2*CHDATA_SIZE; j++)
     {
-        if ((abs(expanded_data[j]-expanded_data[j-1]))!=CAL_DIFF) result++;
+        if ((abs(expanded_data[j]-expanded_data[j-1]))!=cal_diff) result++;
     }
 
     //free resources
@@ -195,13 +195,73 @@ static int computeBadSamples(uint8_t adc_ch)
     return result;
 }
 
-//sets input delays to optimal values
-int inputDelayCalibrate()
+// prints bad samples matrix for a specified adc_ch, using a testPattern for ADC
+int inputDelayTest(adc_testPattern_t testPattern, uint8_t adc_ch)
 {
-    //set clock divider to 0
-    adc_clkDividerSet(0);
-    //set test pattern to CAL_PATTERN
-    adc_testPattern(CAL_PATTERN);
+    if (testPattern != oneZeroWordToggle && testPattern != checkerboard)
+    {
+        printf("inputDelayTest: test pattern for delay_test may be checkerboard or oneZeroWordToggle.\n");
+        exit(1);
+    }
+    uint16_t sample_dif;
+    if (testPattern == oneZeroWordToggle) sample_dif = CAL_DIFF_WT;
+    else sample_dif = CAL_DIFF_CHK;
+
+    if (adc_ch < 0 || adc_ch > 15)
+    {
+        printf("adc_ch must be in range 0-15.\n");
+        exit(1);
+    }
+
+    //use frame corresponding to adc_ch position
+    uint8_t frame = g_adcPinPositions[adc_ch];
+
+    int i, k;
+
+    int result;
+
+    //configure ADC to desired test conditions
+    adc_testPattern(testPattern);
+
+    printf("Rows: Tap 0 (frame)\n");
+    printf("Columns: Tap 1 (data)\n");
+
+    printf("\t");
+    for (i = 0; i<32; i++) printf("T%d\t", i);
+    printf("\n");
+    for (i = 0; i<32; i++)
+    {
+        printf("T%d\t", i);
+        for (k = 0; k<32; k++)
+        {
+            //change IDELAY 0 to i value and IDELAY 1 to k value
+            inputDelaySet_frame(frame, i);
+            inputDelaySet_data(adc_ch, k);
+
+            //compute bad samples
+            result = computeBadSamples(adc_ch, sample_dif);
+
+            //print result
+            printf("%d\t", result);
+        }
+        printf("\n");
+    }
+
+    //return both input delays to 0
+    inputDelaySet_frame(frame, 0);
+    inputDelaySet_data(adc_ch, 0);
+
+    return 0;
+}
+
+//sets input delays to optimal values
+int inputDelayCalibrate(adc_testPattern_t testPattern)
+{
+    //set test pattern to testPattern
+    adc_testPattern(testPattern);
+    uint16_t sample_dif;
+    if (testPattern == oneZeroWordToggle) sample_dif = CAL_DIFF_WT;
+    else sample_dif = CAL_DIFF_CHK;
 
     //get two lists for each bank
     uint8_t i;
@@ -266,7 +326,7 @@ int inputDelayCalibrate()
                 inputDelaySet_data(active_list[j], l);
 
                 //compute bad samples and save to matrix
-                bad_samples_matrix[k][l] = computeBadSamples(j);
+                bad_samples_matrix[k][l] = computeBadSamples(j, sample_dif);
             }
         }
 
@@ -323,7 +383,7 @@ int inputDelayCalibrate()
                 //set data delay to l
                 inputDelaySet_data(active_list[k], l);
                 //compute bad samples and save to line
-                bad_samples_line[l] = computeBadSamples(active_list[k]);
+                bad_samples_line[l] = computeBadSamples(active_list[k], sample_dif);
             }
 
             m = 0;
