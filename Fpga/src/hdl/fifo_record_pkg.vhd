@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-05
+-- Revision: 2020-10-25
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -31,6 +31,18 @@ package fifo_record_pkg is
     rd_data_cnt : std_logic_vector (12 - 1 downto 0);
     data_out    : std_logic_vector (32 - 1 downto 0);
   end record fifo_out_t;
+
+  constant fifo_zeros : fifo_out_t :=
+  (
+  full       => '0',
+  empty      => '0',
+  overflow   => '0',
+  prog_full  => '0',
+  wr_rst_bsy => '0',
+  rd_rst_bsy => '0',
+  rd_data_cnt => (others => '0'),
+  data_out => (others => '0')
+  );
 
   type fifo_out_vector_t is array (integer range <>) of fifo_out_t;
 
