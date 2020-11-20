@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: 
 -- 
--- Revision: 2020-11-11
+-- Revision: 2020-11-19
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ begin
       valid_next <= valid_i;
     end if;
 
-    if (control_i = "1111") then
+    if (control_i = "1111" and enable_i = '1') then
       counter_ce_next <= '1';
     else
       counter_ce_next <= '0';

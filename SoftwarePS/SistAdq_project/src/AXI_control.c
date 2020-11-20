@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AXI data and control functions for CIAA-ACC
 
-Version: 2020-10-24
+Version: 2020-11-20
 Comments:
 */
 
@@ -205,6 +205,32 @@ void debug_disable()
 {
     uint32_t data = 0;
     memwrite(DATA_BASE_ADDR + ENABLE_OFF, &data, 1);
+}
+
+// enable external trigger logic
+void ext_trigger_enable()
+{
+    uint32_t wr_data = 1;
+    memwrite(DATA_BASE_ADDR + EXT_TRIGGER_EN_OFF, &wr_data, 1);
+}
+
+// disable external trigger logic
+void ext_trigger_disable()
+{
+    uint32_t wr_data = 0;
+    memwrite(DATA_BASE_ADDR + EXT_TRIGGER_EN_OFF, &wr_data, 1);
+}
+
+// wait on external trigger signal
+void ext_trigger_wait()
+{
+    printf("wait_on_ext_trigger: Waiting on external trigger...\n");
+    uint32_t rd_data;
+    do
+    {
+        memread(DATA_BASE_ADDR + EXT_TRIGGER_OFF, &rd_data, 1);
+    } while (rd_data != 1);
+    printf("wait_on_ext_trigger: External trigger detected.\n");
 }
 
 //// AXI DATA INTERFACE

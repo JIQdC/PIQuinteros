@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Client control functions for CIAA-ACC
 
-Version: 2020-10-17
+Version: 2020-11-20
 Comments:
 */
 
@@ -62,7 +62,24 @@ static void* acqTh_threadFunc(void* ctx)
     for (i = 0; i < acqTh->multiPtr_data->mem_num; i++) debug_output(acqTh->client->debug_output, i);
 
     //enable FIFO input
-    debug_enable();
+    if (acqTh->client->trigMode == extTrigger)
+    {
+        //when external trigger is selected, activate dedicated logic, assert debug_enable, and
+        //wait of assertion of external trigger signal to start capture
+        ext_trigger_enable();
+        usleep(1);
+        debug_enable();
+        ext_trigger_wait();
+        //after trigger has been captured, its logic is no longer required. Flow control falls 
+        //back to software
+        ext_trigger_disable();
+    }
+    else
+    {
+        //simply start capture
+        debug_enable();
+    }
+
 
     if (acqTh->client->capMode == sampleNumber)
     {

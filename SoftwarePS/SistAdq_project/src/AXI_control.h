@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AXI data and control functions for CIAA-ACC
 
-Version: 2020-10-24
+Version: 2020-11-20
 Comments:
 */
 
@@ -35,19 +35,22 @@ Comments:
 #define PAGE_SIZE getpagesize()
 
 // Data interface register addresses
-#define DATA_BASE_ADDR  0x43C00000
-#define COREID_OFF      (0x00<<2)
-#define ASYNCRST_OFF    (0x01<<2)
-#define FIFORST_OFF     (0x02<<2)
-#define PROGFULL_OFF    (0x03<<2)
-#define ENABLE_OFF      (0x04<<2)
+#define DATA_BASE_ADDR      0x43C00000
+#define COREID_OFF          (0x00<<2)
+#define ASYNCRST_OFF        (0x01<<2)
+#define FIFORST_OFF         (0x02<<2)
+#define PROGFULL_OFF        (0x03<<2)
+#define ENABLE_OFF          (0x04<<2)
+#define EXT_TRIGGER_EN_OFF  (0x05<<2)
+#define EXT_TRIGGER_OFF     (0x06<<2)
 
-#define CONTROL_OFF     (0x20<<2)
-#define USRW2W1_OFF     (0x40<<2)
-#define FIFOFLAGS_OFF   (0x60<<2)
-#define FIFODATA_OFF    (0x80<<2)
 
-#define USRAUX_OFF      (0xFF<<2)
+#define CONTROL_OFF         (0x20<<2)
+#define USRW2W1_OFF         (0x40<<2)
+#define FIFOFLAGS_OFF       (0x60<<2)
+#define FIFODATA_OFF        (0x80<<2)
+
+#define USRAUX_OFF          (0xFF<<2)
 
 //pin control module register addresses`
 #define CONTROL_BASE_ADDR   0x83C10000
@@ -126,6 +129,15 @@ void debug_enable();
 
 // disables FIFO input for all ADC channels
 void debug_disable();
+
+// enable external trigger logic
+void ext_trigger_enable();
+
+// disable external trigger logic
+void ext_trigger_disable();
+
+// wait on external trigger signal
+void ext_trigger_wait();
 
 // initializes a Multi_MemPtr_t, mapping the memory addresses passed as argument
 Multi_MemPtr_t* multi_minit(uint32_t* addr, uint8_t mem_num);

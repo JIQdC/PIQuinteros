@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-25
+-- Revision: 2020-11-20
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -89,7 +89,10 @@ entity adc_control_wrapper is
     delay_frame1_output_o : out std_logic_vector((5 - 1) downto 0);
     delay_frame2_ld_i     : in std_logic;
     delay_frame2_input_i  : in std_logic_vector((5 - 1) downto 0);
-    delay_frame2_output_o : out std_logic_vector((5 - 1) downto 0)
+    delay_frame2_output_o : out std_logic_vector((5 - 1) downto 0);
+
+    --external trigger signal
+    ext_trigger_i : in std_logic
   );
 end adc_control_wrapper;
 
@@ -173,7 +176,8 @@ begin
       debug_control_o => debug_control_from_AXI,
       debug_w2w1_o    => debug_w2w1_from_AXI,
       fifo_rd_en_o    => fifo_rd_en_from_AXI,
-      fifo_out_i      => fifo_out_to_AXI
+      fifo_out_i      => fifo_out_to_AXI,
+      ext_trigger_i   => ext_trigger_i
     );
 
   ---- DELAY CONTROL

@@ -1,11 +1,11 @@
 /*
-Emulation, acquisition and data processing system for sensor matrices 
+Emulation, acquisition and data processing system for sensor matrices
 José Quinteros del Castillo
 Instituto Balseiro
 ---
 Parameter parsing for data acquisition interface
 
-Version: 2020-09-16
+Version: 2020-11-20
 Comments:
 */
 
@@ -34,14 +34,15 @@ typedef enum
 {
     manual,
     timer,
-    noDelay
+    noDelay,
+    extTrigger
 } TriggerMode_t;
 
 typedef struct
 {
     uint8_t bd_id;
     uint8_t ch_id;
-    char * serv_addr;
+    char* serv_addr;
     int server_portno;
     Tx_Mode_t txMode;
     CaptureMode_t capMode;
@@ -55,6 +56,6 @@ typedef struct
 
 //// PARAMETER PARSING
 // parse a file to get parameters for client. checks if all necessary parameters are set
-void ClientParseFile(const char *fname, ClParams_t *clPars);
+void ClientParseFile(const char* fname, ClParams_t* clPars);
 
 #endif //CLIENT_PARAMS_H_

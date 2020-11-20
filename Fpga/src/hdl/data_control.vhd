@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-25
+-- Revision: 2020-11-20
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -101,7 +101,10 @@ entity data_control is
 
     -- FIFO signals
     fifo_rd_en_o : out std_logic_vector((N - 1) downto 0);
-    fifo_out_i   : in fifo_out_vector_t((N - 1) downto 0)
+    fifo_out_i   : in fifo_out_vector_t((N - 1) downto 0);
+
+    -- External trigger
+    ext_trigger_i : in std_logic
   );
 end data_control;
 
@@ -119,6 +122,11 @@ architecture rtl of data_control is
   signal debug_enable_r                : std_logic_vector(32 - 1 downto 0);
   -- Aux user register
   signal usr_aux_r : std_logic_vector(32 - 1 downto 0) := (others => '0');
+
+  -- External trigger registers
+  signal ext_trigger_r, ext_trigger_en_r : std_logic_vector(32 - 1 downto 0) := (others => '0');
+  -- Debug enable aux signal
+  signal debug_enable_aux : std_logic := '0';
 
   -- Width of S_AXI address bus
   constant C_S_AXI_ADDR_WIDTH : integer := 10;
@@ -251,12 +259,13 @@ begin
   begin
     if rising_edge(S_AXI_ACLK) then
       if S_AXI_ARESETN = '0' then
-        async_rst_r     <= (others => '0');
-        fifo_rst_r      <= (others => '0');
-        debug_enable_r  <= (others => '0');
-        debug_control_r <= (others => '0');
-        debug_w2w1_r    <= (others => '0');
-        usr_aux_r       <= (others => '0');
+        async_rst_r      <= (others => '0');
+        fifo_rst_r       <= (others => '0');
+        debug_enable_r   <= (others => '0');
+        debug_control_r  <= (others => '0');
+        debug_w2w1_r     <= (others => '0');
+        usr_aux_r        <= (others => '0');
+        ext_trigger_en_r <= (others => '0');
       else
         loc_addr_w := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
         if (slv_reg_wren = '1') then
@@ -281,6 +290,14 @@ begin
               for byte_index in 0 to (32/8 - 1) loop
                 if (S_AXI_WSTRB(byte_index) = '1') then
                   debug_enable_r(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+                end if;
+              end loop;
+
+              --external trigger enable
+            when x"05" =>
+              for byte_index in 0 to (32/8 - 1) loop
+                if (S_AXI_WSTRB(byte_index) = '1') then
+                  ext_trigger_en_r(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
                 end if;
               end loop;
 
@@ -642,6 +659,14 @@ begin
           when x"04" =>
             axi_rdata <= debug_enable_r;
 
+            --external trigger enable readback
+          when x"05" =>
+            axi_rdata <= ext_trigger_en_r;
+
+            --external trigger input
+          when x"06" =>
+            axi_rdata <= ext_trigger_r;
+
             --debug control 1 readback
           when x"20" =>
             axi_rdata <= debug_control_r(31 downto 0);
@@ -933,6 +958,10 @@ begin
 
   -- User logic
 
+  --Logic for external trigger selection
+  debug_enable_aux <= (debug_enable_r(0) and ext_trigger_i) when ext_trigger_en_r(0) = '1' else
+    debug_enable_r(0);
+
   -- Register inputs and outputs
   process (S_AXI_ACLK)
   begin
@@ -940,6 +969,11 @@ begin
       --Reset outputs
       fifo_rst_o  <= fifo_rst_r(0);
       async_rst_o <= async_rst_r(0);
+      --Debug enable output
+      debug_enable_o <= debug_enable_aux;
+      --External trigger input
+      ext_trigger_r(0) <= ext_trigger_i;
+
     end if;
   end process;
 
@@ -953,7 +987,6 @@ begin
     begin
       if rising_edge(S_AXI_ACLK) then
         --outputs
-        debug_enable_o                                    <= debug_enable_r(0);
         debug_control_o((4 * (i + 1) - 1) downto (4 * i)) <= debug_control_r((32 * i + 4 - 1) downto (32 * i));
         debug_w2w1_o((28 * (i + 1) - 1) downto (28 * i))  <= debug_w2w1_r((32 * i + 28 - 1) downto (32 * i));
 

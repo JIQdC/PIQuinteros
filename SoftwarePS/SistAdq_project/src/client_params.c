@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Parameter parsing for data acquisition interface
 
-Version: 2020-09-16
+Version: 2020-11-20
 Comments:
 */
 
@@ -136,9 +136,14 @@ static void cl_parseParam(const char* key, char* value, ClParams_t* clPars)
             clPars->trigMode = noDelay;
             return;
         }
+        else if (strstr(value, "extTrigger")!=NULL)
+        {
+            clPars->trigMode = extTrigger;
+            return;
+        }
         else
         {
-            printf("ClParseParam: TRIG_MODE must be timer, manual or noDelay.\n");
+            printf("ClParseParam: TRIG_MODE must be timer, manual, noDelay or extTrigger.\n");
             exit(1);
         }
     }
