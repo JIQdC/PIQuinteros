@@ -5,11 +5,11 @@ Instituto Balseiro
 ---
 Delay set for pin and frame
 
-Version: 2020-10-17
+Version: 2020-11-20
 Comments:
 */
 
-#include "src/SPI_control.h"
+#include "src/delay_functions.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,11 +21,11 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    sscanf(argv[1], "%hhd", &pin);
+    sscanf(argv[2], "%hhd", &pin);
     sscanf(argv[3], "%hhd", &delay_val);
 
-    if (!strcmp(argv[2], "pin")) inputDelaySet_data(pin, delay_val);
-    else if (!strcmp(argv[2], "frame")) inputDelaySet_frame(pin, delay_val);
+    if (!strcmp(argv[1], "pin")) inputDelaySet_data(pin, delay_val);
+    else if (!strcmp(argv[1], "frame")) inputDelaySet_frame(pin, delay_val);
     else
     {
         printf("First argument must be \"pin\" or \"frame\".\n");

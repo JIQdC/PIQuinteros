@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-11-11
+Version: 2020-11-20
 Comments:
 */
 
@@ -139,7 +139,7 @@ int inputDelaySet_data(uint8_t adc_ch, uint8_t taps)
 }
 
 // computes bad samples acquired when compared to a calibration pattern
-static int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
+int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
 {
     int result;
     uint16_t expanded_data[2*CHDATA_SIZE];

@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-10
+-- Revision: 2020-11-19
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -22,9 +22,8 @@ use ieee.numeric_std.all;
 entity pin_control is
   generic (
     -- User constants
-    MAX_COUNT_1MS       : integer               := 50000;   --1ms/S_AXI_ACLK_period
-    LED_BLINK_PERIOD_MS : unsigned(15 downto 0) := x"01f4"; --LED blink period in ms
-    FIFO_RESET_LED_DUR  : integer               := 1000     --duration of FIFO reset blink in ms
+    MAX_COUNT_1MS       : integer               := 50000;  --1ms/S_AXI_ACLK_period
+    LED_BLINK_PERIOD_MS : unsigned(15 downto 0) := x"01f4" --LED blink period in ms
   );
   port (
     -- Global Clock Signal
@@ -89,16 +88,13 @@ entity pin_control is
     S_AXI_RREADY : in std_logic;
 
     -- User I/O
-    fifo_full_i  : in std_logic;
-    fifo_empty_i : in std_logic;
-    fifo_rst_i   : in std_logic;
-    vadj_en_o    : out std_logic;
-    led_red_o    : out std_logic;
-    led_green_o  : out std_logic;
-    led_dout0_o  : out std_logic;
-    led_dout1_o  : out std_logic;
+    vadj_en_o   : out std_logic;
+    led_red_o   : out std_logic;
+    led_green_o : out std_logic;
+    led_dout0_o : out std_logic;
+    led_dout1_o : out std_logic;
     -- led_dout2_o		: out std_logic;
-    led_dout3_o : out std_logic;
+    -- led_dout3_o : out std_logic;
 
     fmc_present_i  : in std_logic;
     adc_FCO1lock_i : in std_logic;
@@ -440,27 +436,8 @@ begin
   -- Drive led output
   led_red_o <= led_toggle_r and vadj_en_r(0);
 
-  -- LEDs for FIFO flags
-  led_dout0_o <= fifo_full_i and vadj_en_r(0);
-  led_dout1_o <= fifo_empty_i and vadj_en_r(0);
-
-  -- 2s pulse generation when reset detected
-  process (S_AXI_ACLK, fifo_rst_i, led_prescale_ce_r)
-  begin
-    if rising_edge(S_AXI_ACLK) then
-      if (fifo_rst_i = '1') then
-        led_pulse_count <= 0;
-        led_rst_en      <= '1';
-      end if;
-      if (led_prescale_ce_r = '1' and led_rst_en = '1') then
-        led_pulse_count <= led_pulse_count + 1;
-        if led_pulse_count = (FIFO_RESET_LED_DUR - 1) then
-          led_rst_en <= '0';
-        end if;
-      end if;
-    end if;
-  end process;
-
-  led_dout3_o <= led_rst_en and vadj_en_r(0);
+  -- LEDs for FCO lock status
+  led_dout0_o <= adc_FCO1lock_r(0) and vadj_en_r(0);
+  led_dout1_o <= adc_FCO2lock_r(0) and vadj_en_r(0);
 
 end rtl;

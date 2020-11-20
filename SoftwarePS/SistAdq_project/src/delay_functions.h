@@ -44,6 +44,9 @@ int inputDelaySet_frame(uint8_t i, uint8_t taps);
 // changes the input delay of adc_ch to value taps
 int inputDelaySet_data(uint8_t adc_ch, uint8_t taps);
 
+// computes bad samples acquired when compared to a calibration pattern
+int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff);
+
 // prints bad samples matrix for a specified adc_ch, using a testPattern for ADC
 int inputDelayTest(adc_testPattern_t testPattern, uint8_t adc_ch);
 

@@ -11,7 +11,7 @@
 -- 
 -- Dependencies: None.
 -- 
--- Revision: 2020-10-17
+-- Revision: 2020-11-19
 -- Additional Comments: 
 ----------------------------------------------------------------------------------
 
@@ -87,7 +87,6 @@ entity delay_control is
 
     -- User I/O
     delay_locked1_i       : in std_logic;
-    delay_locked2_i       : in std_logic;
     delay_data_ld_o       : out std_logic_vector((N - 1) downto 0);
     delay_data_input_o    : out std_logic_vector((5 * N - 1) downto 0);
     delay_data_output_i   : in std_logic_vector((5 * N - 1) downto 0);
@@ -106,10 +105,10 @@ architecture rtl of delay_control is
   constant C_S_AXI_ADDR_WIDTH : integer := 10;
 
   -- Input registers
-  signal delay_locked1_r, delay_locked2_r : std_logic_vector(32 - 1 downto 0)      := (others => '0');
-  signal delay_frame1_output_r            : std_logic_vector(32 - 1 downto 0)      := (others => '0');
-  signal delay_frame2_output_r            : std_logic_vector(32 - 1 downto 0)      := (others => '0');
-  signal delay_data_output_r              : std_logic_vector(16 * 32 - 1 downto 0) := (others => '0');
+  signal delay_locked1_r       : std_logic_vector(32 - 1 downto 0)      := (others => '0');
+  signal delay_frame1_output_r : std_logic_vector(32 - 1 downto 0)      := (others => '0');
+  signal delay_frame2_output_r : std_logic_vector(32 - 1 downto 0)      := (others => '0');
+  signal delay_data_output_r   : std_logic_vector(16 * 32 - 1 downto 0) := (others => '0');
 
   -- Output registers
   signal delay_frame1_ld_r, delay_frame1_input_r : std_logic_vector(32 - 1 downto 0)      := (others => '0');
@@ -609,13 +608,9 @@ begin
         -- acceptance of read address by the slave (axi_arready),
         -- output the read data matching the read address.
         case loc_addr_r is
-            --locked1 state
+            --locked state
           when x"00" =>
             axi_rdata <= delay_locked1_r;
-
-            --locked2 state
-          when x"01" =>
-            axi_rdata <= delay_locked2_r;
 
             --delay frame1 load readback
           when x"02" =>
@@ -805,7 +800,6 @@ begin
       delay_frame2_input_o <= delay_frame2_input_r((5 - 1) downto 0);
       --Inputs
       delay_locked1_r(0)                      <= delay_locked1_i;
-      delay_locked2_r(0)                      <= delay_locked2_i;
       delay_frame1_output_r((5 - 1) downto 0) <= delay_frame1_output_i;
       delay_frame2_output_r((5 - 1) downto 0) <= delay_frame2_output_i;
     end if;
