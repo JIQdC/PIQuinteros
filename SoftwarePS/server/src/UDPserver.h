@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 UDP server functions
 
-Version: 2020-10-24
+Version: 2020-11-20
 Comments:
 */
 
@@ -34,10 +34,10 @@ Comments:
 #include <fcntl.h>
 
 #include "server_queues.h"
-#include "../../SistAdq_project/lib/error.h"
-#include "../../SistAdq_project/lib/acqPack.h"
-#include "../../SistAdq_project/lib/intMax.h"
-#include "../../SistAdq_project/lib/dateFormatter.h"
+#include "../../client/lib/error.h"
+#include "../../client/lib/acqPack.h"
+#include "../../client/lib/intMax.h"
+#include "../../client/lib/dateFormatter.h"
 
 #define STDIN_BUF_LENGTH 32
 

@@ -1,3 +1,13 @@
+# /*
+# Emulation, acquisition and data processing system for sensor matrices
+# José Quinteros del Castillo
+# Instituto Balseiro
+# ---
+# Client configuration model file
+# 
+# Version: 2020-11-22
+# Comments:
+
 # CLIENT CONFIG FILE
 # This is a model of the Client Config File. Comment lines start with '#'. Blank lines are ignored. Unless specified, ALL PARAMETERS MUST BE SET.
 # Parameters must be formatted as
@@ -5,11 +15,10 @@
 
 # PARAMETER DESCRIPTION
 # BD_ID: identifier for board. Can take values 0-255
-# CH_ID: identifier for channel. Can take values 0-255
-# TX_MODE: defines output for client. Can take values 'file' (writes output to local file), 'TCP' or 'UDP' (sends output to server).
+# TX_MODE: defines output for client. Can take values 'file' (writes output to local file), or 'UDP' (sends output to server).
 # SERVER_ADDR: server address or name. String to be passed to gethostbyname()
 # SERVER_PORTNO: server port number
-# CAP_MODE: capture mode for client. Can take values 'sampleNumber' or 'timeInterval'
+# CAP_MODE: capture mode for client. Can take values 'sampleNumber', 'timeInterval' or 'continued'.
 # SAMPLE_NUM: valid if CAP_MODE=sampleNumber. Number of samples to be captured by client.
 # STOP_SEC: valid if CAP_MODE=timeInterval. Time interval for client capture, in seconds. Adds with STOP_NSEC.
 # STOP_NSEC: set if CAP_MODE=timeInterval. Time interval for client capture, in nanoseconds. Adds with STOP_SEC.
@@ -29,19 +38,19 @@
 #   C:    mixed frequency
 #   D:    deserializer output (default)
 #   F:    14-bit binary counter
+# DOWNSAMPLER_TRESH: sets downsampler threshold value (hex). Can take values from 0x000 to 0x3FF.
 
 BD_ID=0
-CH_ID=2
 
 TX_MODE=UDP
 
 SERVER_ADDR=192.168.0.1
-SERVER_PORTNO=12345
+SERVER_PORTNO=50000
 
 CAP_MODE=sampleNumber
 
 # valid if CAP_MODE=sampleNumber
-SAMPLE_NUM=2
+SAMPLE_NUM=10
 # valid if CAP_MODE=timeInterval
 STOP_SEC=2
 STOP_NSEC=0
@@ -58,5 +67,6 @@ START_SEC=00
 
 CLK_DIVIDER=0
 DEBUG_OUTPUT=D
+DOWNSAMPLER_TRESH=B4
 
 # END CLIENT CONFIG FILE

@@ -5,11 +5,12 @@ Instituto Balseiro
 ---
 Binary file reader script
 
-Version: 2020-10-24
+Version: 2020-11-21
 Comments:
 */
 
 #include "src/UDPserver.h"
+#include "../client/lib/intToBase.h"
 
 // // Programa principal
 int main(int argc, char* argv[])
@@ -52,6 +53,11 @@ int main(int argc, char* argv[])
         }
 
         fprintf(fout, "time: %.9f\n", acqPack->header.acq_timestamp_sec + 1e-9*acqPack->header.acq_timestamp_nsec);
+        fprintf(fout, "BD_ID = %d\n", acqPack->header.bd_id);
+        fprintf(fout, "CH_ID = %d\n", acqPack->header.ch_id);
+        fprintf(fout, "ADC channels used: %s\n", intToBase(acqPack->header.ch_adc, 2));
+        fprintf(fout, "Clock divider: %d\n", acqPack->header.clk_divider);
+        fprintf(fout, "Payload size: %d bytes", acqPack->header.payload_size);
         fprintf(fout, "FIFO flags\n");
         fprintf(fout, "ch_name,count,empty,full,pr_full,ovflow,rdrstbs,wrrstbs\n");
         for (i = 0; i<16; i++)

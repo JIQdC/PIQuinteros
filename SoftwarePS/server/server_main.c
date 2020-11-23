@@ -5,16 +5,15 @@ Instituto Balseiro
 ---
 Server main script
 
-Version: 2020-10-24
+Version: 2020-11-21
 Comments:
 */
 
-//remember that, when using TCP, functions are TCPServerXXXX
 #include "src/UDPserver.h"
 
 int main()
 {
-    int portno = 12345;
+    int portno = 50000;
     //create server
     Server_t* server = ServerInit(portno);
 

@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-11-11
+Version: 2020-11-22
 Comments:
 */
 
@@ -14,6 +14,11 @@ Comments:
 
 #include "AXI_control.h"
 #include "SPI_control.h"
+
+// ADC PIN POSITIONS
+
+//position of each ADC data pin in FPGA banks. 0 for BANK12, 1 for BANK13
+static const bool g_adcPinPositions[16] = { 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1 };
 
 //delay control module register addresses
 #define DELAY_BASE_ADDR     0x43C10000

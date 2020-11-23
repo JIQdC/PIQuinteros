@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AXI data and control functions for CIAA-ACC
 
-Version: 2020-11-20
+Version: 2020-11-21
 Comments:
 */
 
@@ -78,6 +78,10 @@ Comments:
 #define DESERIALIZER_CTRL       0xD
 #define CONT_NBITS_CTRL         0xF
 
+//data for filling AcqPack_Header
+#define CH_ADC ((1<<16)-1)
+#define PAYLOAD_SIZE (CHDATA_SIZE << 2)
+
 //a Multi_MemPtr_t contains several mapped memory spaces for easy read/write operations
 typedef struct
 {
@@ -86,11 +90,6 @@ typedef struct
     off_t* align_offset;
     uint8_t mem_num;
 }Multi_MemPtr_t;
-
-// ADC PIN POSITIONS
-
-//position of each ADC data pin in FPGA banks. 0 for BANK12, 1 for BANK13
-static const bool g_adcPinPositions[16] = { 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1 };
 
 // GENERAL PURPOSE FUNCTIONS
 

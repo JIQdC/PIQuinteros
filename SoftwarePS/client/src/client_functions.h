@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Client control functions for CIAA-ACC
 
-Version: 2020-10-17
+Version: 2020-11-21
 Comments:
 */
 
@@ -22,6 +22,7 @@ Comments:
 #include "SPI_control.h"
 #include "client_queues.h"
 #include "client_params.h"
+#include "preproc_functions.h"
 
 struct Client_str;
 typedef struct Client_str Client_t;
@@ -44,30 +45,24 @@ typedef struct
     Client_t* client;
     struct sockaddr_in serv_addr;
     int sockfd;
+    int fout;
 } Tx_Thread_t;
 
 struct Client_str
 {
-    Tx_Mode_t tx_mode;
     Rx_Queue_t* rxQ;
     Tx_Queue_t* txQ;
 
     Acq_Thread_t* acqTh;
     Tx_Thread_t* txTh;
 
-    CaptureMode_t capMode;
-    TriggerMode_t trigMode;
-
     int timerfd_start;
 
     int timerfd_stop;
-    struct itimerspec timerfd_stop_spec;
 
-    int eventfd_samples;
-    int n_samples;
+    int eventfd;
 
-    uint16_t debug_output;
-    uint16_t clk_divider;
+    ClParams_t* params;
 };
 
 ////ACQUISITION THREAD

@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Client control functions for CIAA-ACC
 
-Version: 2020-11-20
+Version: 2020-11-22
 Comments:
 */
 
@@ -47,6 +47,13 @@ void AcqThreadDestroy(Acq_Thread_t* acqTh)
     free(acqTh);
 }
 
+// function to fill some data in an AcqPack_t header with client params
+static void acqPackHeaderFill(AcqPack_Header_t* header, ClParams_t* params)
+{
+    header->bd_id = params->bd_id;
+    header->clk_divider = params->clk_divider;
+}
+
 // function to be run by the acquisition thread
 static void* acqTh_threadFunc(void* ctx)
 {
@@ -54,15 +61,19 @@ static void* acqTh_threadFunc(void* ctx)
     uint64_t wr_buf;
     AcqPack_t* acqPack = malloc(sizeof(AcqPack_t));
 
-    int count = acqTh->client->n_samples;
+    int count = acqTh->client->params->n_samples;
 
-    int i;
-
-    //select FIFO data input from debug_control    
-    for (i = 0; i < acqTh->multiPtr_data->mem_num; i++) debug_output(acqTh->client->debug_output, i);
+    uint64_t rd_buf;
 
     //enable FIFO input
-    if (acqTh->client->trigMode == extTrigger)
+    if (acqTh->client->params->trigMode == manual)
+    {
+        printf("acqTh: Press any key to enable FIFO input...\n");
+        getchar();
+        getchar();
+        debug_enable();
+    }
+    if (acqTh->client->params->trigMode == extTrigger)
     {
         //when external trigger is selected, activate dedicated logic, assert debug_enable, and
         //wait of assertion of external trigger signal to start capture
@@ -74,34 +85,58 @@ static void* acqTh_threadFunc(void* ctx)
         //back to software
         ext_trigger_disable();
     }
+    else if (acqTh->client->params->trigMode == timer)
+    {
+        printf("acqTh: Waiting for timer to enable FIFO input...\n");
+        read(acqTh->client->timerfd_start, &rd_buf, sizeof(rd_buf));
+        printf("acqTh: timer expired. Enabling FIFO input.\n");
+        debug_enable();
+    }
     else
     {
         //simply start capture
         debug_enable();
     }
 
-
-    if (acqTh->client->capMode == sampleNumber)
+    if (acqTh->client->params->capMode == sampleNumber)
     {
         //capture until reaching the required number of samples or thread is stopped
         while (acqTh->running && count--)
         {
             acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
+            acqPackHeaderFill(&acqPack->header, acqTh->client->params);
             acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
-            //clk_divider
-            acqPack->header.clk_divider = acqTh->client->clk_divider;
             Tx_QueuePut(acqTh->client->txQ, acqPack);
         }
         //notify client
         wr_buf = 1;
-        write(acqTh->client->eventfd_samples, &wr_buf, sizeof(wr_buf));
+        write(acqTh->client->eventfd, &wr_buf, sizeof(wr_buf));
     }
-    else
+    else if (acqTh->client->params->capMode == timeInterval)
+    {
+        //start time interval timer
+        timerfd_settime(acqTh->client->timerfd_stop, 0, &acqTh->client->params->timerfd_stop_spec, NULL);
+
+        //notify client that timer has started
+        wr_buf = 1;
+        write(acqTh->client->eventfd, &wr_buf, sizeof(wr_buf));
+
+        //capture until thread is stopped
+        while (acqTh->running)
+        {
+            acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
+            acqPackHeaderFill(&acqPack->header, acqTh->client->params);
+            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
+            Tx_QueuePut(acqTh->client->txQ, acqPack);
+        }
+    }
+    else //continued
     {
         //capture until thread is stopped
         while (acqTh->running)
         {
             acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
+            acqPackHeaderFill(&acqPack->header, acqTh->client->params);
             acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
             Tx_QueuePut(acqTh->client->txQ, acqPack);
         }
@@ -147,6 +182,39 @@ void AcqThreadStop(Acq_Thread_t* acqTh)
 }
 
 //// TRANSMISSION THREAD
+// opens a file with current time as name, and brief description of content
+static int fileOpen()
+{
+    int fout;
+    struct timespec t;
+    char* word1;
+    //char * word2 = NULL;
+
+    //get time from clock and place it formatted in word 1
+    if (clock_gettime(CLOCK_REALTIME, &t) < 0) error("clock_gettime in fileOpen");
+    word1 = ctime(&t.tv_sec);
+    //remove last char
+    word1[strlen(word1) - 1] = ' ';
+    //remove undesired chars
+    char* target;
+    while (target = strchr(word1, ':'), target != NULL)
+    {
+        *target = '_';
+    }
+    while (target = strchr(word1, ' '), target != NULL)
+    {
+        *target = '_';
+    }
+    //open file with name
+    fout = open(word1, O_CREAT | O_RDWR, 0640);
+    if (fout < 0) error("open in fileOpen");
+
+    //notify
+    printf("txTh: opened file with name %s\n", word1);
+
+    return fout;
+}
+
 // initializes a Tx_Thread_t
 Tx_Thread_t* TxThreadInit(Client_t* client, char* server_addr, const int server_portno)
 {
@@ -160,7 +228,7 @@ Tx_Thread_t* TxThreadInit(Client_t* client, char* server_addr, const int server_
     txTh->client = client;
     txTh->running = 0;
 
-    if (client->tx_mode == TCP || client->tx_mode == UDP)
+    if (client->params->txMode == UDP)
     {
         //find host
         server = gethostbyname(server_addr);
@@ -176,24 +244,16 @@ Tx_Thread_t* TxThreadInit(Client_t* client, char* server_addr, const int server_
             server->h_length);    //use port passed as argument
         txTh->serv_addr.sin_port = htons(server_portno);
 
-        if (client->tx_mode == TCP)
-        {
-            //open TCP/IP socket
-            txTh->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            if (txTh->sockfd < 0) error("txTh: TCP/IP socket open");
+        //open UDP socket
+        txTh->sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+        if (txTh->sockfd < 0) error("txTh: UDP socket open");
 
-            //connect to server
-            if (connect(txTh->sockfd, (struct sockaddr*)&txTh->serv_addr, sizeof(txTh->serv_addr)) < 0) error("txTh: connect to TCP/IP server");
-            printf("Client connected to %s:%d.\n", server_addr, server_portno);
-        }
-        else
-        {
-            //open UDP socket
-            txTh->sockfd = socket(PF_INET, SOCK_DGRAM, 0);
-            if (txTh->sockfd < 0) error("txTh: TCP/IP socket open");
-
-            printf("Client ready to send UDP packages to %s:%d.\n", server_addr, server_portno);
-        }
+        printf("Client ready to send UDP packages to %s:%d.\n", server_addr, server_portno);
+    }
+    else //txMode == file
+    {
+        //open file
+        txTh->fout = fileOpen();
     }
 
     return txTh;
@@ -202,11 +262,17 @@ Tx_Thread_t* TxThreadInit(Client_t* client, char* server_addr, const int server_
 // destroys a Tx_Thread_t
 void TxThreadDestroy(Tx_Thread_t* txTh)
 {
-    if (txTh->client->tx_mode == TCP || txTh->client->tx_mode == UDP)
+    if (txTh->client->params->txMode == UDP)
     {
         //close connection with server
         close(txTh->sockfd);
     }
+    else
+    {
+        //close file
+        close(txTh->fout);
+    }
+
 
     //release memory
     free(txTh);
@@ -288,116 +354,6 @@ static void* txTh_threadFuncUDP(void* ctx)
     return NULL;
 }
 
-// writes a msg to TCP connected sockfd. Retries writing until full msg is sent. Returns 0 on success, -1 on write error, 1 on connection closed
-static int socketWriteTCP(int sockfd, void* msg, size_t size_msg)
-{
-    int n;
-
-    //cast msg to char * to be able to chop it
-    char* msg_c = (char*)msg;
-
-    n = write(sockfd, msg_c, size_msg);
-
-    if (n == size_msg)
-    {
-        return 0;
-    }
-    else if (n > 0)
-    {
-        return socketWriteTCP(sockfd, msg_c + n, size_msg - n);
-    }
-    else if (n == 0)
-    {
-        return 1;
-    }
-    else // n < 0
-    {
-        return -1;
-    }
-}
-
-// function to be run by a transmission thread when tx_mode is TCP
-static void* txTh_threadFuncTCP(void* ctx)
-{
-    Tx_Thread_t* txTh = (Tx_Thread_t*)ctx;
-    Tx_Queue_t* txQ = txTh->client->txQ;
-    Rx_Queue_t* rxQ = txTh->client->rxQ;
-    AcqPack_t* acqPack;
-
-    //transmit packets over network
-    int wr_ret;
-    while (txTh->running && txTh->client->acqTh->running)
-    {
-        //capture from Tx_Queue
-        acqPack = Tx_QueueGet(txQ);
-
-        //send buffer to TCP socket
-        wr_ret = socketWriteTCP(txTh->sockfd, acqPack, sizeof(AcqPack_t));
-        if (wr_ret > 0)
-        {
-            //do something for closed server. Die perhaps?
-        }
-        if (wr_ret < 0) error("socket write in txTh");
-
-        //release buffer
-        Rx_Queue_Release(rxQ, acqPack);
-    }
-
-    //if needed, empty Tx_Queue
-    while (Tx_QueueSize(txQ) > 0)
-    {
-        //capture from Tx_Queue
-        acqPack = Tx_QueueGet(txQ);
-
-        //send buffer to TCP socket
-        wr_ret = socketWriteTCP(txTh->sockfd, acqPack, sizeof(AcqPack_t));
-        if (wr_ret > 0)
-        {
-            //do something for closed server. Die perhaps?
-        }
-        if (wr_ret < 0) error("socket write in txTh");
-
-        //release buffer
-        Rx_Queue_Release(rxQ, acqPack);
-    }
-
-    //return to be joined
-    return NULL;
-}
-
-// opens a file with current time as name, and brief description of content
-static int fileOpen()
-{
-    int fout;
-    struct timespec t;
-    char* word1;
-    //char * word2 = NULL;
-
-    //get time from clock and place it formatted in word 1
-    if (clock_gettime(CLOCK_REALTIME, &t) < 0) error("clock_gettime in fileOpen");
-    word1 = ctime(&t.tv_sec);
-    //remove last char
-    word1[strlen(word1) - 1] = ' ';
-    //remove undesired chars
-    char* target;
-    while (target = strchr(word1, ':'), target != NULL)
-    {
-        *target = '_';
-    }
-    while (target = strchr(word1, ' '), target != NULL)
-    {
-        *target = '_';
-    }
-    //open file with name
-    fout = open(word1, O_CREAT | O_RDWR, 0640);
-    if (fout < 0) error("open in fileOpen");
-
-    //notify
-    printf("txTh: opened file with name %s\n", word1);
-
-    return fout;
-}
-
 // writes the contents of an acqPack into file fout
 static void fileWrite(int fout, AcqPack_t* acqPack)
 {
@@ -412,15 +368,13 @@ static void* txTh_threadFuncFile(void* ctx)
     Rx_Queue_t* rxQ = txTh->client->rxQ;
     AcqPack_t* acqPack;
 
-    //open file
-    int fout = fileOpen();
     while (txTh->running && txTh->client->acqTh->running)
     {
         //capture from Tx_Queue
         acqPack = Tx_QueueGet(txQ);
 
         //write to file
-        fileWrite(fout, acqPack);
+        fileWrite(txTh->fout, acqPack);
 
         //release buffer
         Rx_Queue_Release(rxQ, acqPack);
@@ -433,14 +387,11 @@ static void* txTh_threadFuncFile(void* ctx)
         acqPack = Tx_QueueGet(txQ);
 
         //write to file
-        fileWrite(fout, acqPack);
+        fileWrite(txTh->fout, acqPack);
 
         //release buffer
         Rx_Queue_Release(rxQ, acqPack);
     }
-
-    //close file
-    close(fout);
 
     //return to be joined
     return NULL;
@@ -459,14 +410,10 @@ void TxThreadRun(Tx_Thread_t* txTh)
     txTh->running = 1;
 
     //create thread with function according to client->txMode
-    switch (txTh->client->tx_mode)
+    switch (txTh->client->params->txMode)
     {
     case file:
         if (pthread_create(&txTh->th, NULL, txTh_threadFuncFile, txTh) != 0) error("pthread_create in txTh");
-        break;
-
-    case TCP:
-        if (pthread_create(&txTh->th, NULL, txTh_threadFuncTCP, txTh) != 0) error("pthread_create in txTh");
         break;
 
     default: //UDP
@@ -501,37 +448,28 @@ Client_t* ClientInit(ClParams_t* params)
 
     struct itimerspec timerfd_start_spec;
 
+    //save parameters into client
+    client->params = params;
+
     //rx and tx queues must be initialized
     client->rxQ = Rx_QueueInit();
     client->txQ = Tx_QueueInit();
 
-    //modes from params
-    client->tx_mode = params->txMode;
-    client->capMode = params->capMode;
-    client->trigMode = params->trigMode;
-
-    client->debug_output = params->debug_output;
-    client->clk_divider = params->clk_divider;
-
     //initialize threads
     client->acqTh = AcqThreadInit(client);
-    client->txTh = TxThreadInit(client, params->serv_addr, params->server_portno);
+    client->txTh = TxThreadInit(client, client->params->serv_addr, client->params->server_portno);
 
     //set clock divider in ADC
-    adc_clkDividerSet(params->clk_divider);
+    adc_clkDividerSet(client->params->clk_divider);
 
-    switch (client->capMode)
+    switch (client->params->capMode)
     {
     case sampleNumber:
         //initialize eventfd for acqTh notification
-        client->eventfd_samples = eventfd(0, 0);
-        //get sample number from params      
-        client->n_samples = params->n_samples;
+        client->eventfd = eventfd(0, 0);
         break;
 
     case timeInterval:
-        //get time interval from params
-        client->timerfd_stop_spec = params->timerfd_stop_spec;
         //create timer
         client->timerfd_stop = timerfd_create(CLOCK_REALTIME, 0);
         if (client->timerfd_stop < 0) error("timerfd_create in ClientInit");
@@ -541,7 +479,7 @@ Client_t* ClientInit(ClParams_t* params)
         break;
     }
 
-    switch (client->trigMode)
+    switch (client->params->trigMode)
     {
     case manual:
         //nothing to be done here. Manual trigger is set in ClientRun()
@@ -551,7 +489,7 @@ Client_t* ClientInit(ClParams_t* params)
         //clear timer start time
         memset(&timerfd_start_spec, 0, sizeof(timerfd_start_spec));
         //get start time from params
-        timerfd_start_spec.it_value.tv_sec = mktime(&params->timerfd_start_br);
+        timerfd_start_spec.it_value.tv_sec = mktime(&client->params->timerfd_start_br);
         //create and start timer
         client->timerfd_start = timerfd_create(CLOCK_REALTIME, 0);
         timerfd_settime(client->timerfd_start, TFD_TIMER_ABSTIME, &timerfd_start_spec, NULL);
@@ -577,7 +515,7 @@ void ClientDestroy(Client_t* client)
     Tx_QueueDestroy(client->txQ);
     if (client->timerfd_start) close(client->timerfd_start);
     if (client->timerfd_stop) close(client->timerfd_stop);
-    if (client->timerfd_stop) close(client->eventfd_samples);
+    if (client->timerfd_stop) close(client->eventfd);
 }
 
 // stops a Client_t
@@ -593,47 +531,53 @@ void ClientRun(Client_t* client)
     uint64_t rd_buf;
     struct timespec tspec;
 
-    switch (client->trigMode)
+    //set debug control sequences for all channels
+    int i;
+    for (i = 0; i < 16; i++) debug_output(client->params->debug_output, i);
+
+    //set downsampler threshold
+    downsampling_set(client->params->downsampler_tresh);
+
+    switch (client->params->trigMode)
     {
     case manual:
-        printf("Client ready to capture. Press any key to start capture...\n");
-        getchar();
-        getchar();
+        printf("Client will wait for user input to enable FIFO input.\n");
         break;
 
     case timer:
-        printf("Client waiting for timer to run.\n");
-        read(client->timerfd_start, &rd_buf, sizeof(rd_buf));
+        printf("Client will wait for timer to enable FIFO input.\n");
         break;
 
     case noDelay:
         //do nothing. Start at once
         break;
+
+    case extTrigger:
+        printf("Client will wait for external trigger to enable FIFO input.\n");
+        break;
+
     default:
         break;
     }
 
     clock_gettime(CLOCK_REALTIME, &tspec);
     printf("Client started capture at time %s", ctime(&tspec.tv_sec));
-    //if capture with time interval, start this timer
-    if (client->capMode == timeInterval)
-    {
-        timerfd_settime(client->timerfd_stop, 0, &client->timerfd_stop_spec, NULL);
-    }
 
     //run threads
     AcqThreadRun(client->acqTh);
     TxThreadRun(client->txTh);
 
-    switch (client->capMode)
+    switch (client->params->capMode)
     {
     case sampleNumber:
         //wait for acqThread notification
-        read(client->eventfd_samples, &rd_buf, sizeof(rd_buf));
+        read(client->eventfd, &rd_buf, sizeof(rd_buf));
         ClientStop(client);
         break;
 
     case timeInterval:
+        //wait for timer to start
+        read(client->eventfd, &rd_buf, sizeof(rd_buf));
         //wait for time Interval
         read(client->timerfd_stop, &rd_buf, sizeof(rd_buf));
         ClientStop(client);

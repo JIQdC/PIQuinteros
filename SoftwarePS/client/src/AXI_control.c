@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 AXI data and control functions for CIAA-ACC
 
-Version: 2020-11-20
+Version: 2020-11-21
 Comments:
 */
 
@@ -287,30 +287,34 @@ void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemP
 
     struct timespec t;
 
-    //HEADER
-        //timestamp
-    if (clock_gettime(CLOCK_REALTIME, &t) < 0) error("clock_gettime in acquire_data");
-    acqPack->header.acq_timestamp_sec = t.tv_sec;
-    acqPack->header.acq_timestamp_nsec = t.tv_nsec;
+    //wait until prog_full is asserted
+    do
+    {
+        flags = *((volatile uint32_t*)(multiPtr_progFull->ptr[0] + multiPtr_progFull->align_offset[0]));
+    } while (!(flags & PROGFULL_ASSERT));
+
+    //reset fifo flags register
+
+    //ID data
+    acqPack->header.ch_adc = CH_ADC;
+    acqPack->header.payload_size = PAYLOAD_SIZE;
     //FIFO flags
     for (i = 0; i < multiPtr_flags->mem_num; i++)
     {
         acqPack->header.fifo_flags[i] = *((volatile uint32_t*)(multiPtr_flags->ptr[i] + multiPtr_flags->align_offset[i]));
     }
 
-    //whatever we want to do with remaining header
-
-//wait until prog_full is asserted
-    do
-    {
-        flags = *((volatile uint32_t*)(multiPtr_progFull->ptr[0] + multiPtr_progFull->align_offset[0]));
-    } while (!(flags & PROGFULL_ASSERT));
-
-
     //ACQUIRE
-        //read data
+    //read data
     for (j = 0; j < CHDATA_SIZE; j++)
     {
         for (i = 0; i < multiPtr_data->mem_num; i++) acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[i] + multiPtr_data->align_offset[i]));
     }
+
+    //read FIFO flags register to see what happened during capture.
+
+    //timestamp
+    if (clock_gettime(CLOCK_REALTIME, &t) < 0) error("clock_gettime in acquire_data");
+    acqPack->header.acq_timestamp_sec = t.tv_sec;
+    acqPack->header.acq_timestamp_nsec = t.tv_nsec;
 }

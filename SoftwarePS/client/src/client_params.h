@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Parameter parsing for data acquisition interface
 
-Version: 2020-11-20
+Version: 2020-11-21
 Comments:
 */
 
@@ -20,14 +20,14 @@ Comments:
 typedef enum
 {
     file,
-    TCP,
     UDP
 } Tx_Mode_t;
 
 typedef enum
 {
     sampleNumber,
-    timeInterval
+    timeInterval,
+    continued
 } CaptureMode_t;
 
 typedef enum
@@ -41,7 +41,6 @@ typedef enum
 typedef struct
 {
     uint8_t bd_id;
-    uint8_t ch_id;
     char* serv_addr;
     int server_portno;
     Tx_Mode_t txMode;
@@ -52,6 +51,7 @@ typedef struct
     struct itimerspec timerfd_stop_spec;
     uint16_t debug_output;
     uint16_t clk_divider;
+    uint16_t downsampler_tresh;
 } ClParams_t;
 
 //// PARAMETER PARSING

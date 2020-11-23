@@ -4,7 +4,7 @@
 # ---
 # Makefile for server functions
 
-# Version: 2020-10-24
+# Version: 2020-11-20
 # Comments:
 
 # Usage:
@@ -18,8 +18,8 @@ LINKERFLAG = -lm -lrt -pthread
 SERVER_SRCS := $(wildcard src/*.c) 
 SERVER_SRCS := $(filter-out fileReader.c, $(SERVER_SRCS))
 SERVER_HEADERS := $(wildcard src/*.h) 
-LIB_SRCS := $(wildcard ../SistAdq_project/lib/*.c)
-LIB_HEADERS := $(wildcard ../SistAdq_project/lib/*.h)
+LIB_SRCS := $(wildcard ../client/lib/*.c)
+LIB_HEADERS := $(wildcard ../client/lib/*.h)
 
 .PHONY: all clean
 

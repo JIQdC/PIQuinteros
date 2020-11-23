@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Parameter parsing for data acquisition interface
 
-Version: 2020-11-20
+Version: 2020-11-21
 Comments:
 */
 
@@ -25,27 +25,11 @@ static void cl_parseParam(const char* key, char* value, ClParams_t* clPars)
         return;
     }
 
-    if (!strcmp(key, "CH_ID"))
-    {
-        sscanf(value, "%hhd", &clPars->ch_id);
-        if ((clPars->ch_id < 0) || (clPars->ch_id > UINT8_MAX))
-        {
-            printf("ClParseParam: CH_ID out of range.\n");
-            exit(1);
-        }
-        return;
-    }
-
     if (!strcmp(key, "TX_MODE"))
     {
         if (strstr(value, "file")!=NULL)
         {
             clPars->txMode = file;
-            return;
-        }
-        else if (strstr(value, "TCP")!=NULL)
-        {
-            clPars->txMode = TCP;
             return;
         }
         else if (strstr(value, "UDP")!=NULL)
@@ -55,7 +39,7 @@ static void cl_parseParam(const char* key, char* value, ClParams_t* clPars)
         }
         else
         {
-            printf("ClParseParam: TX_MODE must be file, TCP or UDP.\n");
+            printf("ClParseParam: TX_MODE must be file or UDP.\n");
             exit(1);
         }
     }
@@ -91,6 +75,11 @@ static void cl_parseParam(const char* key, char* value, ClParams_t* clPars)
         else if (strstr(value, "sampleNumber")!=NULL)
         {
             clPars->capMode = sampleNumber;
+            return;
+        }
+        else if (strstr(value, "continued")!=NULL)
+        {
+            clPars->capMode = continued;
             return;
         }
         else
@@ -201,6 +190,17 @@ static void cl_parseParam(const char* key, char* value, ClParams_t* clPars)
         return;
     }
 
+    if (!strcmp(key, "DOWNSAMPLER_TRESH"))
+    {
+        sscanf(value, "%08hX", &clPars->downsampler_tresh);
+        if ((clPars->downsampler_tresh < 0x0) || (clPars->downsampler_tresh >((1<<10)-1)))
+        {
+            printf("ClParseParam: DOWNSAMPLER_TRESH out of range.\n");
+            exit(1);
+        }
+        return;
+    }
+
     //if key not valid, print it
     printf("ClParseParam: invalid key %s detected.\n", key);
     return;
@@ -226,7 +226,6 @@ void ClientParseFile(const char* fname, ClParams_t* clPars)
 
     //set default params for clPars
     clPars->bd_id = 0;
-    clPars->ch_id = 0;
     clPars->serv_addr = NULL;       //check if set
     clPars->server_portno = -1;     //check if set
     clPars->txMode = -1;            //check if set
@@ -235,6 +234,7 @@ void ClientParseFile(const char* fname, ClParams_t* clPars)
     clPars->n_samples = -1;         //check if set
     clPars->clk_divider = -1;        //check if set
     clPars->debug_output = -1;      //check if set     
+    clPars->downsampler_tresh = 0;
     //default start date = today
     struct timespec tspec;
     clock_gettime(CLOCK_REALTIME, &tspec);

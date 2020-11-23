@@ -5,7 +5,7 @@ Instituto Balseiro
 ---
 Control functions for input delays and calibration
 
-Version: 2020-11-20
+Version: 2020-11-21
 Comments:
 */
 
@@ -181,7 +181,8 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
 
     result = 0;
     //compute bad samples checking if the difference between them differs from cal_diff
-    for (j = 1; j<2*CHDATA_SIZE; j++)
+    //ignore first sample, since it always contains zeros
+    for (j = 2; j<2*CHDATA_SIZE; j++)
     {
         if ((abs(expanded_data[j]-expanded_data[j-1]))!=cal_diff) result++;
     }

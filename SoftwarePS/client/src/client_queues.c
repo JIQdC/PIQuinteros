@@ -48,7 +48,7 @@ AcqPack_t * Rx_Queue_Acquire(Rx_Queue_t *q)
     return ret;
 }
 
-// Releases an Buffer_t making it ready to be reused
+// Releases an AcqPack_t making it ready to be reused
 void Rx_Queue_Release(Rx_Queue_t *q, AcqPack_t * rxBuf)
 {
 	sem_post(&q->sem);
