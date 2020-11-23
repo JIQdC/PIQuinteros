@@ -1,5 +1,5 @@
 proc getPresetInfo {} {
-  return [dict create name {PS_minimum} description {PS_minimum}  vlnv xilinx.com:ip:processing_system7:5.5 display_name {PS_minimum} ]
+  return [dict create name {ZYNQ_minimum_config_CIAA} description {ZYNQ_minimum_config_CIAA}  vlnv xilinx.com:ip:processing_system7:5.5 display_name {ZYNQ_minimum_config_CIAA} ]
 }
 
 proc validate_preset {IPINST} { return true }
@@ -113,7 +113,7 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_PACKAGE_DDR_BOARD_DELAY3 {0.106}  \
     CONFIG.PCW_CPU_CPU_6X4X_MAX_RANGE {800}  \
     CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333}  \
-    CONFIG.PCW_APU_PERIPHERAL_FREQMHZ {666.666666}  \
+    CONFIG.PCW_APU_PERIPHERAL_FREQMHZ {800}  \
     CONFIG.PCW_DCI_PERIPHERAL_FREQMHZ {10.159}  \
     CONFIG.PCW_QSPI_PERIPHERAL_FREQMHZ {150}  \
     CONFIG.PCW_SMC_PERIPHERAL_FREQMHZ {100}  \
@@ -125,7 +125,7 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_CAN_PERIPHERAL_FREQMHZ {100}  \
     CONFIG.PCW_CAN0_PERIPHERAL_FREQMHZ {-1}  \
     CONFIG.PCW_CAN1_PERIPHERAL_FREQMHZ {-1}  \
-    CONFIG.PCW_I2C_PERIPHERAL_FREQMHZ {111.111115}  \
+    CONFIG.PCW_I2C_PERIPHERAL_FREQMHZ {133.333328}  \
     CONFIG.PCW_WDT_PERIPHERAL_FREQMHZ {133.333333}  \
     CONFIG.PCW_TTC_PERIPHERAL_FREQMHZ {50}  \
     CONFIG.PCW_TTC0_CLK0_PERIPHERAL_FREQMHZ {133.333333}  \
@@ -140,7 +140,7 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {250}  \
     CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ {100}  \
     CONFIG.PCW_FPGA3_PERIPHERAL_FREQMHZ {50}  \
-    CONFIG.PCW_ACT_APU_PERIPHERAL_FREQMHZ {666.666687}  \
+    CONFIG.PCW_ACT_APU_PERIPHERAL_FREQMHZ {800.000000}  \
     CONFIG.PCW_UIPARAM_ACT_DDR_FREQ_MHZ {533.333374}  \
     CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158730}  \
     CONFIG.PCW_ACT_QSPI_PERIPHERAL_FREQMHZ {142.857132}  \
@@ -150,13 +150,13 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_ACT_USB0_PERIPHERAL_FREQMHZ {60}  \
     CONFIG.PCW_ACT_USB1_PERIPHERAL_FREQMHZ {60}  \
     CONFIG.PCW_ACT_SDIO_PERIPHERAL_FREQMHZ {50.000000}  \
-    CONFIG.PCW_ACT_UART_PERIPHERAL_FREQMHZ {100.000000}  \
+    CONFIG.PCW_ACT_UART_PERIPHERAL_FREQMHZ {10.000000}  \
     CONFIG.PCW_ACT_SPI_PERIPHERAL_FREQMHZ {10.000000}  \
     CONFIG.PCW_ACT_CAN_PERIPHERAL_FREQMHZ {10.000000}  \
     CONFIG.PCW_ACT_CAN0_PERIPHERAL_FREQMHZ {23.8095}  \
     CONFIG.PCW_ACT_CAN1_PERIPHERAL_FREQMHZ {23.8095}  \
     CONFIG.PCW_ACT_I2C_PERIPHERAL_FREQMHZ {50}  \
-    CONFIG.PCW_ACT_WDT_PERIPHERAL_FREQMHZ {111.111115}  \
+    CONFIG.PCW_ACT_WDT_PERIPHERAL_FREQMHZ {133.333344}  \
     CONFIG.PCW_ACT_TTC_PERIPHERAL_FREQMHZ {50}  \
     CONFIG.PCW_ACT_PCAP_PERIPHERAL_FREQMHZ {200.000000}  \
     CONFIG.PCW_ACT_TPIU_PERIPHERAL_FREQMHZ {200.000000}  \
@@ -164,12 +164,12 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {10.000000}  \
     CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {10.000000}  \
     CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000}  \
-    CONFIG.PCW_ACT_TTC0_CLK0_PERIPHERAL_FREQMHZ {111.111115}  \
-    CONFIG.PCW_ACT_TTC0_CLK1_PERIPHERAL_FREQMHZ {111.111115}  \
-    CONFIG.PCW_ACT_TTC0_CLK2_PERIPHERAL_FREQMHZ {111.111115}  \
-    CONFIG.PCW_ACT_TTC1_CLK0_PERIPHERAL_FREQMHZ {111.111115}  \
-    CONFIG.PCW_ACT_TTC1_CLK1_PERIPHERAL_FREQMHZ {111.111115}  \
-    CONFIG.PCW_ACT_TTC1_CLK2_PERIPHERAL_FREQMHZ {111.111115}  \
+    CONFIG.PCW_ACT_TTC0_CLK0_PERIPHERAL_FREQMHZ {133.333344}  \
+    CONFIG.PCW_ACT_TTC0_CLK1_PERIPHERAL_FREQMHZ {133.333344}  \
+    CONFIG.PCW_ACT_TTC0_CLK2_PERIPHERAL_FREQMHZ {133.333344}  \
+    CONFIG.PCW_ACT_TTC1_CLK0_PERIPHERAL_FREQMHZ {133.333344}  \
+    CONFIG.PCW_ACT_TTC1_CLK1_PERIPHERAL_FREQMHZ {133.333344}  \
+    CONFIG.PCW_ACT_TTC1_CLK2_PERIPHERAL_FREQMHZ {133.333344}  \
     CONFIG.PCW_CLK0_FREQ {250000000}  \
     CONFIG.PCW_CLK1_FREQ {10000000}  \
     CONFIG.PCW_CLK2_FREQ {10000000}  \
@@ -180,7 +180,7 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_SMC_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_QSPI_PERIPHERAL_DIVISOR0 {7}  \
     CONFIG.PCW_SDIO_PERIPHERAL_DIVISOR0 {20}  \
-    CONFIG.PCW_UART_PERIPHERAL_DIVISOR0 {10}  \
+    CONFIG.PCW_UART_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_SPI_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_CAN_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_CAN_PERIPHERAL_DIVISOR1 {1}  \
@@ -207,17 +207,17 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_TTC1_CLK1_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_TTC1_CLK2_PERIPHERAL_DIVISOR0 {1}  \
     CONFIG.PCW_WDT_PERIPHERAL_DIVISOR0 {1}  \
-    CONFIG.PCW_ARMPLL_CTRL_FBDIV {40}  \
+    CONFIG.PCW_ARMPLL_CTRL_FBDIV {48}  \
     CONFIG.PCW_IOPLL_CTRL_FBDIV {30}  \
     CONFIG.PCW_DDRPLL_CTRL_FBDIV {32}  \
-    CONFIG.PCW_CPU_CPU_PLL_FREQMHZ {1333.333}  \
+    CONFIG.PCW_CPU_CPU_PLL_FREQMHZ {1600.000}  \
     CONFIG.PCW_IO_IO_PLL_FREQMHZ {1000.000}  \
     CONFIG.PCW_DDR_DDR_PLL_FREQMHZ {1066.667}  \
     CONFIG.PCW_SMC_PERIPHERAL_VALID {0}  \
     CONFIG.PCW_SDIO_PERIPHERAL_VALID {1}  \
     CONFIG.PCW_SPI_PERIPHERAL_VALID {0}  \
     CONFIG.PCW_CAN_PERIPHERAL_VALID {0}  \
-    CONFIG.PCW_UART_PERIPHERAL_VALID {1}  \
+    CONFIG.PCW_UART_PERIPHERAL_VALID {0}  \
     CONFIG.PCW_EN_EMIO_CAN0 {0}  \
     CONFIG.PCW_EN_EMIO_CAN1 {0}  \
     CONFIG.PCW_EN_EMIO_ENET0 {0}  \
@@ -331,8 +331,8 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_EN_SDIO1 {0}  \
     CONFIG.PCW_EN_SPI0 {0}  \
     CONFIG.PCW_EN_SPI1 {0}  \
-    CONFIG.PCW_EN_UART0 {1}  \
-    CONFIG.PCW_EN_UART1 {1}  \
+    CONFIG.PCW_EN_UART0 {0}  \
+    CONFIG.PCW_EN_UART1 {0}  \
     CONFIG.PCW_EN_MODEM_UART0 {0}  \
     CONFIG.PCW_EN_MODEM_UART1 {0}  \
     CONFIG.PCW_EN_TTC0 {0}  \
@@ -459,11 +459,11 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_SD1_GRP_CD_ENABLE {0}  \
     CONFIG.PCW_SD1_GRP_WP_ENABLE {0}  \
     CONFIG.PCW_SD1_GRP_POW_ENABLE {0}  \
-    CONFIG.PCW_UART0_PERIPHERAL_ENABLE {1}  \
-    CONFIG.PCW_UART0_UART0_IO {MIO 10 .. 11}  \
+    CONFIG.PCW_UART0_PERIPHERAL_ENABLE {0}  \
+    CONFIG.PCW_UART0_UART0_IO {<Select>}  \
     CONFIG.PCW_UART0_GRP_FULL_ENABLE {0}  \
-    CONFIG.PCW_UART1_PERIPHERAL_ENABLE {1}  \
-    CONFIG.PCW_UART1_UART1_IO {MIO 8 .. 9}  \
+    CONFIG.PCW_UART1_PERIPHERAL_ENABLE {0}  \
+    CONFIG.PCW_UART1_UART1_IO {<Select>}  \
     CONFIG.PCW_UART1_GRP_FULL_ENABLE {0}  \
     CONFIG.PCW_SPI0_PERIPHERAL_ENABLE {0}  \
     CONFIG.PCW_SPI0_SPI0_IO {<Select>}  \
@@ -585,22 +585,22 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_MIO_7_IOTYPE {<Select>}  \
     CONFIG.PCW_MIO_7_DIRECTION {<Select>}  \
     CONFIG.PCW_MIO_7_SLEW {<Select>}  \
-    CONFIG.PCW_MIO_8_PULLUP {disabled}  \
-    CONFIG.PCW_MIO_8_IOTYPE {LVCMOS 3.3V}  \
-    CONFIG.PCW_MIO_8_DIRECTION {out}  \
-    CONFIG.PCW_MIO_8_SLEW {slow}  \
-    CONFIG.PCW_MIO_9_PULLUP {enabled}  \
-    CONFIG.PCW_MIO_9_IOTYPE {LVCMOS 3.3V}  \
-    CONFIG.PCW_MIO_9_DIRECTION {in}  \
-    CONFIG.PCW_MIO_9_SLEW {slow}  \
-    CONFIG.PCW_MIO_10_PULLUP {disabled}  \
-    CONFIG.PCW_MIO_10_IOTYPE {LVCMOS 3.3V}  \
-    CONFIG.PCW_MIO_10_DIRECTION {in}  \
-    CONFIG.PCW_MIO_10_SLEW {slow}  \
-    CONFIG.PCW_MIO_11_PULLUP {disabled}  \
-    CONFIG.PCW_MIO_11_IOTYPE {LVCMOS 3.3V}  \
-    CONFIG.PCW_MIO_11_DIRECTION {out}  \
-    CONFIG.PCW_MIO_11_SLEW {slow}  \
+    CONFIG.PCW_MIO_8_PULLUP {<Select>}  \
+    CONFIG.PCW_MIO_8_IOTYPE {<Select>}  \
+    CONFIG.PCW_MIO_8_DIRECTION {<Select>}  \
+    CONFIG.PCW_MIO_8_SLEW {<Select>}  \
+    CONFIG.PCW_MIO_9_PULLUP {<Select>}  \
+    CONFIG.PCW_MIO_9_IOTYPE {<Select>}  \
+    CONFIG.PCW_MIO_9_DIRECTION {<Select>}  \
+    CONFIG.PCW_MIO_9_SLEW {<Select>}  \
+    CONFIG.PCW_MIO_10_PULLUP {<Select>}  \
+    CONFIG.PCW_MIO_10_IOTYPE {<Select>}  \
+    CONFIG.PCW_MIO_10_DIRECTION {<Select>}  \
+    CONFIG.PCW_MIO_10_SLEW {<Select>}  \
+    CONFIG.PCW_MIO_11_PULLUP {<Select>}  \
+    CONFIG.PCW_MIO_11_IOTYPE {<Select>}  \
+    CONFIG.PCW_MIO_11_DIRECTION {<Select>}  \
+    CONFIG.PCW_MIO_11_SLEW {<Select>}  \
     CONFIG.PCW_MIO_12_PULLUP {enabled}  \
     CONFIG.PCW_MIO_12_IOTYPE {LVCMOS 3.3V}  \
     CONFIG.PCW_MIO_12_DIRECTION {inout}  \
@@ -770,8 +770,8 @@ proc apply_preset {IPINST} {
     CONFIG.PCW_MIO_53_DIRECTION {inout}  \
     CONFIG.PCW_MIO_53_SLEW {slow}  \
     CONFIG.PCW_UIPARAM_GENERATE_SUMMARY {NA}  \
-    CONFIG.PCW_MIO_TREE_PERIPHERALS {unassigned#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#unassigned#UART 1#UART 1#UART 0#UART 0#I2C 1#I2C 1#I2C 0#I2C 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#Enet 0#Enet 0}  \
-    CONFIG.PCW_MIO_TREE_SIGNALS {unassigned#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_sclk#unassigned#tx#rx#rx#tx#scl#sda#scl#sda#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#clk#cmd#data[0]#data[1]#data[2]#data[3]#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#mdc#mdio}  \
+    CONFIG.PCW_MIO_TREE_PERIPHERALS {unassigned#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#unassigned#unassigned#unassigned#unassigned#unassigned#I2C 1#I2C 1#I2C 0#I2C 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#Enet 0#Enet 0}  \
+    CONFIG.PCW_MIO_TREE_SIGNALS {unassigned#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_sclk#unassigned#unassigned#unassigned#unassigned#unassigned#scl#sda#scl#sda#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#clk#cmd#data[0]#data[1]#data[2]#data[3]#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#mdc#mdio}  \
     CONFIG.PCW_PS7_SI_REV {PRODUCTION}  \
     CONFIG.PCW_FPGA_FCLK0_ENABLE {1}  \
     CONFIG.PCW_FPGA_FCLK1_ENABLE {0}  \

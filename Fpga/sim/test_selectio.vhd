@@ -7,7 +7,7 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Testbench for deserializer
+-- Description: Testbench for SelectIO module
 -- 
 -- Dependencies: 
 -- 
@@ -18,11 +18,11 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
-entity test_deser is
+entity test_selectio is
   --  no ports - this is a testbench;
-end test_deser;
+end test_selectio;
 
-architecture sim of test_deser is
+architecture sim of test_selectio is
 
   signal rst_n, rst : std_logic := '0';
   signal adc_DCO_p, adc_FCO_p, adc_D_p,
@@ -30,7 +30,6 @@ architecture sim of test_deser is
   signal control                : std_logic_vector(3 downto 0)  := (others => '0');
   signal usr_w1, usr_w2         : std_logic_vector(13 downto 0) := (others => '0');
   signal delay_ref_clk          : std_logic                     := '0';
-  signal frame_n                : std_logic                     := '0';
 
 begin
   rst <= not (rst_n);
@@ -48,7 +47,7 @@ begin
       adc_DCO_n => adc_DCO_n, adc_FCO_n => adc_FCO_n, adc_D_n => adc_D_n
     );
 
-  SelectIO : entity work.deser_test_wrapper(STRUCTURE)
+  SelectIO : entity work.SelectIO_test_wrapper(STRUCTURE)
     port map(
       clk_in_n_0               => adc_DCO_n,
       clk_in_p_0               => adc_DCO_p,
@@ -62,7 +61,7 @@ begin
   simProcess : process
   begin
     --pruebo una secuencia de salida
-    control <= "1111";
+    control <= "0100";
     --reseteo por un tiempo
     rst_n <= '0';
     wait for 50 ns;

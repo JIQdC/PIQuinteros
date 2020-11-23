@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="test_selectio_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="test_selectio" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="9676116667fs"></ZoomStartTime>
+      <ZoomEndTime time="9705866668fs"></ZoomEndTime>
+      <Cursor1Time time="9661967000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="249"></NameColumnWidth>
+      <ValueColumnWidth column_width="153"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="14" />
+   <wvobject fp_name="divider58" type="divider">
+      <obj_property name="label">ADC sim control</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_selectio/DUT/control">
+      <obj_property name="ElementShortName">control[3:0]</obj_property>
+      <obj_property name="ObjectShortName">control[3:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider54" type="divider">
+      <obj_property name="label">ADC sim out</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/DUT/adc_DCO_p">
+      <obj_property name="ElementShortName">adc_DCO_p</obj_property>
+      <obj_property name="ObjectShortName">adc_DCO_p</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/DUT/adc_FCO_p">
+      <obj_property name="ElementShortName">adc_FCO_p</obj_property>
+      <obj_property name="ObjectShortName">adc_FCO_p</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/DUT/adc_D_p">
+      <obj_property name="ElementShortName">adc_D_p</obj_property>
+      <obj_property name="ObjectShortName">adc_D_p</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider53" type="divider">
+      <obj_property name="label">SelectIO clk out</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/SelectIO/SelectIO_test_i/selectio_0/clk_out">
+      <obj_property name="ElementShortName">clk_out</obj_property>
+      <obj_property name="ObjectShortName">clk_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider46" type="divider">
+      <obj_property name="label">Frame IDDR out</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/SelectIO/SelectIO_test_i/selectio_0/data_in_to_device[2]">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[2]</obj_property>
+      <obj_property name="ObjectShortName">[2]</obj_property>
+      <obj_property name="label">Frame_RE</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/SelectIO/SelectIO_test_i/selectio_0/data_in_to_device[0]">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[0]</obj_property>
+      <obj_property name="ObjectShortName">[0]</obj_property>
+      <obj_property name="label">Frame_FE</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider50" type="divider">
+      <obj_property name="label">Data IDDR out</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/SelectIO/SelectIO_test_i/selectio_0/data_in_to_device[3]">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[3]</obj_property>
+      <obj_property name="ObjectShortName">[3]</obj_property>
+      <obj_property name="label">Data_RE</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_selectio/SelectIO/SelectIO_test_i/selectio_0/data_in_to_device[1]">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[1]</obj_property>
+      <obj_property name="ObjectShortName">[1]</obj_property>
+      <obj_property name="label">Data_FE</obj_property>
+   </wvobject>
+</wave_config>
