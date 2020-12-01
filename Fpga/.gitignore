@@ -1,4 +1,6 @@
 /src/ip/ip_user_files/
 /src/ip/managed_ip_project/
-/src/ip/.Xil
 /unused_hdl
+.Xil
+*_proj
+NA
