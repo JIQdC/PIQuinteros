@@ -65,7 +65,13 @@ print("\n")
 print("Longitudes referidas a cable (%d,%d)" % (i_ref,j_ref))
 print("Num\tLong. rel (cm)\tRet. rel. (ns)")
 for k in range(0,N*M):
-    print("%d\t%.2f \t\t\t%.4f" % (k,length_ref[k]*1e2,delay_ref[k]*1e9))   
+    print("%d\t%.2f \t\t\t%.4f" % (k,length_ref[k]*1e2,delay_ref[k]*1e9))  
+    
+#get phases in radians referred to delay 7 = (1,3)
+delay_phase_ref=delay-delay[N*1 + 3]
+slope = 360*delay_phase_ref
+for k in range(0,16):
+    print(slope[15-k],",")v
 
 # ##gráfico de retardos
 # f=plt.figure(2)

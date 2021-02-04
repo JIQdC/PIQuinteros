@@ -10,3 +10,4 @@ SoftwarePS/server/captured_data
 SoftwarePS/server/fileReader
 SoftwarePS/server/server_main
 */__pycache__
+SoftwarePS/server/src/TCPserver.h

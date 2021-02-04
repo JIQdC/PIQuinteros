@@ -16,12 +16,13 @@ from matplotlib.ticker import StrMethodFormatter
 
 filename = sys.argv[1]
 clk_divider = int(sys.argv[2]) + 1
-downsampler_rate = 180
+downsampler_rate = 1
 f_sample = 65e6/(clk_divider*downsampler_rate)
 t_sample = 1/f_sample
 v_fullscale = 2  # Vpp
 channel_number = 16
 x_samples = 1
+chop_init_samples = 2
 
 ch_names = ["A1", "A2", "B1", "B2", "C1", "C2", "D1",
             "D2", "E1", "E2", "F1", "F2", "G1", "G2", "H1", "H2"]
@@ -29,12 +30,14 @@ ch_names = ["A1", "A2", "B1", "B2", "C1", "C2", "D1",
 # load time values
 t = np.loadtxt(filename, delimiter=",", skiprows=0, usecols=[0])
 t = t*t_sample
+t = t[chop_init_samples:]
 
 # load data values
 data = []
 for i in range(0, channel_number):
     data.append(np.loadtxt(filename, delimiter=",", skiprows=0, usecols=[i+1]))
-    #data[i] = v_fullscale*data[i]/16383 - v_fullscale/2
+    data[i] = v_fullscale*data[i]/16383 - v_fullscale/2
+    data[i] = data[i][chop_init_samples:]
 
 # calculate difference between consecutive values
 dif = []
@@ -46,8 +49,13 @@ for i in range(0, channel_number):
 # compute FFT
 freq = np.linspace(-f_sample/2, f_sample/2, num=np.size(t))
 Data = []
+Phase = []
 for i in range(0, channel_number):
-    Data.append(10*np.log10(np.abs(np.fft.fftshift(np.fft.fft(data[i])))))
+    Data.append(np.fft.fftshift(np.fft.fft(data[i]))/np.size(data[i]))
+    Phase.append(np.rad2deg(np.unwrap(np.angle(Data[i]))))
+    Data[i] = 20*np.log10(np.abs(Data[i]))-10*np.log10(50*1e-3)
+    #Data.append(np.abs(np.fft.fftshift(np.fft.fft(data[i]))))
+    #Data[i]=Data[i]/np.size(Data[i])
 
 # # SINGLE CHANNEL PLOT
 # # plot data values
@@ -137,5 +145,19 @@ for j in range(0, 4):
         i = i+1
 fig3.subplots_adjust(wspace=0)
 fig3.suptitle("FFT de datos capturados")
+
+# plot FFT phase
+fig4, ax4 = plt.subplots(4, 4, sharex=True, sharey=True)
+i = 0
+for j in range(0, 4):
+    ax4[j, 0].set_ylabel("Fase (deg)")
+    ax4[3, j].set_xlabel("Frecuencia (MHz)")
+    for k in range(0, 4):
+        ax4[j, k].set_title(ch_names[i])
+        ax4[j, k].plot(freq*1e-6, Phase[i], color='red')
+        ax4[j, k].grid()
+        i = i+1
+fig4.subplots_adjust(wspace=0)
+fig4.suptitle("FFT de datos capturados")
 
 plt.show()
