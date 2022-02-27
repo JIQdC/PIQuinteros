@@ -1,16 +1,16 @@
 # ----------------------------------------------------------------------------------
 # -- Company:  Instituto Balseiro
 # -- Engineer: José Quinteros
-# -- 
-# -- Design Name: 
-# -- Module Name: 
-# -- Project Name: 
-# -- Target Devices: 
-# -- Tool Versions: 
+# --
+# -- Design Name:
+# -- Module Name:
+# -- Project Name:
+# -- Target Devices:
+# -- Tool Versions:
 # -- Description: ADC data signals constraints file for CIAA-ACC acquisition system project
-# -- 
+# --
 # -- Dependencies: None.
-# -- 
+# --
 # -- Revision: 2020-11-15
 # -- Additional Comments: Can be regenerated using Fpga/tools/x-special/XDC_Generator.ipynb
 # ----------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ set_property IOSTANDARD LVDS_25 [get_ports adc_DCO1_i_clk_p]
 #adc_DCO1 clock creation
 create_clock -period 2.198 -name adc_DCO1 [get_ports adc_DCO1_i_clk_p]
 set_input_jitter [get_clocks adc_DCO1] 0.000
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks adc_DCO1]
 
 #adc_DCO2- @bank12
 set_property IOSTANDARD LVDS_25 [get_ports adc_DCO2_i_clk_n]
@@ -40,6 +41,7 @@ set_property IOSTANDARD LVDS_25 [get_ports adc_DCO2_i_clk_p]
 #adc_DCO2 clock creation
 create_clock -period 2.198 -name adc_DCO2 [get_ports adc_DCO2_i_clk_p]
 set_input_jitter [get_clocks adc_DCO2] 0.000
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks adc_DCO2]
 
 # adc_FCO1- @bank13
 set_property IOSTANDARD LVDS_25 [get_ports adc_FCO1_i_v_n]

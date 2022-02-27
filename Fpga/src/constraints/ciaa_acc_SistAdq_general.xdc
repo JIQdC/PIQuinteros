@@ -1,18 +1,18 @@
 # ----------------------------------------------------------------------------------
 # -- Company:  Instituto Balseiro
 # -- Engineer: José Quinteros
-# -- 
-# -- Design Name: 
-# -- Module Name: 
-# -- Project Name: 
-# -- Target Devices: 
-# -- Tool Versions: 
+# --
+# -- Design Name:
+# -- Module Name:
+# -- Project Name:
+# -- Target Devices:
+# -- Tool Versions:
 # -- Description: General constraints file for CIAA-ACC acquisition system project
-# -- 
+# --
 # -- Dependencies: None.
-# -- 
+# --
 # -- Revision: 2020-11-19
-# -- Additional Comments: 
+# -- Additional Comments:
 # ----------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -94,5 +94,7 @@ set_property IOSTANDARD LVCMOS18 [get_ports fmc_present_i]
 # ----------------------------------------------------------------------------
 # FCO signals as User Generated Clocks
 # ----------------------------------------------------------------------------
-create_generated_clock -name SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver1_inst/frame_delayed -source [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver1_inst/IDDR_inst_frame/C] -divide_by 7 [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver1_inst/IDDR_inst_frame/Q2]
-create_generated_clock -name SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver2_inst/frame_delayed -source [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver2_inst/IDDR_inst_frame/C] -divide_by 7 [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver2_inst/IDDR_inst_frame/Q2]
+create_generated_clock -name frame_clock_fco1 -source [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver1_inst/IDDR_inst_frame/C] -divide_by 7 [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver1_inst/IDDR_inst_frame/Q2]
+create_generated_clock -name frame_clock_fco2 -source [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver2_inst/IDDR_inst_frame/C] -divide_by 7 [get_pins SistAdq_i/ADC_AcqControl/adc_control_wrapper_0/U0/adc_receiver2_inst/IDDR_inst_frame/Q2]
+
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks clk_fpga_0]
