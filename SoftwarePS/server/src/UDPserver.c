@@ -129,7 +129,7 @@ static void readCsvPlot(Ch_File_t* chF)
     fclose(fout);
 
     //send to plotter
-    strcat(command, "python plotter.py ");
+    strcat(command, "python3 plotter.py ");
     strcat(command, fout_name);
     sprintf(value_clkdiv, " %d", clk_divider);
     strcat(command, value_clkdiv);

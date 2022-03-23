@@ -32,6 +32,7 @@ Comments:
 #include <netdb.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include "server_queues.h"
 #include "../../client/lib/error.h"

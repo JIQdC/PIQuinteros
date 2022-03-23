@@ -13,7 +13,7 @@ Comments:
 
 int main()
 {
-    int portno = 50000;
+    int portno = 12345;
     //create server
     Server_t* server = ServerInit(portno);
 
