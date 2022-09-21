@@ -75,17 +75,30 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component frame_clk_wiz_0
-    port (
-      clk_in1        : in std_logic;
-      clk_to_counter : out std_logic;
-      clk_to_preproc : out std_logic;
-      clk_to_debug   : out std_logic;
-      fifo_wr_clk    : out std_logic;
-      locked         : out std_logic;
-      reset          : in std_logic
-    );
-  end component;
+  -- component frame_clk_wiz_0
+  --   port (
+  --     clk_in1        : in std_logic;
+  --     clk_to_counter : out std_logic;
+  --     clk_to_preproc : out std_logic;
+  --     clk_to_debug   : out std_logic;
+  --     fifo_wr_clk    : out std_logic;
+  --     locked         : out std_logic;
+  --     reset          : in std_logic
+  --   );
+  -- end component;
+
+  component clk_wiz_0_0
+    port
+     (-- Clock in ports
+      -- Clock out ports
+      clk_out1_0          : out    std_logic;
+      -- Status and control signals
+      reset_0             : in     std_logic;
+      locked_0          : out    std_logic;
+      clk_in1_0           : in     std_logic
+     );
+    end component;
+
   --FIFO generator declaration
   component fifo_generator_0
     port (
@@ -118,6 +131,11 @@ architecture arch of adc_receiver is
   signal debug_counter                                                 : std_logic_vector(13 downto 0);
   signal debug_counter_ce                                              : std_logic;
   signal zerosN                                                        : std_logic_vector((N - 1) downto 0) := (others => '0');
+
+  signal valid_from_pulse_sync                                        : std_logic_vector((N - 1) downto 0);
+
+  signal data_from_deser_slow                                         : std_logic_vector(16 * N - 1 downto 0);
+  signal valid_from_deser_slow                                        : std_logic_vector((N - 1) downto 0);
 
 begin
   ---- BINARY COUNTER
@@ -217,22 +235,38 @@ begin
   );
 
   -- clk_div from frame
-  clk_div <= not(frame_delayed);
+  -- clk_div <= not(frame_delayed);
+
 
   -- clk wizard instantiation
-  FCO_clk_wiz : frame_clk_wiz_0
-  port map(
-    -- Clock out ports  
-    clk_to_preproc => clk_to_preproc,
-    fifo_wr_clk    => fifo_wr_clk,
-    clk_to_counter => clk_to_counter,
-    clk_to_debug   => clk_to_debug,
-    -- Status and control signals                
-    reset  => async_rst_i,
-    locked => adc_FCOlck_o,
-    -- Clock in ports
-    clk_in1 => clk_div
-  );
+  -- FCO_clk_wiz : frame_clk_wiz_0
+  -- port map(
+  --   -- Clock out ports  
+  --   clk_to_preproc => clk_to_preproc,
+  --   fifo_wr_clk    => fifo_wr_clk,
+  --   clk_to_counter => clk_to_counter,
+  --   clk_to_debug   => clk_to_debug,
+  --   -- Status and control signals                
+  --   reset  => async_rst_i,
+  --   locked => adc_FCOlck_o,
+  --   -- Clock in ports
+  --   clk_in1 => clk_div
+  -- );
+  FCO_clk_wiz : clk_wiz_0_0
+   port map ( 
+  -- Clock out ports  
+   clk_out1_0 => clk_div,
+  -- Status and control signals                
+   reset_0 => async_rst_i,
+   locked_0 => adc_FCOlck_o,
+   -- Clock in ports
+   clk_in1_0 => clk_to_logic
+ );
+
+ clk_to_preproc <= clk_div;
+ clk_to_debug <= clk_div;
+ clk_to_counter <= clk_div;
+ fifo_wr_clk <= clk_div;
 
   ---- TRESHOLD REGISTER FOR DOWNSAMPLER
   tresh_reg_inst : entity work.downsampler_tresh_reg(arch)
@@ -312,6 +346,41 @@ begin
         d_valid_o => valid_from_deser(i)
       );
 
+
+    --instantiate pulse_sync
+    pulse_sync_data : entity work.pulse_sync(arch)
+      port map(
+        src_clk => clk_to_logic,
+        src_rst_i => async_rst_i,
+        dest_clk => clk_to_preproc,
+        dest_rst_i => async_rst_i,
+        pulse_i => valid_from_deser(i),
+        pulse_o => valid_from_pulse_sync(i)
+      );
+
+    -- process(valid_from_pulse_sync)
+    -- begin
+    --   if valid_from_pulse_sync(i) = '1' then
+    --     data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)) <= data_from_deser((14 * (i + 1) - 1) downto (14 * i));
+    --   else
+    --     data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)) <= data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i));
+    --   end if;
+    -- end process;
+
+    --instantiate sampler_with_ce
+    sampler_data : entity work.sampler_with_ce(arch)
+      generic map(
+        N => 14
+      )
+      port map(
+        clk => clk_to_preproc,
+        rst_i => async_rst_i,
+        ce => valid_from_pulse_sync(i),
+        din => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
+        dout => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
+        dout_valid => valid_from_deser_slow(i)
+      );
+      
     --instantiate debug control
     deb_control_data : entity work.debug_control(arch)
       generic map(
@@ -323,8 +392,10 @@ begin
         enable_i   => debug_enable_i,
         control_i  => debug_control_i(((4 * (i + 1)) - 1) downto (4 * i)),
         usr_w2w1_i => debug_w2w1_i(((28 * (i + 1)) - 1) downto (28 * i)),
-        data_i     => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
-        valid_i    => valid_from_deser(i),
+        --data_i     => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
+        data_i     => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
+        --valid_i    => valid_from_deser(i),
+        valid_i    => valid_from_deser_slow(i),
 
         counter_count_i => debug_counter,
         counter_ce_o    => counter_ce_v(i),

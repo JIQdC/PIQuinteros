@@ -306,9 +306,9 @@ void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemP
 
     //ACQUIRE
     //read data
-    for (j = 0; j < CHDATA_SIZE; j++)
+    for (i = 0; i < CHDATA_SIZE; i++)
     {
-        for (i = 0; i < multiPtr_data->mem_num; i++) acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[i] + multiPtr_data->align_offset[i]));
+        for (j = 0; j < multiPtr_data->mem_num; j++) acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[j] + multiPtr_data->align_offset[j]));
     }
 
     //read FIFO flags register to see what happened during capture.

@@ -322,7 +322,7 @@ static void* txTh_threadFuncUDP(void* ctx)
         acqPack = Tx_QueueGet(txQ);
 
         //send buffer to UDP socket
-        wr_ret = socketWriteUDP(txTh->sockfd, acqPack, sizeof(AcqPack_t), (struct sockaddr*)&(txTh->serv_addr));
+        wr_ret = socketWriteUDP(txTh->sockfd, &(acqPack->data), sizeof(AcqPack_t), (struct sockaddr*)&(txTh->serv_addr));
         if (wr_ret > 0)
         {
             //do something for closed server. Die perhaps?

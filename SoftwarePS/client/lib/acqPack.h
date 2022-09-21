@@ -54,6 +54,7 @@ typedef struct __attribute__((packed))
     uint8_t clk_divider;
     uint32_t fifo_flags[16];
     uint16_t payload_size;
+    uint8_t padding; //padding to make the size of the struct to be a multiple of 8
 }AcqPack_Header_t;
 
 typedef union
@@ -65,7 +66,9 @@ typedef union
 typedef struct __attribute__((packed))
 {
     AcqPack_Header_t header;
-    fifo_data_t data[16][CHDATA_SIZE];
+    //fifo_data_t data[16][CHDATA_SIZE];
+    //Queremos 16 columnas, una por canal
+    fifo_data_t data[CHDATA_SIZE][16];
 }AcqPack_t;
 
 // human readable print of FIFO flags structure
