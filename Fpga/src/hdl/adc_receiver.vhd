@@ -119,6 +119,9 @@ architecture arch of adc_receiver is
     );
   end component;
 
+
+
+
   signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_div,
   clk_to_preproc, clk_to_counter, fifo_wr_clk, clk_to_debug            : std_logic;
   signal data_to_idelays, data_to_iddr, data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
@@ -263,23 +266,25 @@ begin
    clk_in1_0 => clk_to_logic
  );
 
+ --Assign clk_div to 4 legacy clks
  clk_to_preproc <= clk_div;
  clk_to_debug <= clk_div;
  clk_to_counter <= clk_div;
  fifo_wr_clk <= clk_div;
 
+ --Not useful without downsampler
   ---- TRESHOLD REGISTER FOR DOWNSAMPLER
-  tresh_reg_inst : entity work.downsampler_tresh_reg(arch)
-    generic map(
-      N_tr_b => N_tr_b
-    )
-    port map(
-      d_clk_i        => clk_to_preproc,
-      rst_i          => async_rst_i,
-      treshold_i     => treshold_value_i,
-      treshold_ld_i  => treshold_ld_i,
-      treshold_reg_o => treshold_reg
-    );
+  -- tresh_reg_inst : entity work.downsampler_tresh_reg(arch)
+  --   generic map(
+  --     N_tr_b => N_tr_b
+  --   )
+  --   port map(
+  --     d_clk_i        => clk_to_preproc,
+  --     rst_i          => async_rst_i,
+  --     treshold_i     => treshold_value_i,
+  --     treshold_ld_i  => treshold_ld_i,
+  --     treshold_reg_o => treshold_reg
+  --   );
 
   ---- ADC DATA INPUTS
 
@@ -404,6 +409,8 @@ begin
         valid_o => valid_from_debug(i)
       );
 
+--------Replace downsampler with preprocessing
+
     --instantiate downsampler
     downsampler_data : entity work.downsampler(arch)
       generic map(
@@ -419,6 +426,8 @@ begin
         data_o         => data_from_dwsamp((16 * (i + 1) - 1) downto (16 * i)),
         d_valid_o      => valid_from_dwsamp(i)
       );
+
+-------- End of replace downsampler with preprocessing
 
     --instantiate FIFO
     fifo_inst : fifo_generator_0

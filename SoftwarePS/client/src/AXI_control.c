@@ -305,11 +305,15 @@ void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemP
     }
 
     //ACQUIRE
+    //Incluir modulito CRC (o suma), incluir enable y clear
+    //Usar cada pulsito de read para mandarle la muestra a un CRC en la fpga
     //read data
     for (i = 0; i < CHDATA_SIZE; i++)
     {
-        for (j = 0; j < multiPtr_data->mem_num; j++) acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[j] + multiPtr_data->align_offset[j]));
+        for (j = 0; j < multiPtr_data->mem_num; j++)
+        acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[j] + multiPtr_data->align_offset[j]));
     }
+    //apagar y leer crc
 
     //read FIFO flags register to see what happened during capture.
 
