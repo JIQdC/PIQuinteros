@@ -59,7 +59,15 @@ entity adc_receiver is
     delay_data_output_o  : out std_logic_vector((5 * N - 1) downto 0);
     delay_frame_ld_i     : in std_logic;
     delay_frame_input_i  : in std_logic_vector((5 - 1) downto 0);
-    delay_frame_output_o : out std_logic_vector((5 - 1) downto 0)
+    delay_frame_output_o : out std_logic_vector((5 - 1) downto 0);
+
+    --preprocessing signals
+    data_source_sel : in std_logic_vector(1 downto 0);
+    ch_1_freq   : in std_logic_vector(15 downto 0);
+    ch_2_freq   : in std_logic_vector(15 downto 0);
+    ch_3_freq   : in std_logic_vector(15 downto 0);
+    ch_4_freq   : in std_logic_vector(15 downto 0);
+    ch_5_freq   : in std_logic_vector(15 downto 0)
   );
 end adc_receiver;
 
@@ -75,18 +83,6 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  -- component frame_clk_wiz_0
-  --   port (
-  --     clk_in1        : in std_logic;
-  --     clk_to_counter : out std_logic;
-  --     clk_to_preproc : out std_logic;
-  --     clk_to_debug   : out std_logic;
-  --     fifo_wr_clk    : out std_logic;
-  --     locked         : out std_logic;
-  --     reset          : in std_logic
-  --   );
-  -- end component;
-
   component clk_wiz_0_0
     port
      (-- Clock in ports
@@ -100,34 +96,112 @@ architecture arch of adc_receiver is
     end component;
 
   --FIFO generator declaration
-  component fifo_generator_0
-    port (
-      rst           : in std_logic;
-      wr_clk        : in std_logic;
-      rd_clk        : in std_logic;
-      din           : in std_logic_vector(15 downto 0);
-      wr_en         : in std_logic;
-      rd_en         : in std_logic;
-      dout          : out std_logic_vector(31 downto 0);
-      full          : out std_logic;
-      overflow      : out std_logic;
-      empty         : out std_logic;
-      rd_data_count : out std_logic_vector(11 downto 0);
-      prog_full     : out std_logic;
-      wr_rst_busy   : out std_logic;
-      rd_rst_busy   : out std_logic
-    );
-  end component;
+  COMPONENT fifo_generator_0
+  PORT (
+    rst : IN STD_LOGIC;
+    wr_clk : IN STD_LOGIC;
+    rd_clk : IN STD_LOGIC;
+    din : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    wr_en : IN STD_LOGIC;
+    rd_en : IN STD_LOGIC;
+    dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    full : OUT STD_LOGIC;
+    overflow : OUT STD_LOGIC;
+    empty : OUT STD_LOGIC;
+    rd_data_count : OUT STD_LOGIC_VECTOR(10 DOWNTO 0);
+    prog_full : OUT STD_LOGIC;
+    wr_rst_busy : OUT STD_LOGIC;
+    rd_rst_busy : OUT STD_LOGIC
+  );
+END COMPONENT;
 
+  --Preprocessing components
 
+  COMPONENT preprocessing_setup_0
+  PORT (
+    adc_clk_0 : IN STD_LOGIC;
+    adc_rst_ni_0 : IN STD_LOGIC;
+    data_local_osc : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+    data_osc : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    data_sel_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    data_sel_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+    m_axis_0_tdata : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+    m_axis_0_tvalid : OUT STD_LOGIC;
+    tready_osc_in : OUT STD_LOGIC;
+    valid_local_osc : OUT STD_LOGIC
+  );
+END COMPONENT;
+
+COMPONENT band_processing_v2_0
+  PORT (
+    adc_clk_0 : IN STD_LOGIC;
+    adc_rst_ni_0 : IN STD_LOGIC;
+    band_osc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    control_in_0 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+    data_adc : IN STD_LOGIC_VECTOR(13 DOWNTO 0);
+    data_counter : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    data_local_osc : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    data_out : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    valid_adc : IN STD_LOGIC;
+    valid_counter : IN STD_LOGIC;
+    valid_local_osc : IN STD_LOGIC;
+    valid_mux_out : OUT STD_LOGIC;
+    valid_out : OUT STD_LOGIC
+  );
+END COMPONENT;
+
+COMPONENT ch_oscillator_0
+  PORT (
+    adc_clk_0 : IN STD_LOGIC;
+    adc_rst_ni_0 : IN STD_LOGIC;
+    m_axis_tdata_0 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    s_axis_config_tdata_0 : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
+  );
+END COMPONENT;
+
+COMPONENT ch_mixer
+  PORT (
+    aclk : IN STD_LOGIC;
+    aresetn : IN STD_LOGIC;
+    s_axis_a_tvalid : IN STD_LOGIC;
+    s_axis_a_tdata : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    s_axis_b_tvalid : IN STD_LOGIC;
+    s_axis_b_tdata : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    m_axis_dout_tvalid : OUT STD_LOGIC;
+    m_axis_dout_tdata : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+  );
+END COMPONENT;
+
+  --End preprocessing components
 
 
   signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_div,
   clk_to_preproc, clk_to_counter, fifo_wr_clk, clk_to_debug            : std_logic;
   signal data_to_idelays, data_to_iddr, data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
   signal data_from_deser, data_from_debug                              : std_logic_vector((RES_ADC * N - 1) downto 0);
+  signal valid_from_deser, valid_from_debug                            : std_logic_vector((N - 1) downto 0);
+  
+  --To be removed
+  signal valid_from_dwsamp                                             : std_logic_vector((N - 1) downto 0);
   signal data_from_dwsamp                                              : std_logic_vector(16 * N - 1 downto 0);
-  signal valid_from_deser, valid_from_debug, valid_from_dwsamp         : std_logic_vector((N - 1) downto 0);
+  --End to be removed
+  --Band and channel processing signals
+  signal data_source_sel_cdc : std_logic_vector(1 downto 0);
+
+  signal data_local_osc : std_logic_vector(15 downto 0);
+  signal valid_local_osc : std_logic;
+  signal data_preproc_counter : std_logic_vector(15 downto 0);
+  signal valid_preproc_counter : std_logic;
+  signal tready_for_osc : std_logic;
+  signal data_band_osc : std_logic_vector(31 downto 0);
+  
+  signal ch_oscillator_output : std_logic_vector(31 downto 0);
+
+  signal data_band_preproc                                             : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_band_preproc                                           : std_logic_vector((N - 1) downto 0);
+  signal data_channel_preproc                                          : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_channel_preproc                                        : std_logic_vector((N - 1) downto 0);
+
   signal frame_to_idelay, frame_to_iddr, frame_delayed                 : std_logic;
   signal treshold_reg                                                  : std_logic_vector((N_tr_b - 1) downto 0);
   signal counter_ce_v                                                  : std_logic_vector((N - 1) downto 0);
@@ -288,6 +362,31 @@ begin
 
   ---- ADC DATA INPUTS
 
+--Instantitate preprocessing_setup
+  preprocessing_setup_inst : preprocessing_setup_0
+  PORT MAP (
+    adc_clk_0 => clk_to_preproc,
+    adc_rst_ni_0 => not(async_rst_i),
+    data_local_osc => data_local_osc,
+    valid_local_osc => valid_local_osc,
+    data_osc => data_band_osc,
+    data_sel_in => data_source_sel,
+    data_sel_out => data_source_sel_cdc,
+    m_axis_0_tdata => data_preproc_counter,
+    m_axis_0_tvalid => valid_preproc_counter,
+    tready_osc_in => tready_for_osc
+  );
+
+  --Instantiate ch_oscillator (for now only one)
+
+  ch_osc_inst : ch_oscillator_0
+  PORT MAP (
+    adc_clk_0 => clk_to_preproc,
+    adc_rst_ni_0 => not(async_rst_i),
+    s_axis_config_tdata_0 => ch_1_freq,
+    m_axis_tdata_0 => ch_oscillator_output
+  );
+
   -- Generate IBUFDS, IDELAYs, IDDR, deserializer, downsampler for ADC data inputs
   ADC_data : for i in 0 to (N - 1) generate
 
@@ -412,20 +511,62 @@ begin
 --------Replace downsampler with preprocessing
 
     --instantiate downsampler
-    downsampler_data : entity work.downsampler(arch)
-      generic map(
-        N_tr_b => N_tr_b
-      )
-      port map(
-        d_clk_i        => clk_to_preproc,
-        rst_i          => async_rst_i,
-        data_i         => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
-        d_valid_i      => valid_from_debug(i),
-        treshold_reg_i => treshold_reg,
-        treshold_ld_i  => treshold_ld_i,
-        data_o         => data_from_dwsamp((16 * (i + 1) - 1) downto (16 * i)),
-        d_valid_o      => valid_from_dwsamp(i)
-      );
+    -- downsampler_data : entity work.downsampler(arch)
+    --   generic map(
+    --     N_tr_b => N_tr_b
+    --   )
+    --   port map(
+    --     d_clk_i        => clk_to_preproc,
+    --     rst_i          => async_rst_i,
+    --     data_i         => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
+    --     d_valid_i      => valid_from_debug(i),
+    --     treshold_reg_i => treshold_reg,
+    --     treshold_ld_i  => treshold_ld_i,
+    --     data_o         => data_from_dwsamp((16 * (i + 1) - 1) downto (16 * i)),
+    --     d_valid_o      => valid_from_dwsamp(i)
+    --   );
+
+    -- Band preprocessing: Multiplies and filters
+
+  band_processing_bd_inst : band_processing_v2_0
+  PORT MAP (
+    adc_clk_0 => clk_to_preproc,
+    adc_rst_ni_0 => not(async_rst_i),
+    band_osc_in => data_band_osc,
+    control_in_0 => data_source_sel_cdc,
+    data_adc => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
+    data_counter => data_preproc_counter,
+    data_local_osc => data_local_osc,
+    data_out => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    valid_adc => valid_from_debug(i),
+    valid_counter => valid_preproc_counter,
+    valid_local_osc => valid_local_osc,
+    valid_mux_out => tready_for_osc,
+    valid_out => valid_band_preproc(i)
+  );
+
+    -- channel_preprocessing_inst : channel_processing_0
+    -- port map (
+    --   adc_clk_0 => clk_to_preproc,
+    --   adc_rst_ni_0 => not(async_rst_i),
+    --   m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    --   m_axis_dout_tvalid => valid_channel_preproc(i),
+    --   s_axis_config_tdata_0 => ch_1_freq,
+    --   s_axis_tdata_in => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    --   s_axis_tvalid_in => valid_band_preproc(i)
+    -- );
+  ch_mixer_inst : ch_mixer
+  PORT MAP (
+    aclk => clk_to_preproc,
+    aresetn => not(async_rst_i),
+    s_axis_a_tvalid => valid_band_preproc(i),
+    s_axis_a_tdata => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    s_axis_b_tvalid => valid_band_preproc(i),
+    s_axis_b_tdata => ch_oscillator_output,
+    m_axis_dout_tvalid => valid_channel_preproc(i),
+    m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i))
+  );
+
 
 -------- End of replace downsampler with preprocessing
 
@@ -435,8 +576,8 @@ begin
       rst           => fifo_rst_i,
       wr_clk        => fifo_wr_clk,
       rd_clk        => fpga_clk_i,
-      din           => data_from_dwsamp((16 * (i + 1) - 1) downto (16 * i)),
-      wr_en         => valid_from_dwsamp(i),
+      din           => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
+      wr_en         => valid_channel_preproc(i),
       rd_en         => fifo_rd_en_i(i),
       dout          => fifo_out_o(i).data_out,
       full          => fifo_out_o(i).full,

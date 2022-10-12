@@ -28,7 +28,8 @@ package fifo_record_pkg is
     prog_full   : std_logic;
     wr_rst_bsy  : std_logic;
     rd_rst_bsy  : std_logic;
-    rd_data_cnt : std_logic_vector (12 - 1 downto 0);
+    --rd_data_cnt : std_logic_vector (12 - 1 downto 0);
+    rd_data_cnt : std_logic_vector (10 downto 0);
     data_out    : std_logic_vector (32 - 1 downto 0);
   end record fifo_out_t;
 

@@ -993,7 +993,8 @@ begin
         --inputs
         fifo_data_out_r((32 * (i + 1) - 1) downto (32 * i)) <= fifo_out_i(i).data_out;
 
-        fifo_flags_r((32 * i + 12 - 1) downto (32 * i)) <= fifo_out_i(i).rd_data_cnt;
+        --fifo_flags_r((32 * i + 12 - 1) downto (32 * i)) <= fifo_out_i(i).rd_data_cnt;
+        fifo_flags_r((32 * i + 10) downto (32 * i)) <= fifo_out_i(i).rd_data_cnt;
         fifo_flags_r(12 + 32 * i)                       <= fifo_out_i(i).rd_rst_bsy;
         fifo_flags_r(13 + 32 * i)                       <= fifo_out_i(i).wr_rst_bsy;
         fifo_flags_r(14 + 32 * i)                       <= fifo_out_i(i).overflow;
