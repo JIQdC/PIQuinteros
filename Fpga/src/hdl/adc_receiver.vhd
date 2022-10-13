@@ -172,6 +172,16 @@ COMPONENT ch_mixer
   );
 END COMPONENT;
 
+COMPONENT ch_filter_0
+  PORT (
+    adc_clk_0 : IN STD_LOGIC;
+    axis_out_tdata : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+    axis_out_tvalid : OUT STD_LOGIC;
+    data_in_0 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    valid_in_0 : IN STD_LOGIC
+  );
+END COMPONENT;
+
   --End preprocessing components
 
 
@@ -201,6 +211,8 @@ END COMPONENT;
   signal valid_band_preproc                                           : std_logic_vector((N - 1) downto 0);
   signal data_channel_preproc                                          : std_logic_vector(32 * N - 1 downto 0);
   signal valid_channel_preproc                                        : std_logic_vector((N - 1) downto 0);
+  signal data_ch_filter_preproc                                       : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_ch_filter_preproc                                      : std_logic_vector((N - 1) downto 0);
 
   signal frame_to_idelay, frame_to_iddr, frame_delayed                 : std_logic;
   signal treshold_reg                                                  : std_logic_vector((N_tr_b - 1) downto 0);
@@ -555,6 +567,8 @@ begin
     --   s_axis_tdata_in => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
     --   s_axis_tvalid_in => valid_band_preproc(i)
     -- );
+
+  --Aca debe hacerse un for para 5 beams
   ch_mixer_inst : ch_mixer
   PORT MAP (
     aclk => clk_to_preproc,
@@ -567,6 +581,19 @@ begin
     m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i))
   );
 
+  --Aca falta incorporar el mux para seleccionar el beam
+
+  ch_filter_inst : ch_filter_0
+  PORT MAP (
+    adc_clk_0 => clk_to_preproc,
+    data_in_0 => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    valid_in_0 => valid_channel_preproc(i),
+    axis_out_tdata => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
+    axis_out_tvalid => valid_ch_filter_preproc(i)
+  );
+
+
+
 
 -------- End of replace downsampler with preprocessing
 
@@ -576,8 +603,8 @@ begin
       rst           => fifo_rst_i,
       wr_clk        => fifo_wr_clk,
       rd_clk        => fpga_clk_i,
-      din           => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
-      wr_en         => valid_channel_preproc(i),
+      din           => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
+      wr_en         => valid_ch_filter_preproc(i),
       rd_en         => fifo_rd_en_i(i),
       dout          => fifo_out_o(i).data_out,
       full          => fifo_out_o(i).full,
