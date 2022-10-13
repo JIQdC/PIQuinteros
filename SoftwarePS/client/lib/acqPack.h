@@ -18,7 +18,15 @@ Comments:
 #include <time.h>
 
 //PACK SIZE MUST BE EQUAL TO PROG_FULL LEVEL/2 IN FIFO
-#define CHDATA_SIZE 1000
+#define CHDATA_SIZE 21
+
+//MTU = 1500, 1500 - UDP header - IP header = 1472
+//AcqPack_Header_t size = 88
+//Available payload size = 1472 - 88 = 1384
+//Cada dato tiene 32 bits -> 4 bytes
+//16*4 = 64 bytes por fila
+//64*21 = 1344 bytes de payload serán entonces
+//Tamaño final de paquete = 88 + 1344 = 1432 bytes (sin contar el header ethernet)
 
 //masks to read FIFO flags register
 #define RDDATACOUNT_MASK ((1 << 12) - 1)
@@ -44,6 +52,7 @@ typedef struct
     uint32_t rd_data_count;
 }fifo_flags_t;
 
+//header size: 
 typedef struct __attribute__((packed))
 {
     uint64_t acq_timestamp_sec;
@@ -56,6 +65,7 @@ typedef struct __attribute__((packed))
     uint16_t payload_size;
     uint8_t padding; //padding to make the size of the struct to be a multiple of 8
 }AcqPack_Header_t;
+//Header size: 88 bytes
 
 typedef union
 {
