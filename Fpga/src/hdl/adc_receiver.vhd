@@ -62,12 +62,18 @@ entity adc_receiver is
     delay_frame_output_o : out std_logic_vector((5 - 1) downto 0);
 
     --preprocessing signals
+    enable_postprocessing_counter_i : in std_logic;
     data_source_sel : in std_logic_vector(1 downto 0);
     ch_1_freq   : in std_logic_vector(15 downto 0);
+    ch_1_freq_valid : in std_logic;
     ch_2_freq   : in std_logic_vector(15 downto 0);
+    ch_2_freq_valid : in std_logic;
     ch_3_freq   : in std_logic_vector(15 downto 0);
+    ch_3_freq_valid : in std_logic;
     ch_4_freq   : in std_logic_vector(15 downto 0);
-    ch_5_freq   : in std_logic_vector(15 downto 0)
+    ch_4_freq_valid : in std_logic;
+    ch_5_freq   : in std_logic_vector(15 downto 0);
+    ch_5_freq_valid : in std_logic
   );
 end adc_receiver;
 
@@ -117,7 +123,7 @@ END COMPONENT;
 
   --Preprocessing components
 
-  COMPONENT preprocessing_setup_0
+  COMPONENT preprocessing_setup_bd_0
   PORT (
     adc_clk_0 : IN STD_LOGIC;
     adc_rst_ni_0 : IN STD_LOGIC;
@@ -155,7 +161,8 @@ COMPONENT ch_oscillator_0
     adc_clk_0 : IN STD_LOGIC;
     adc_rst_ni_0 : IN STD_LOGIC;
     m_axis_tdata_0 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-    s_axis_config_tdata_0 : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
+    s_axis_config_tdata_0 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    s_axis_config_tvalid_0 : IN STD_LOGIC
   );
 END COMPONENT;
 
@@ -213,6 +220,12 @@ END COMPONENT;
   signal valid_channel_preproc                                        : std_logic_vector((N - 1) downto 0);
   signal data_ch_filter_preproc                                       : std_logic_vector(32 * N - 1 downto 0);
   signal valid_ch_filter_preproc                                      : std_logic_vector((N - 1) downto 0);
+
+  signal data_counter_post_preprocessing : std_logic_vector(31 downto 0);
+  signal valid_counter_post_preprocessing : std_logic;
+
+  signal data_fifo_input : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_fifo_input : std_logic_vector((N - 1) downto 0);
 
   signal frame_to_idelay, frame_to_iddr, frame_delayed                 : std_logic;
   signal treshold_reg                                                  : std_logic_vector((N_tr_b - 1) downto 0);
@@ -375,7 +388,7 @@ begin
   ---- ADC DATA INPUTS
 
 --Instantitate preprocessing_setup
-  preprocessing_setup_inst : preprocessing_setup_0
+  preprocessing_setup_inst : preprocessing_setup_bd_0
   PORT MAP (
     adc_clk_0 => clk_to_preproc,
     adc_rst_ni_0 => not(async_rst_i),
@@ -396,8 +409,22 @@ begin
     adc_clk_0 => clk_to_preproc,
     adc_rst_ni_0 => not(async_rst_i),
     s_axis_config_tdata_0 => ch_1_freq,
+    s_axis_config_tvalid_0 => ch_1_freq_valid,
     m_axis_tdata_0 => ch_oscillator_output
   );
+
+
+  --Instantiate debug counter
+  debug_counter_inst : entity work.basic_counter(rtl)
+    generic map(
+      COUNTER_WIDTH      => 32,
+      DIVIDE_CLK_FREQ_BY => 1600)
+    port map(
+      clk_i => clk_to_preproc,
+      rst_ni => not(async_rst_i),
+      m_axis_tdata => data_counter_post_preprocessing,
+      m_axis_tvalid => valid_counter_post_preprocessing
+    );
 
   -- Generate IBUFDS, IDELAYs, IDDR, deserializer, downsampler for ADC data inputs
   ADC_data : for i in 0 to (N - 1) generate
@@ -593,7 +620,17 @@ begin
   );
 
 
-
+-- Select channel filter data or counter
+fifo_input : process(enable_postprocessing_counter_i)
+  begin
+    if enable_postprocessing_counter_i = '1' then
+      data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_counter_post_preprocessing;
+      valid_fifo_input(i) <= valid_counter_post_preprocessing;
+    else
+      data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i));
+      valid_fifo_input(i) <= valid_ch_filter_preproc(i);
+    end if;
+  end process;
 
 -------- End of replace downsampler with preprocessing
 
@@ -603,8 +640,8 @@ begin
       rst           => fifo_rst_i,
       wr_clk        => fifo_wr_clk,
       rd_clk        => fpga_clk_i,
-      din           => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
-      wr_en         => valid_ch_filter_preproc(i),
+      din           => data_fifo_input((32 * (i + 1) - 1) downto (32 * i)),
+      wr_en         => valid_fifo_input(i),
       rd_en         => fifo_rd_en_i(i),
       dout          => fifo_out_o(i).data_out,
       full          => fifo_out_o(i).full,

@@ -1,8 +1,8 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
---Tool Version: Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
---Date        : Wed Oct 12 11:14:48 2022
---Host        : Ferb running 64-bit major release  (build 9200)
+--Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+--Date        : Fri Oct 14 07:45:32 2022
+--Host        : ib-pcteleco10.cabib.local running 64-bit unknown
 --Command     : generate_target preprocessing_setup_bd.bd
 --Design      : preprocessing_setup_bd
 --Purpose     : IP block netlist
@@ -21,14 +21,14 @@ entity Local_osc_hier_imp_B52PYN is
 end Local_osc_hier_imp_B52PYN;
 
 architecture STRUCTURE of Local_osc_hier_imp_B52PYN is
-  component preprocessing_setup_bd_Local_oscillator_0 is
+  component preprocessing_setup_bd_Local_oscillator_1 is
   port (
     aclk : in STD_LOGIC;
     m_axis_data_tvalid : out STD_LOGIC;
     m_axis_data_tready : in STD_LOGIC;
     m_axis_data_tdata : out STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  end component preprocessing_setup_bd_Local_oscillator_0;
+  end component preprocessing_setup_bd_Local_oscillator_1;
   component preprocessing_setup_bd_dsp_dds_compiler_con_0_0 is
   port (
     aclk : in STD_LOGIC;
@@ -52,7 +52,7 @@ begin
   m_axis_tdata(15 downto 0) <= dsp_dds_compiler_con_0_m_axis_tdata(15 downto 0);
   m_axis_tvalid <= dsp_dds_compiler_con_0_m_axis_tvalid;
   rst_ni_0_1 <= adc_rst_ni;
-Local_oscillator: component preprocessing_setup_bd_Local_oscillator_0
+Local_oscillator: component preprocessing_setup_bd_Local_oscillator_1
      port map (
       aclk => aclk_0_1,
       m_axis_data_tdata(15 downto 0) => Local_oscillator_M_AXIS_DATA_TDATA(15 downto 0),
@@ -167,14 +167,14 @@ entity preprocessing_setup_bd is
 end preprocessing_setup_bd;
 
 architecture STRUCTURE of preprocessing_setup_bd is
-  component preprocessing_setup_bd_Band_selector_oscillator_0 is
+  component preprocessing_setup_bd_Band_selector_oscillator_1 is
   port (
     aclk : in STD_LOGIC;
     m_axis_data_tvalid : out STD_LOGIC;
     m_axis_data_tready : in STD_LOGIC;
     m_axis_data_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  end component preprocessing_setup_bd_Band_selector_oscillator_0;
+  end component preprocessing_setup_bd_Band_selector_oscillator_1;
   component preprocessing_setup_bd_basic_counter_0_0 is
   port (
     clk_i : in STD_LOGIC;
@@ -212,7 +212,7 @@ begin
   m_axis_0_tvalid <= basic_counter_0_m_axis_TVALID;
   valid_local_osc <= Local_osc_hier_m_axis_tvalid;
   tready_osc_in <= 'Z';
-Band_selector_oscillator: component preprocessing_setup_bd_Band_selector_oscillator_0
+Band_selector_oscillator: component preprocessing_setup_bd_Band_selector_oscillator_1
      port map (
       aclk => adc_clk_0_2,
       m_axis_data_tdata(31 downto 0) => Band_selector_oscillator_m_axis_data_tdata(31 downto 0),

@@ -164,12 +164,18 @@ ARCHITECTURE arch OF adc_control_wrapper IS
   SIGNAL delay_refclk : STD_LOGIC;
 
   --preprocessing signals
+  SIGNAL en_postprocessing_counter : STD_LOGIC := '0';
   SIGNAL data_source_sel : STD_LOGIC_VECTOR(1 DOWNTO 0) := (OTHERS => '0');
   SIGNAL ch_1_freq : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ch_1_valid : STD_LOGIC := '0';
   SIGNAL ch_2_freq : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ch_2_valid : STD_LOGIC := '0';
   SIGNAL ch_3_freq : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ch_3_valid : STD_LOGIC := '0';
   SIGNAL ch_4_freq : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ch_4_valid : STD_LOGIC := '0';
   SIGNAL ch_5_freq : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ch_5_valid : STD_LOGIC := '0';
 
 BEGIN
 
@@ -238,13 +244,25 @@ BEGIN
       S_AXI_RRESP => S_AXI_PREPROC_RRESP,
       S_AXI_RVALID => S_AXI_PREPROC_RVALID,
       S_AXI_RREADY => S_AXI_PREPROC_RREADY,
+      enable_postprocessing_counter => en_postprocessing_counter,
       data_source_selector => data_source_sel,
-      ch_1_freq => ch_1_freq,
-      ch_2_freq => ch_2_freq,
-      ch_3_freq => ch_3_freq,
-      ch_4_freq => ch_4_freq,
-      ch_5_freq => ch_5_freq
+
+      --TODO: Hacer CDC para estas señales
+      --Como el AXI_clk es de 200 MHz, y el preproc es 260 MHz, no debería haber problema
+      --De todas formas, hay que hacerlo
+      ch_1_freq_data => ch_1_freq,
+      ch_1_freq_valid => ch_1_valid,
+      ch_2_freq_data => ch_2_freq,
+      ch_2_freq_valid => ch_2_valid,
+      ch_3_freq_data => ch_3_freq,
+      ch_3_freq_valid => ch_3_valid,
+      ch_4_freq_data => ch_4_freq,
+      ch_4_freq_valid => ch_4_valid,
+      ch_5_freq_data => ch_5_freq,
+      ch_5_freq_valid => ch_5_valid
     );
+
+--CRC block
 
   ---- DELAY CONTROL
   -- instantiate IBUFDS and BUFG for external ref clk, and IDELAYCTRL to control IDELAYs in receivers
@@ -306,12 +324,18 @@ BEGIN
       delay_frame_output_o => delay_frame1_output_o,
 
       --preprocessing signals
+      enable_postprocessing_counter_i => en_postprocessing_counter,
       data_source_sel => data_source_sel,
       ch_1_freq => ch_1_freq,
+      ch_1_freq_valid => ch_1_valid,
       ch_2_freq => ch_2_freq,
+      ch_2_freq_valid => ch_2_valid,
       ch_3_freq => ch_3_freq,
+      ch_3_freq_valid => ch_3_valid,
       ch_4_freq => ch_4_freq,
-      ch_5_freq => ch_5_freq
+      ch_4_freq_valid => ch_4_valid,
+      ch_5_freq => ch_5_freq,
+      ch_5_freq_valid => ch_5_valid
     );
 
   --receiver for bank13 signals
@@ -354,12 +378,18 @@ BEGIN
       delay_frame_output_o => delay_frame2_output_o,
 
       --preprocessing signals
+      enable_postprocessing_counter_i => en_postprocessing_counter,
       data_source_sel => data_source_sel,
       ch_1_freq => ch_1_freq,
+      ch_1_freq_valid => ch_1_valid,
       ch_2_freq => ch_2_freq,
+      ch_2_freq_valid => ch_2_valid,
       ch_3_freq => ch_3_freq,
+      ch_3_freq_valid => ch_3_valid,
       ch_4_freq => ch_4_freq,
-      ch_5_freq => ch_5_freq
+      ch_4_freq_valid => ch_4_valid,
+      ch_5_freq => ch_5_freq,
+      ch_5_freq_valid => ch_5_valid
     );
 
   --reset handling
