@@ -15,81 +15,81 @@ entity eight_regs_block is
 	);
 	port (
 		-- Users to add ports here
-		enable_postprocessing_counter : out std_logic;
-		data_source_selector          : out std_logic_vector(1 downto 0);
-		ch_1_freq_data                : out std_logic_vector(15 downto 0);
-		ch_1_freq_valid               : out std_logic;
-		ch_2_freq_data                : out std_logic_vector(15 downto 0);
-		ch_2_freq_valid               : out std_logic;
-		ch_3_freq_data                : out std_logic_vector(15 downto 0);
-		ch_3_freq_valid               : out std_logic;
-		ch_4_freq_data                : out std_logic_vector(15 downto 0);
-		ch_4_freq_valid               : out std_logic;
-		ch_5_freq_data                : out std_logic_vector(15 downto 0);
-		ch_5_freq_valid               : out std_logic;
+		fifo_input_mux_o     : out std_logic_vector;
+		data_source_selector : out std_logic_vector(1 downto 0);
+		ch_1_freq_data       : out std_logic_vector(15 downto 0);
+		ch_1_freq_valid      : out std_logic;
+		ch_2_freq_data       : out std_logic_vector(15 downto 0);
+		ch_2_freq_valid      : out std_logic;
+		ch_3_freq_data       : out std_logic_vector(15 downto 0);
+		ch_3_freq_valid      : out std_logic;
+		ch_4_freq_data       : out std_logic_vector(15 downto 0);
+		ch_4_freq_valid      : out std_logic;
+		ch_5_freq_data       : out std_logic_vector(15 downto 0);
+		ch_5_freq_valid      : out std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
 		-- Global Clock Signal
-		S_AXI_ACLK                    : in std_logic;
+		S_AXI_ACLK           : in std_logic;
 		-- Global Reset Signal. This Signal is Active LOW
-		S_AXI_ARESETN                 : in std_logic;
+		S_AXI_ARESETN        : in std_logic;
 		-- Write address (issued by master, acceped by Slave)
-		S_AXI_AWADDR                  : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
+		S_AXI_AWADDR         : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
 		-- Write channel Protection type. This signal indicates the
 		-- privilege and security level of the transaction, and whether
 		-- the transaction is a data access or an instruction access.
-		S_AXI_AWPROT                  : in std_logic_vector(2 downto 0);
+		S_AXI_AWPROT         : in std_logic_vector(2 downto 0);
 		-- Write address valid. This signal indicates that the master signaling
 		-- valid write address and control information.
-		S_AXI_AWVALID                 : in std_logic;
+		S_AXI_AWVALID        : in std_logic;
 		-- Write address ready. This signal indicates that the slave is ready
 		-- to accept an address and associated control signals.
-		S_AXI_AWREADY                 : out std_logic;
+		S_AXI_AWREADY        : out std_logic;
 		-- Write data (issued by master, acceped by Slave)
-		S_AXI_WDATA                   : in std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+		S_AXI_WDATA          : in std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 		-- Write strobes. This signal indicates which byte lanes hold
 		-- valid data. There is one write strobe bit for each eight
 		-- bits of the write data bus.
-		S_AXI_WSTRB                   : in std_logic_vector((C_S_AXI_DATA_WIDTH/8) - 1 downto 0);
+		S_AXI_WSTRB          : in std_logic_vector((C_S_AXI_DATA_WIDTH/8) - 1 downto 0);
 		-- Write valid. This signal indicates that valid write
 		-- data and strobes are available.
-		S_AXI_WVALID                  : in std_logic;
+		S_AXI_WVALID         : in std_logic;
 		-- Write ready. This signal indicates that the slave
 		-- can accept the write data.
-		S_AXI_WREADY                  : out std_logic;
+		S_AXI_WREADY         : out std_logic;
 		-- Write response. This signal indicates the status
 		-- of the write transaction.
-		S_AXI_BRESP                   : out std_logic_vector(1 downto 0);
+		S_AXI_BRESP          : out std_logic_vector(1 downto 0);
 		-- Write response valid. This signal indicates that the channel
 		-- is signaling a valid write response.
-		S_AXI_BVALID                  : out std_logic;
+		S_AXI_BVALID         : out std_logic;
 		-- Response ready. This signal indicates that the master
 		-- can accept a write response.
-		S_AXI_BREADY                  : in std_logic;
+		S_AXI_BREADY         : in std_logic;
 		-- Read address (issued by master, acceped by Slave)
-		S_AXI_ARADDR                  : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
+		S_AXI_ARADDR         : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
 		-- Protection type. This signal indicates the privilege
 		-- and security level of the transaction, and whether the
 		-- transaction is a data access or an instruction access.
-		S_AXI_ARPROT                  : in std_logic_vector(2 downto 0);
+		S_AXI_ARPROT         : in std_logic_vector(2 downto 0);
 		-- Read address valid. This signal indicates that the channel
 		-- is signaling valid read address and control information.
-		S_AXI_ARVALID                 : in std_logic;
+		S_AXI_ARVALID        : in std_logic;
 		-- Read address ready. This signal indicates that the slave is
 		-- ready to accept an address and associated control signals.
-		S_AXI_ARREADY                 : out std_logic;
+		S_AXI_ARREADY        : out std_logic;
 		-- Read data (issued by slave)
-		S_AXI_RDATA                   : out std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+		S_AXI_RDATA          : out std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 		-- Read response. This signal indicates the status of the
 		-- read transfer.
-		S_AXI_RRESP                   : out std_logic_vector(1 downto 0);
+		S_AXI_RRESP          : out std_logic_vector(1 downto 0);
 		-- Read valid. This signal indicates that the channel is
 		-- signaling the required read data.
-		S_AXI_RVALID                  : out std_logic;
+		S_AXI_RVALID         : out std_logic;
 		-- Read ready. This signal indicates that the master can
 		-- accept the read data and response information.
-		S_AXI_RREADY                  : in std_logic
+		S_AXI_RREADY         : in std_logic
 	);
 end eight_regs_block;
 
@@ -119,7 +119,7 @@ architecture arch_imp of eight_regs_block is
 	--------------------------------------------------
 	---- Number of Slave Registers 8
 	signal slv_reg0 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
-	signal en_postprocessing_counter_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal fifo_input_mux_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal slv_reg2 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal ch_freq_1_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal ch_freq_1_valid_reg : std_logic;
@@ -234,7 +234,7 @@ begin
 		if rising_edge(S_AXI_ACLK) then
 			if S_AXI_ARESETN = '0' then
 				slv_reg0 <= (others => '0');
-				en_postprocessing_counter_reg <= (others => '0');
+				fifo_input_mux_reg <= (others => '0');
 				slv_reg2 <= (others => '0');
 				ch_freq_1_reg <= (others => '0');
 				ch_freq_2_reg <= (others => '0');
@@ -263,7 +263,7 @@ begin
 								if (S_AXI_WSTRB(byte_index) = '1') then
 									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 1
-									en_postprocessing_counter_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+									fifo_input_mux_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
 								end if;
 							end loop;
 						when b"010" =>
@@ -320,14 +320,6 @@ begin
 							end loop;
 							ch_freq_5_valid_reg <= '1';
 						when others =>
-							slv_reg0 <= slv_reg0;
-							en_postprocessing_counter_reg <= en_postprocessing_counter_reg;
-							slv_reg2 <= slv_reg2;
-							ch_freq_1_reg <= ch_freq_1_reg;
-							ch_freq_2_reg <= ch_freq_2_reg;
-							ch_freq_3_reg <= ch_freq_3_reg;
-							ch_freq_4_reg <= ch_freq_4_reg;
-							ch_freq_5_reg <= ch_freq_5_reg;
 							ch_freq_1_valid_reg <= '0';
 							ch_freq_2_valid_reg <= '0';
 							ch_freq_3_valid_reg <= '0';
@@ -420,7 +412,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid);
 
-	process (slv_reg0, en_postprocessing_counter_reg, slv_reg2, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+	process (slv_reg0, fifo_input_mux_reg, slv_reg2, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
 		variable loc_addr : std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -429,7 +421,7 @@ begin
 			when b"000" =>
 				reg_data_out <= slv_reg0;
 			when b"001" =>
-				reg_data_out <= en_postprocessing_counter_reg;
+				reg_data_out <= fifo_input_mux_reg;
 			when b"010" =>
 				reg_data_out <= slv_reg2;
 			when b"011" =>
@@ -465,7 +457,7 @@ begin
 		end if;
 	end process;
 	-- Add user logic here
-	enable_postprocessing_counter <= en_postprocessing_counter_reg(0);
+	fifo_input_mux_o <= fifo_input_mux_reg(1 downto 0);
 	data_source_selector <= slv_reg2(1 downto 0);
 	ch_1_freq_data <= ch_freq_1_reg(15 downto 0);
 	ch_1_freq_valid <= ch_freq_1_valid_reg;

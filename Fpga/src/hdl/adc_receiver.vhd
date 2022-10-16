@@ -31,49 +31,49 @@ entity adc_receiver is
     N_tr_b  : integer := 10  --bits for downsampler treshold register
   );
   port (
-    fpga_clk_i                      : in std_logic;
-    async_rst_i                     : in std_logic;
+    fpga_clk_i           : in std_logic;
+    async_rst_i          : in std_logic;
 
-    adc_clk_p_i                     : in std_logic;
-    adc_clk_n_i                     : in std_logic;
-    adc_frame_p_i                   : in std_logic;
-    adc_frame_n_i                   : in std_logic;
-    adc_data_p_i                    : in std_logic_vector((N - 1) downto 0);
-    adc_data_n_i                    : in std_logic_vector((N - 1) downto 0);
-    adc_FCOlck_o                    : out std_logic;
+    adc_clk_p_i          : in std_logic;
+    adc_clk_n_i          : in std_logic;
+    adc_frame_p_i        : in std_logic;
+    adc_frame_n_i        : in std_logic;
+    adc_data_p_i         : in std_logic_vector((N - 1) downto 0);
+    adc_data_n_i         : in std_logic_vector((N - 1) downto 0);
+    adc_FCOlck_o         : out std_logic;
 
-    treshold_value_i                : in std_logic_vector((N_tr_b - 1) downto 0);
-    treshold_ld_i                   : in std_logic;
+    treshold_value_i     : in std_logic_vector((N_tr_b - 1) downto 0);
+    treshold_ld_i        : in std_logic;
 
-    debug_enable_i                  : in std_logic;
-    debug_control_i                 : in std_logic_vector((N * 4 - 1) downto 0);
-    debug_w2w1_i                    : in std_logic_vector((28 * N - 1) downto 0);
+    debug_enable_i       : in std_logic;
+    debug_control_i      : in std_logic_vector((N * 4 - 1) downto 0);
+    debug_w2w1_i         : in std_logic_vector((28 * N - 1) downto 0);
 
-    fifo_rst_i                      : in std_logic;
-    fifo_rd_en_i                    : in std_logic_vector((N - 1) downto 0);
-    fifo_out_o                      : out fifo_out_vector_t((N - 1) downto 0);
+    fifo_rst_i           : in std_logic;
+    fifo_rd_en_i         : in std_logic_vector((N - 1) downto 0);
+    fifo_out_o           : out fifo_out_vector_t((N - 1) downto 0);
 
-    delay_refclk_i                  : in std_logic;
-    delay_data_ld_i                 : in std_logic_vector((N - 1) downto 0);
-    delay_data_input_i              : in std_logic_vector((5 * N - 1) downto 0);
-    delay_data_output_o             : out std_logic_vector((5 * N - 1) downto 0);
-    delay_frame_ld_i                : in std_logic;
-    delay_frame_input_i             : in std_logic_vector((5 - 1) downto 0);
-    delay_frame_output_o            : out std_logic_vector((5 - 1) downto 0);
+    delay_refclk_i       : in std_logic;
+    delay_data_ld_i      : in std_logic_vector((N - 1) downto 0);
+    delay_data_input_i   : in std_logic_vector((5 * N - 1) downto 0);
+    delay_data_output_o  : out std_logic_vector((5 * N - 1) downto 0);
+    delay_frame_ld_i     : in std_logic;
+    delay_frame_input_i  : in std_logic_vector((5 - 1) downto 0);
+    delay_frame_output_o : out std_logic_vector((5 - 1) downto 0);
 
     --preprocessing signals
-    enable_postprocessing_counter_i : in std_logic;
-    data_source_sel                 : in std_logic_vector(1 downto 0);
-    ch_1_freq                       : in std_logic_vector(15 downto 0);
-    ch_1_freq_valid                 : in std_logic;
-    ch_2_freq                       : in std_logic_vector(15 downto 0);
-    ch_2_freq_valid                 : in std_logic;
-    ch_3_freq                       : in std_logic_vector(15 downto 0);
-    ch_3_freq_valid                 : in std_logic;
-    ch_4_freq                       : in std_logic_vector(15 downto 0);
-    ch_4_freq_valid                 : in std_logic;
-    ch_5_freq                       : in std_logic_vector(15 downto 0);
-    ch_5_freq_valid                 : in std_logic
+    fifo_input_mux_sel_i : in std_logic_vector(1 downto 0);
+    data_source_sel      : in std_logic_vector(1 downto 0);
+    ch_1_freq            : in std_logic_vector(15 downto 0);
+    ch_1_freq_valid      : in std_logic;
+    ch_2_freq            : in std_logic_vector(15 downto 0);
+    ch_2_freq_valid      : in std_logic;
+    ch_3_freq            : in std_logic_vector(15 downto 0);
+    ch_3_freq_valid      : in std_logic;
+    ch_4_freq            : in std_logic_vector(15 downto 0);
+    ch_4_freq_valid      : in std_logic;
+    ch_5_freq            : in std_logic_vector(15 downto 0);
+    ch_5_freq_valid      : in std_logic
   );
 end adc_receiver;
 
@@ -198,8 +198,7 @@ architecture arch of adc_receiver is
   end component;
 
   --End preprocessing components
-  signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_div,
-  clk_to_preproc, clk_to_counter, fifo_wr_clk, clk_to_debug : std_logic;
+  signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_260_mhz : std_logic;
   signal data_to_idelays, data_to_iddr, data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
   signal data_from_deser, data_from_debug : std_logic_vector((RES_ADC * N - 1) downto 0);
   signal valid_from_deser, valid_from_debug : std_logic_vector((N - 1) downto 0);
@@ -250,7 +249,7 @@ begin
   -- instantiate binary counter for debugging purposes
   binary_counter : c_counter_binary_0
   port map(
-    CLK  => clk_to_counter,
+    CLK  => clk_260_mhz,
     CE   => debug_counter_ce,
     SCLR => async_rst_i,
     Q    => debug_counter
@@ -342,26 +341,10 @@ begin
     S  => '0'            -- 1-bit set
   );
 
-  -- clk_div from frame
-  -- clk_div <= not(frame_delayed);
-  -- clk wizard instantiation
-  -- FCO_clk_wiz : frame_clk_wiz_0
-  -- port map(
-  --   -- Clock out ports
-  --   clk_to_preproc => clk_to_preproc,
-  --   fifo_wr_clk    => fifo_wr_clk,
-  --   clk_to_counter => clk_to_counter,
-  --   clk_to_debug   => clk_to_debug,
-  --   -- Status and control signals
-  --   reset  => async_rst_i,
-  --   locked => adc_FCOlck_o,
-  --   -- Clock in ports
-  --   clk_in1 => clk_div
-  -- );
   FCO_clk_wiz : clk_wiz_0_0
   port map(
     -- Clock out ports
-    clk_out1_0 => clk_div,
+    clk_out1_0 => clk_260_mhz,
     -- Status and control signals
     reset_0    => async_rst_i,
     locked_0   => adc_FCOlck_o,
@@ -369,32 +352,12 @@ begin
     clk_in1_0  => clk_to_logic
   );
 
-  --Assign clk_div to 4 legacy clks
-  clk_to_preproc <= clk_div;
-  clk_to_debug <= clk_div;
-  clk_to_counter <= clk_div;
-  fifo_wr_clk <= clk_div;
-
-  --Not useful without downsampler
-  ---- TRESHOLD REGISTER FOR DOWNSAMPLER
-  -- tresh_reg_inst : entity work.downsampler_tresh_reg(arch)
-  --   generic map(
-  --     N_tr_b => N_tr_b
-  --   )
-  --   port map(
-  --     d_clk_i        => clk_to_preproc,
-  --     rst_i          => async_rst_i,
-  --     treshold_i     => treshold_value_i,
-  --     treshold_ld_i  => treshold_ld_i,
-  --     treshold_reg_o => treshold_reg
-  --   );
-
   ---- ADC DATA INPUTS
 
   --Instantitate preprocessing_setup
   preprocessing_setup_inst : preprocessing_setup_bd_0
   port map(
-    adc_clk_0       => clk_to_preproc,
+    adc_clk_0       => clk_260_mhz,
     adc_rst_ni_0    => not(async_rst_i),
     data_local_osc  => data_local_osc,
     valid_local_osc => valid_local_osc,
@@ -410,7 +373,7 @@ begin
 
   ch_osc_inst : ch_oscillator_0
   port map(
-    adc_clk_0              => clk_to_preproc,
+    adc_clk_0              => clk_260_mhz,
     adc_rst_ni_0           => not(async_rst_i),
     s_axis_config_tdata_0  => ch_1_freq,
     s_axis_config_tvalid_0 => ch_1_freq_valid,
@@ -422,14 +385,14 @@ begin
   --     COUNTER_WIDTH      => 32,
   --     DIVIDE_CLK_FREQ_BY => 1600)
   --   port map(
-  --     clk_i => clk_to_preproc,
+  --     clk_i => clk_260_mhz,
   --     rst_ni => not(async_rst_i),
   --     m_axis_tdata => data_counter_post_preprocessing,
   --     m_axis_tvalid => valid_counter_post_preprocessing
   --   );
   debug_counter_inst : counter_32_bits
   port map(
-    CLK  => clk_to_preproc,
+    CLK  => clk_260_mhz,
     CE   => valid_fifo_input(0),
     SCLR => async_rst_i,
     Q    => data_counter_post_preprocessing
@@ -501,7 +464,7 @@ begin
       port map(
         src_clk    => clk_to_logic,
         src_rst_i  => async_rst_i,
-        dest_clk   => clk_to_preproc,
+        dest_clk   => clk_260_mhz,
         dest_rst_i => async_rst_i,
         pulse_i    => valid_from_deser(i),
         pulse_o    => valid_from_pulse_sync(i)
@@ -522,7 +485,7 @@ begin
         N => 14
       )
       port map(
-        clk        => clk_to_preproc,
+        clk        => clk_260_mhz,
         rst_i      => async_rst_i,
         ce         => valid_from_pulse_sync(i),
         din        => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
@@ -536,7 +499,7 @@ begin
         RES_ADC => RES_ADC
       )
       port map(
-        clock_i         => clk_to_debug,
+        clock_i         => clk_260_mhz,
         rst_i           => async_rst_i,
         enable_i        => debug_enable_i,
         control_i       => debug_control_i(((4 * (i + 1)) - 1) downto (4 * i)),
@@ -561,7 +524,7 @@ begin
     --     N_tr_b => N_tr_b
     --   )
     --   port map(
-    --     d_clk_i        => clk_to_preproc,
+    --     d_clk_i        => clk_260_mhz,
     --     rst_i          => async_rst_i,
     --     data_i         => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
     --     d_valid_i      => valid_from_debug(i),
@@ -575,7 +538,7 @@ begin
 
     band_processing_bd_inst : band_processing_v2_0
     port map(
-      adc_clk_0       => clk_to_preproc,
+      adc_clk_0       => clk_260_mhz,
       adc_rst_ni_0    => not(async_rst_i),
       band_osc_in     => data_band_osc,
       control_in_0    => data_source_sel_cdc,
@@ -592,7 +555,7 @@ begin
 
     -- channel_preprocessing_inst : channel_processing_0
     -- port map (
-    --   adc_clk_0 => clk_to_preproc,
+    --   adc_clk_0 => clk_260_mhz,
     --   adc_rst_ni_0 => not(async_rst_i),
     --   m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
     --   m_axis_dout_tvalid => valid_channel_preproc(i),
@@ -604,7 +567,7 @@ begin
     --Aca debe hacerse un for para 5 beams
     ch_mixer_inst : ch_mixer
     port map(
-      aclk               => clk_to_preproc,
+      aclk               => clk_260_mhz,
       aresetn            => not(async_rst_i),
       s_axis_a_tvalid    => valid_band_preproc(i),
       s_axis_a_tdata     => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
@@ -618,23 +581,33 @@ begin
 
     ch_filter_inst : ch_filter_0
     port map(
-      adc_clk_0       => clk_to_preproc,
+      adc_clk_0       => clk_260_mhz,
       data_in_0       => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
       valid_in_0      => valid_channel_preproc(i),
       axis_out_tdata  => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
       axis_out_tvalid => valid_ch_filter_preproc(i)
     );
-    -- Select channel filter data or counter
-    fifo_input : process (enable_postprocessing_counter_i)
-    begin
-      if enable_postprocessing_counter_i = '1' then
-        data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_counter_post_preprocessing;
-        valid_fifo_input(i) <= valid_ch_filter_preproc(i);
-      else
-        data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i));
-        valid_fifo_input(i) <= valid_ch_filter_preproc(i);
-      end if;
-    end process;
+
+    -- Select FIFO input
+    fifo_input_mux_inst : entity work.fifo_input_data_mux
+      port map(
+        sys_clk_i            => clk_260_mhz,
+        sys_rst_i            => async_rst_i,
+        -- Mux control
+        data_mux_sel_i       => fifo_input_mux_sel_i,
+        -- Data from preprocessing logic
+        data_preproc_i       => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
+        data_preproc_valid_i => valid_ch_filter_preproc(i),
+        -- Data from debug counter
+        data_counter_i       => data_counter_post_preprocessing,
+        data_counter_valid_i => valid_ch_filter_preproc(0),
+        -- Raw data from deserializer
+        data_raw_i           => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
+        data_raw_valid_i     => valid_from_debug(i),
+        -- Output data
+        data_o               => data_fifo_input((32 * (i + 1) - 1) downto (32 * i)),
+        data_valid_o         => valid_fifo_input(i)
+      );
 
     -------- End of replace downsampler with preprocessing
 
@@ -642,7 +615,7 @@ begin
     fifo_inst : fifo_generator_0
     port map(
       rst           => fifo_rst_i,
-      wr_clk        => fifo_wr_clk,
+      wr_clk        => clk_260_mhz,
       rd_clk        => fpga_clk_i,
       din           => data_fifo_input((32 * (i + 1) - 1) downto (32 * i)),
       wr_en         => valid_fifo_input(i),
