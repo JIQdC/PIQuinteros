@@ -15,7 +15,7 @@ entity eight_regs_block is
 	);
 	port (
 		-- Users to add ports here
-		fifo_input_mux_o     : out std_logic_vector;
+		fifo_input_mux_o     : out std_logic_vector(1 downto 0);
 		data_source_selector : out std_logic_vector(1 downto 0);
 		ch_1_freq_data       : out std_logic_vector(15 downto 0);
 		ch_1_freq_valid      : out std_logic;
