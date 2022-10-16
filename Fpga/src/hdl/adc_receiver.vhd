@@ -189,6 +189,15 @@ COMPONENT ch_filter_0
   );
 END COMPONENT;
 
+COMPONENT counter_32_bits
+  PORT (
+    CLK : IN STD_LOGIC;
+    CE : IN STD_LOGIC;
+    SCLR : IN STD_LOGIC;
+    Q : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+  );
+END COMPONENT;
+
   --End preprocessing components
 
 
@@ -415,17 +424,23 @@ begin
 
 
   --Instantiate debug counter
-  debug_counter_inst : entity work.basic_counter(rtl)
-    generic map(
-      COUNTER_WIDTH      => 32,
-      DIVIDE_CLK_FREQ_BY => 1600)
-    port map(
-      clk_i => clk_to_preproc,
-      rst_ni => not(async_rst_i),
-      m_axis_tdata => data_counter_post_preprocessing,
-      m_axis_tvalid => valid_counter_post_preprocessing
+  -- debug_counter_inst : entity work.basic_counter(rtl)
+  --   generic map(
+  --     COUNTER_WIDTH      => 32,
+  --     DIVIDE_CLK_FREQ_BY => 1600)
+  --   port map(
+  --     clk_i => clk_to_preproc,
+  --     rst_ni => not(async_rst_i),
+  --     m_axis_tdata => data_counter_post_preprocessing,
+  --     m_axis_tvalid => valid_counter_post_preprocessing
+  --   );
+  debug_counter_inst : counter_32_bits
+    PORT MAP (
+      CLK => clk_to_preproc,
+      CE => valid_fifo_input(0),
+      SCLR => async_rst_i,
+      Q => data_counter_post_preprocessing
     );
-
   -- Generate IBUFDS, IDELAYs, IDDR, deserializer, downsampler for ADC data inputs
   ADC_data : for i in 0 to (N - 1) generate
 
@@ -625,7 +640,7 @@ fifo_input : process(enable_postprocessing_counter_i)
   begin
     if enable_postprocessing_counter_i = '1' then
       data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_counter_post_preprocessing;
-      valid_fifo_input(i) <= valid_counter_post_preprocessing;
+      valid_fifo_input(i) <= valid_ch_filter_preproc(i);
     else
       data_fifo_input((32 * (i + 1) - 1) downto (32 * i)) <= data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i));
       valid_fifo_input(i) <= valid_ch_filter_preproc(i);
