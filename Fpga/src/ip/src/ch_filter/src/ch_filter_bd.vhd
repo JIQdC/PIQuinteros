@@ -1,8 +1,8 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
---Tool Version: Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
---Date        : Wed Oct 12 17:47:01 2022
---Host        : Ferb running 64-bit major release  (build 9200)
+--Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+--Date        : Sun Oct 16 17:02:29 2022
+--Host        : desktop-ump4eln.cabib.local running 64-bit unknown
 --Command     : generate_target ch_filter_bd.bd
 --Design      : ch_filter_bd
 --Purpose     : IP block netlist
