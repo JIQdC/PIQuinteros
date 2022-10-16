@@ -1,19 +1,19 @@
 ----------------------------------------------------------------------------------
 -- Company:  Instituto Balseiro
 -- Engineer: José Quinteros
--- 
--- Design Name: 
--- Module Name: 
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
+--
+-- Design Name:
+-- Module Name:
+-- Project Name:
+-- Target Devices:
+-- Tool Versions:
 -- Description: Wrapper for IDELAY primitive
--- 
+--
 -- Dependencies: None.
--- 
+--
 -- Revision: 2020-09-29
 -- Additional Comments:
--- 
+--
 ----------------------------------------------------------------------------------
 
 library ieee;
@@ -26,24 +26,24 @@ entity idelay_wrapper is
   port (
     async_rst_i : in std_logic;
 
-    data_i   : in std_logic;
-    data_o   : out std_logic;
-    clk_i    : in std_logic;
-    ld_i     : in std_logic;
-    input_i  : in std_logic_vector((5 - 1) downto 0);
-    output_o : out std_logic_vector((5 - 1) downto 0)
+    data_i      : in std_logic;
+    data_o      : out std_logic;
+    clk_i       : in std_logic;
+    ld_i        : in std_logic;
+    input_i     : in std_logic_vector((5 - 1) downto 0);
+    output_o    : out std_logic_vector((5 - 1) downto 0)
   );
 end idelay_wrapper;
 
 architecture arch of idelay_wrapper is
   --Xilinx attributes
-  attribute X_INTERFACE_INFO                     : string;
-  attribute X_INTERFACE_INFO of clk_i            : signal is "xilinx.com:signal:clock:1.0 clk_i CLK";
-  attribute X_INTERFACE_INFO of async_rst_i      : signal is "xilinx.com:signal:reset:1.0 async_rst_i RST";
-  attribute X_INTERFACE_PARAMETER                : string;
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of clk_i : signal is "xilinx.com:signal:clock:1.0 clk_i CLK";
+  attribute X_INTERFACE_INFO of async_rst_i : signal is "xilinx.com:signal:reset:1.0 async_rst_i RST";
+  attribute X_INTERFACE_PARAMETER : string;
   attribute X_INTERFACE_PARAMETER of async_rst_i : signal is "POLARITY ACTIVE_HIGH";
 
-  attribute IODELAY_GROUP                  : string;
+  attribute IODELAY_GROUP : string;
   attribute IODELAY_GROUP of IDELAYE2_inst : label is "Reception_Delays";
 
 begin

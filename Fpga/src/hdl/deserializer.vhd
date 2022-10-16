@@ -1,19 +1,19 @@
 ----------------------------------------------------------------------------------
 -- Company:  Instituto Balseiro
 -- Engineer: José Quinteros
--- 
--- Design Name: 
--- Module Name: 
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
+--
+-- Design Name:
+-- Module Name:
+-- Project Name:
+-- Target Devices:
+-- Tool Versions:
 -- Description: Deserializer
--- 
+--
 -- Dependencies: None.
--- 
+--
 -- Revision: 2020-09-30
 -- Additional Comments: Parallel data output will be synchronous to not(frame_i)
--- 
+--
 ----------------------------------------------------------------------------------
 
 library ieee;
@@ -39,12 +39,12 @@ end deserializer;
 
 architecture arch of deserializer is
   --Xilinx attributes
-  attribute X_INTERFACE_INFO                   : string;
-  attribute X_INTERFACE_INFO of adc_clk_i      : signal is "xilinx.com:signal:clock:1.0 adc_clk_i CLK";
-  attribute X_INTERFACE_INFO of rst_i          : signal is "xilinx.com:signal:reset:1.0 rst_i RST";
-  attribute X_INTERFACE_PARAMETER              : string;
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of adc_clk_i : signal is "xilinx.com:signal:clock:1.0 adc_clk_i CLK";
+  attribute X_INTERFACE_INFO of rst_i : signal is "xilinx.com:signal:reset:1.0 rst_i RST";
+  attribute X_INTERFACE_PARAMETER : string;
   attribute X_INTERFACE_PARAMETER of adc_clk_i : signal is "ASSOCIATED_ASYNC_RESET rst_i";
-  attribute X_INTERFACE_PARAMETER of rst_i     : signal is "POLARITY ACTIVE_HIGH";
+  attribute X_INTERFACE_PARAMETER of rst_i : signal is "POLARITY ACTIVE_HIGH";
 
   --design signals
   -- signal d_reg, d_next     : std_logic_vector(13 downto 0) := (others => '0');
@@ -52,10 +52,10 @@ architecture arch of deserializer is
   -- signal f_reg, f_next     : std_logic;
   -- signal zeros2            : std_logic_vector(1 downto 0) := (others => '0');
 
-  signal d_reg    : std_logic_vector(13 downto 0) := (others => '0');
+  signal d_reg : std_logic_vector(13 downto 0) := (others => '0');
   signal out_reg : std_logic_vector(13 downto 0) := (others => '0');
-  signal f_reg    : std_logic;
-  signal zeros2            : std_logic_vector(1 downto 0) := (others => '0');
+  signal f_reg : std_logic;
+  signal zeros2 : std_logic_vector(1 downto 0) := (others => '0');
   signal valid_reg : std_logic := '0';
 
 begin
@@ -83,19 +83,19 @@ begin
   --     out_next <= out_reg;
   --   end if;
   -- end process;
-  
+
   -- data_o <= out_reg when (RES_ADC = 14) else
   --   zeros2 & out_reg(11 downto 0);
-  
+
   --data is always valid
   --d_valid_o <= '1';
 
-  process(adc_clk_i, rst_i)
+  process (adc_clk_i, rst_i)
   begin
     if (rst_i = '1') then
-      d_reg   <= (others => '0');
+      d_reg <= (others => '0');
       out_reg <= (others => '0');
-      f_reg   <= '0';
+      f_reg <= '0';
       valid_reg <= '0';
     elsif (rising_edge(adc_clk_i)) then
       d_reg <= d_reg(11 downto 0) & data_RE_i & data_FE_i;
@@ -111,7 +111,7 @@ begin
   end process;
 
   data_o <= out_reg when (RES_ADC = 14) else
-  zeros2 & out_reg(11 downto 0);
+    zeros2 & out_reg(11 downto 0);
 
   d_valid_o <= valid_reg;
 

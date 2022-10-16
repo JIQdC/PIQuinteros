@@ -1,143 +1,143 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-ENTITY eight_regs_block IS
-	GENERIC (
+entity eight_regs_block is
+	generic (
 		-- Users to add parameters here
-		CORE_CONTROL : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"cafecafe";
+		CORE_CONTROL       : std_logic_vector(31 downto 0) := x"cafecafe";
 		-- User parameters ends
 		-- Do not modify the parameters beyond this line
 		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH : INTEGER := 32;
+		C_S_AXI_DATA_WIDTH : integer                       := 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH : INTEGER := 5
+		C_S_AXI_ADDR_WIDTH : integer                       := 5
 	);
-	PORT (
+	port (
 		-- Users to add ports here
-		enable_postprocessing_counter : OUT STD_LOGIC;
-		data_source_selector : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-		ch_1_freq_data : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-		ch_1_freq_valid : OUT STD_LOGIC;
-		ch_2_freq_data : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-		ch_2_freq_valid : OUT STD_LOGIC;
-		ch_3_freq_data : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-		ch_3_freq_valid : OUT STD_LOGIC;
-		ch_4_freq_data : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-		ch_4_freq_valid : OUT STD_LOGIC;
-		ch_5_freq_data : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-		ch_5_freq_valid : OUT STD_LOGIC;
+		enable_postprocessing_counter : out std_logic;
+		data_source_selector          : out std_logic_vector(1 downto 0);
+		ch_1_freq_data                : out std_logic_vector(15 downto 0);
+		ch_1_freq_valid               : out std_logic;
+		ch_2_freq_data                : out std_logic_vector(15 downto 0);
+		ch_2_freq_valid               : out std_logic;
+		ch_3_freq_data                : out std_logic_vector(15 downto 0);
+		ch_3_freq_valid               : out std_logic;
+		ch_4_freq_data                : out std_logic_vector(15 downto 0);
+		ch_4_freq_valid               : out std_logic;
+		ch_5_freq_data                : out std_logic_vector(15 downto 0);
+		ch_5_freq_valid               : out std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
 		-- Global Clock Signal
-		S_AXI_ACLK : IN STD_LOGIC;
+		S_AXI_ACLK                    : in std_logic;
 		-- Global Reset Signal. This Signal is Active LOW
-		S_AXI_ARESETN : IN STD_LOGIC;
+		S_AXI_ARESETN                 : in std_logic;
 		-- Write address (issued by master, acceped by Slave)
-		S_AXI_AWADDR : IN STD_LOGIC_VECTOR(C_S_AXI_ADDR_WIDTH - 1 DOWNTO 0);
+		S_AXI_AWADDR                  : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
 		-- Write channel Protection type. This signal indicates the
 		-- privilege and security level of the transaction, and whether
 		-- the transaction is a data access or an instruction access.
-		S_AXI_AWPROT : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+		S_AXI_AWPROT                  : in std_logic_vector(2 downto 0);
 		-- Write address valid. This signal indicates that the master signaling
 		-- valid write address and control information.
-		S_AXI_AWVALID : IN STD_LOGIC;
+		S_AXI_AWVALID                 : in std_logic;
 		-- Write address ready. This signal indicates that the slave is ready
 		-- to accept an address and associated control signals.
-		S_AXI_AWREADY : OUT STD_LOGIC;
-		-- Write data (issued by master, acceped by Slave) 
-		S_AXI_WDATA : IN STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
+		S_AXI_AWREADY                 : out std_logic;
+		-- Write data (issued by master, acceped by Slave)
+		S_AXI_WDATA                   : in std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 		-- Write strobes. This signal indicates which byte lanes hold
 		-- valid data. There is one write strobe bit for each eight
-		-- bits of the write data bus.    
-		S_AXI_WSTRB : IN STD_LOGIC_VECTOR((C_S_AXI_DATA_WIDTH/8) - 1 DOWNTO 0);
+		-- bits of the write data bus.
+		S_AXI_WSTRB                   : in std_logic_vector((C_S_AXI_DATA_WIDTH/8) - 1 downto 0);
 		-- Write valid. This signal indicates that valid write
 		-- data and strobes are available.
-		S_AXI_WVALID : IN STD_LOGIC;
+		S_AXI_WVALID                  : in std_logic;
 		-- Write ready. This signal indicates that the slave
 		-- can accept the write data.
-		S_AXI_WREADY : OUT STD_LOGIC;
+		S_AXI_WREADY                  : out std_logic;
 		-- Write response. This signal indicates the status
 		-- of the write transaction.
-		S_AXI_BRESP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+		S_AXI_BRESP                   : out std_logic_vector(1 downto 0);
 		-- Write response valid. This signal indicates that the channel
 		-- is signaling a valid write response.
-		S_AXI_BVALID : OUT STD_LOGIC;
+		S_AXI_BVALID                  : out std_logic;
 		-- Response ready. This signal indicates that the master
 		-- can accept a write response.
-		S_AXI_BREADY : IN STD_LOGIC;
+		S_AXI_BREADY                  : in std_logic;
 		-- Read address (issued by master, acceped by Slave)
-		S_AXI_ARADDR : IN STD_LOGIC_VECTOR(C_S_AXI_ADDR_WIDTH - 1 DOWNTO 0);
+		S_AXI_ARADDR                  : in std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
 		-- Protection type. This signal indicates the privilege
 		-- and security level of the transaction, and whether the
 		-- transaction is a data access or an instruction access.
-		S_AXI_ARPROT : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+		S_AXI_ARPROT                  : in std_logic_vector(2 downto 0);
 		-- Read address valid. This signal indicates that the channel
 		-- is signaling valid read address and control information.
-		S_AXI_ARVALID : IN STD_LOGIC;
+		S_AXI_ARVALID                 : in std_logic;
 		-- Read address ready. This signal indicates that the slave is
 		-- ready to accept an address and associated control signals.
-		S_AXI_ARREADY : OUT STD_LOGIC;
+		S_AXI_ARREADY                 : out std_logic;
 		-- Read data (issued by slave)
-		S_AXI_RDATA : OUT STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
+		S_AXI_RDATA                   : out std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 		-- Read response. This signal indicates the status of the
 		-- read transfer.
-		S_AXI_RRESP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+		S_AXI_RRESP                   : out std_logic_vector(1 downto 0);
 		-- Read valid. This signal indicates that the channel is
 		-- signaling the required read data.
-		S_AXI_RVALID : OUT STD_LOGIC;
+		S_AXI_RVALID                  : out std_logic;
 		-- Read ready. This signal indicates that the master can
 		-- accept the read data and response information.
-		S_AXI_RREADY : IN STD_LOGIC
+		S_AXI_RREADY                  : in std_logic
 	);
-END eight_regs_block;
+end eight_regs_block;
 
-ARCHITECTURE arch_imp OF eight_regs_block IS
+architecture arch_imp of eight_regs_block is
 
 	-- AXI4LITE signals
-	SIGNAL axi_awaddr : STD_LOGIC_VECTOR(C_S_AXI_ADDR_WIDTH - 1 DOWNTO 0);
-	SIGNAL axi_awready : STD_LOGIC;
-	SIGNAL axi_wready : STD_LOGIC;
-	SIGNAL axi_bresp : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL axi_bvalid : STD_LOGIC;
-	SIGNAL axi_araddr : STD_LOGIC_VECTOR(C_S_AXI_ADDR_WIDTH - 1 DOWNTO 0);
-	SIGNAL axi_arready : STD_LOGIC;
-	SIGNAL axi_rdata : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL axi_rresp : STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL axi_rvalid : STD_LOGIC;
+	signal axi_awaddr : std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
+	signal axi_awready : std_logic;
+	signal axi_wready : std_logic;
+	signal axi_bresp : std_logic_vector(1 downto 0);
+	signal axi_bvalid : std_logic;
+	signal axi_araddr : std_logic_vector(C_S_AXI_ADDR_WIDTH - 1 downto 0);
+	signal axi_arready : std_logic;
+	signal axi_rdata : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal axi_rresp : std_logic_vector(1 downto 0);
+	signal axi_rvalid : std_logic;
 
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
-	CONSTANT ADDR_LSB : INTEGER := (C_S_AXI_DATA_WIDTH/32) + 1;
-	CONSTANT OPT_MEM_ADDR_BITS : INTEGER := 2;
+	constant ADDR_LSB : integer := (C_S_AXI_DATA_WIDTH/32) + 1;
+	constant OPT_MEM_ADDR_BITS : integer := 2;
 	------------------------------------------------
 	---- Signals for user logic register space example
 	--------------------------------------------------
 	---- Number of Slave Registers 8
-	SIGNAL slv_reg0 : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL en_postprocessing_counter_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL slv_reg2 : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_1_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_1_valid_reg : STD_LOGIC;
-	SIGNAL ch_freq_2_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_2_valid_reg : STD_LOGIC;
-	SIGNAL ch_freq_3_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_3_valid_reg : STD_LOGIC;
-	SIGNAL ch_freq_4_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_4_valid_reg : STD_LOGIC;
-	SIGNAL ch_freq_5_reg : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL ch_freq_5_valid_reg : STD_LOGIC;
-	SIGNAL slv_reg_rden : STD_LOGIC;
-	SIGNAL slv_reg_wren : STD_LOGIC;
-	SIGNAL reg_data_out : STD_LOGIC_VECTOR(C_S_AXI_DATA_WIDTH - 1 DOWNTO 0);
-	SIGNAL byte_index : INTEGER;
-	SIGNAL aw_en : STD_LOGIC;
+	signal slv_reg0 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal en_postprocessing_counter_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal slv_reg2 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_1_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_1_valid_reg : std_logic;
+	signal ch_freq_2_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_2_valid_reg : std_logic;
+	signal ch_freq_3_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_3_valid_reg : std_logic;
+	signal ch_freq_4_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_4_valid_reg : std_logic;
+	signal ch_freq_5_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal ch_freq_5_valid_reg : std_logic;
+	signal slv_reg_rden : std_logic;
+	signal slv_reg_wren : std_logic;
+	signal reg_data_out : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal byte_index : integer;
+	signal aw_en : std_logic;
 
-BEGIN
+begin
 	-- I/O Connections assignments
 
 	S_AXI_AWREADY <= axi_awready;
@@ -153,71 +153,71 @@ BEGIN
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
 	-- de-asserted when reset is low.
 
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
 				axi_awready <= '0';
 				aw_en <= '1';
-			ELSE
-				IF (axi_awready = '0' AND S_AXI_AWVALID = '1' AND S_AXI_WVALID = '1' AND aw_en = '1') THEN
+			else
+				if (axi_awready = '0' and S_AXI_AWVALID = '1' and S_AXI_WVALID = '1' and aw_en = '1') then
 					-- slave is ready to accept write address when
 					-- there is a valid write address and write data
-					-- on the write address and data bus. This design 
-					-- expects no outstanding transactions. 
+					-- on the write address and data bus. This design
+					-- expects no outstanding transactions.
 					axi_awready <= '1';
 					aw_en <= '0';
-				ELSIF (S_AXI_BREADY = '1' AND axi_bvalid = '1') THEN
+				elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then
 					aw_en <= '1';
 					axi_awready <= '0';
-				ELSE
+				else
 					axi_awready <= '0';
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement axi_awaddr latching
-	-- This process is used to latch the address when both 
-	-- S_AXI_AWVALID and S_AXI_WVALID are valid. 
+	-- This process is used to latch the address when both
+	-- S_AXI_AWVALID and S_AXI_WVALID are valid.
 
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
-				axi_awaddr <= (OTHERS => '0');
-			ELSE
-				IF (axi_awready = '0' AND S_AXI_AWVALID = '1' AND S_AXI_WVALID = '1' AND aw_en = '1') THEN
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
+				axi_awaddr <= (others => '0');
+			else
+				if (axi_awready = '0' and S_AXI_AWVALID = '1' and S_AXI_WVALID = '1' and aw_en = '1') then
 					-- Write Address latching
 					axi_awaddr <= S_AXI_AWADDR;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement axi_wready generation
 	-- axi_wready is asserted for one S_AXI_ACLK clock cycle when both
-	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_wready is 
-	-- de-asserted when reset is low. 
+	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_wready is
+	-- de-asserted when reset is low.
 
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
 				axi_wready <= '0';
-			ELSE
-				IF (axi_wready = '0' AND S_AXI_WVALID = '1' AND S_AXI_AWVALID = '1' AND aw_en = '1') THEN
-					-- slave is ready to accept write data when 
+			else
+				if (axi_wready = '0' and S_AXI_WVALID = '1' and S_AXI_AWVALID = '1' and aw_en = '1') then
+					-- slave is ready to accept write data when
 					-- there is a valid write address and write data
-					-- on the write address and data bus. This design 
-					-- expects no outstanding transactions.           
+					-- on the write address and data bus. This design
+					-- expects no outstanding transactions.
 					axi_wready <= '1';
-				ELSE
+				else
 					axi_wready <= '0';
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement memory mapped register select and write logic generation
 	-- The write data is accepted and written to memory mapped registers when
@@ -226,100 +226,100 @@ BEGIN
 	-- These registers are cleared when reset (active low) is applied.
 	-- Slave register write enable is asserted when valid address and data are available
 	-- and the slave is ready to accept the write address and write data.
-	slv_reg_wren <= axi_wready AND S_AXI_WVALID AND axi_awready AND S_AXI_AWVALID;
+	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID;
 
-	PROCESS (S_AXI_ACLK)
-		VARIABLE loc_addr : STD_LOGIC_VECTOR(OPT_MEM_ADDR_BITS DOWNTO 0);
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
-				slv_reg0 <= (OTHERS => '0');
-				en_postprocessing_counter_reg <= (OTHERS => '0');
-				slv_reg2 <= (OTHERS => '0');
-				ch_freq_1_reg <= (OTHERS => '0');
-				ch_freq_2_reg <= (OTHERS => '0');
-				ch_freq_3_reg <= (OTHERS => '0');
-				ch_freq_4_reg <= (OTHERS => '0');
-				ch_freq_5_reg <= (OTHERS => '0');
+	process (S_AXI_ACLK)
+		variable loc_addr : std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
+				slv_reg0 <= (others => '0');
+				en_postprocessing_counter_reg <= (others => '0');
+				slv_reg2 <= (others => '0');
+				ch_freq_1_reg <= (others => '0');
+				ch_freq_2_reg <= (others => '0');
+				ch_freq_3_reg <= (others => '0');
+				ch_freq_4_reg <= (others => '0');
+				ch_freq_5_reg <= (others => '0');
 				ch_freq_1_valid_reg <= '0';
 				ch_freq_2_valid_reg <= '0';
 				ch_freq_3_valid_reg <= '0';
 				ch_freq_4_valid_reg <= '0';
 				ch_freq_5_valid_reg <= '0';
-			ELSE
-				loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS DOWNTO ADDR_LSB);
-				IF (slv_reg_wren = '1') THEN
-					CASE loc_addr IS
+			else
+				loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+				if (slv_reg_wren = '1') then
+					case loc_addr is
 							--   when b"000" =>
 							--     for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 							--       if ( S_AXI_WSTRB(byte_index) = '1' ) then
-							--         -- Respective byte enables are asserted as per write strobes                   
+							--         -- Respective byte enables are asserted as per write strobes
 							--         -- slave registor 0
 							--         slv_reg0(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 							--       end if;
 							--     end loop;
-							  when b"001" =>
-							    for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-							      if ( S_AXI_WSTRB(byte_index) = '1' ) then
-							        -- Respective byte enables are asserted as per write strobes                   
-							        -- slave registor 1
-							        en_postprocessing_counter_reg(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-							      end if;
-							    end loop;
-						WHEN b"010" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+						when b"001" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
+									-- slave registor 1
+									en_postprocessing_counter_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
+						when b"010" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 2
-									slv_reg2(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
-						WHEN b"011" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+									slv_reg2(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
+						when b"011" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 3
-									ch_freq_1_reg(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
+									ch_freq_1_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
 							ch_freq_1_valid_reg <= '1';
-						WHEN b"100" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+						when b"100" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 4
-									ch_freq_2_reg(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
+									ch_freq_2_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
 							ch_freq_2_valid_reg <= '1';
-						WHEN b"101" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+						when b"101" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 5
-									ch_freq_3_reg(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
+									ch_freq_3_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
 							ch_freq_3_valid_reg <= '1';
-						WHEN b"110" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+						when b"110" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 6
-									ch_freq_4_reg(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
+									ch_freq_4_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
 							ch_freq_4_valid_reg <= '1';
-						WHEN b"111" =>
-							FOR byte_index IN 0 TO (C_S_AXI_DATA_WIDTH/8 - 1) LOOP
-								IF (S_AXI_WSTRB(byte_index) = '1') THEN
-									-- Respective byte enables are asserted as per write strobes                   
+						when b"111" =>
+							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8 - 1) loop
+								if (S_AXI_WSTRB(byte_index) = '1') then
+									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 7
-									ch_freq_5_reg(byte_index * 8 + 7 DOWNTO byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 DOWNTO byte_index * 8);
-								END IF;
-							END LOOP;
+									ch_freq_5_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+								end if;
+							end loop;
 							ch_freq_5_valid_reg <= '1';
-						WHEN OTHERS =>
+						when others =>
 							slv_reg0 <= slv_reg0;
 							en_postprocessing_counter_reg <= en_postprocessing_counter_reg;
 							slv_reg2 <= slv_reg2;
@@ -333,150 +333,150 @@ BEGIN
 							ch_freq_3_valid_reg <= '0';
 							ch_freq_4_valid_reg <= '0';
 							ch_freq_5_valid_reg <= '0';
-					END CASE;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+					end case;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement write response logic generation
-	-- The write response and response valid signals are asserted by the slave 
-	-- when axi_wready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted.  
-	-- This marks the acceptance of address and indicates the status of 
+	-- The write response and response valid signals are asserted by the slave
+	-- when axi_wready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted.
+	-- This marks the acceptance of address and indicates the status of
 	-- write transaction.
 
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
 				axi_bvalid <= '0';
 				axi_bresp <= "00"; --need to work more on the responses
-			ELSE
-				IF (axi_awready = '1' AND S_AXI_AWVALID = '1' AND axi_wready = '1' AND S_AXI_WVALID = '1' AND axi_bvalid = '0') THEN
+			else
+				if (axi_awready = '1' and S_AXI_AWVALID = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and axi_bvalid = '0') then
 					axi_bvalid <= '1';
 					axi_bresp <= "00";
-				ELSIF (S_AXI_BREADY = '1' AND axi_bvalid = '1') THEN --check if bready is asserted while bvalid is high)
+				elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then --check if bready is asserted while bvalid is high)
 					axi_bvalid <= '0'; -- (there is a possibility that bready is always asserted high)
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement axi_arready generation
 	-- axi_arready is asserted for one S_AXI_ACLK clock cycle when
-	-- S_AXI_ARVALID is asserted. axi_awready is 
-	-- de-asserted when reset (active low) is asserted. 
-	-- The read address is also latched when S_AXI_ARVALID is 
+	-- S_AXI_ARVALID is asserted. axi_awready is
+	-- de-asserted when reset (active low) is asserted.
+	-- The read address is also latched when S_AXI_ARVALID is
 	-- asserted. axi_araddr is reset to zero on reset assertion.
 
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
 				axi_arready <= '0';
-				axi_araddr <= (OTHERS => '1');
-			ELSE
-				IF (axi_arready = '0' AND S_AXI_ARVALID = '1') THEN
+				axi_araddr <= (others => '1');
+			else
+				if (axi_arready = '0' and S_AXI_ARVALID = '1') then
 					-- indicates that the slave has acceped the valid read address
 					axi_arready <= '1';
-					-- Read Address latching 
+					-- Read Address latching
 					axi_araddr <= S_AXI_ARADDR;
-				ELSE
+				else
 					axi_arready <= '0';
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement axi_arvalid generation
-	-- axi_rvalid is asserted for one S_AXI_ACLK clock cycle when both 
-	-- S_AXI_ARVALID and axi_arready are asserted. The slave registers 
-	-- data are available on the axi_rdata bus at this instance. The 
-	-- assertion of axi_rvalid marks the validity of read data on the 
-	-- bus and axi_rresp indicates the status of read transaction.axi_rvalid 
-	-- is deasserted on reset (active low). axi_rresp and axi_rdata are 
-	-- cleared to zero on reset (active low).  
-	PROCESS (S_AXI_ACLK)
-	BEGIN
-		IF rising_edge(S_AXI_ACLK) THEN
-			IF S_AXI_ARESETN = '0' THEN
+	-- axi_rvalid is asserted for one S_AXI_ACLK clock cycle when both
+	-- S_AXI_ARVALID and axi_arready are asserted. The slave registers
+	-- data are available on the axi_rdata bus at this instance. The
+	-- assertion of axi_rvalid marks the validity of read data on the
+	-- bus and axi_rresp indicates the status of read transaction.axi_rvalid
+	-- is deasserted on reset (active low). axi_rresp and axi_rdata are
+	-- cleared to zero on reset (active low).
+	process (S_AXI_ACLK)
+	begin
+		if rising_edge(S_AXI_ACLK) then
+			if S_AXI_ARESETN = '0' then
 				axi_rvalid <= '0';
 				axi_rresp <= "00";
-			ELSE
-				IF (axi_arready = '1' AND S_AXI_ARVALID = '1' AND axi_rvalid = '0') THEN
+			else
+				if (axi_arready = '1' and S_AXI_ARVALID = '1' and axi_rvalid = '0') then
 					-- Valid read data is available at the read data bus
 					axi_rvalid <= '1';
 					axi_rresp <= "00"; -- 'OKAY' response
-				ELSIF (axi_rvalid = '1' AND S_AXI_RREADY = '1') THEN
+				elsif (axi_rvalid = '1' and S_AXI_RREADY = '1') then
 					-- Read data is accepted by the master
 					axi_rvalid <= '0';
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Implement memory mapped register select and read logic generation
 	-- Slave register read enable is asserted when valid address is available
 	-- and the slave is ready to accept the read address.
-	slv_reg_rden <= axi_arready AND S_AXI_ARVALID AND (NOT axi_rvalid);
+	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid);
 
-	PROCESS (slv_reg0, en_postprocessing_counter_reg, slv_reg2, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
-		VARIABLE loc_addr : STD_LOGIC_VECTOR(OPT_MEM_ADDR_BITS DOWNTO 0);
-	BEGIN
+	process (slv_reg0, en_postprocessing_counter_reg, slv_reg2, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+		variable loc_addr : std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
+	begin
 		-- Address decoding for reading registers
-		loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS DOWNTO ADDR_LSB);
-		CASE loc_addr IS
-			WHEN b"000" =>
+		loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
+		case loc_addr is
+			when b"000" =>
 				reg_data_out <= slv_reg0;
-			WHEN b"001" =>
+			when b"001" =>
 				reg_data_out <= en_postprocessing_counter_reg;
-			WHEN b"010" =>
+			when b"010" =>
 				reg_data_out <= slv_reg2;
-			WHEN b"011" =>
+			when b"011" =>
 				reg_data_out <= ch_freq_1_reg;
-			WHEN b"100" =>
+			when b"100" =>
 				reg_data_out <= ch_freq_2_reg;
-			WHEN b"101" =>
+			when b"101" =>
 				reg_data_out <= ch_freq_3_reg;
-			WHEN b"110" =>
+			when b"110" =>
 				reg_data_out <= ch_freq_4_reg;
-			WHEN b"111" =>
+			when b"111" =>
 				reg_data_out <= ch_freq_5_reg;
-			WHEN OTHERS =>
-				reg_data_out <= (OTHERS => '0');
-		END CASE;
-	END PROCESS;
+			when others =>
+				reg_data_out <= (others => '0');
+		end case;
+	end process;
 
 	-- Output register or memory read data
-	PROCESS (S_AXI_ACLK) IS
-	BEGIN
-		IF (rising_edge (S_AXI_ACLK)) THEN
-			IF (S_AXI_ARESETN = '0') THEN
-				axi_rdata <= (OTHERS => '0');
-			ELSE
-				IF (slv_reg_rden = '1') THEN
-					-- When there is a valid read address (S_AXI_ARVALID) with 
-					-- acceptance of read address by the slave (axi_arready), 
-					-- output the read dada 
+	process (S_AXI_ACLK) is
+	begin
+		if (rising_edge (S_AXI_ACLK)) then
+			if (S_AXI_ARESETN = '0') then
+				axi_rdata <= (others => '0');
+			else
+				if (slv_reg_rden = '1') then
+					-- When there is a valid read address (S_AXI_ARVALID) with
+					-- acceptance of read address by the slave (axi_arready),
+					-- output the read dada
 					-- Read address mux
 					axi_rdata <= reg_data_out; -- register read data
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 	-- Add user logic here
 	enable_postprocessing_counter <= en_postprocessing_counter_reg(0);
-	data_source_selector <= slv_reg2(1 DOWNTO 0);
-	ch_1_freq_data <= ch_freq_1_reg(15 DOWNTO 0);
+	data_source_selector <= slv_reg2(1 downto 0);
+	ch_1_freq_data <= ch_freq_1_reg(15 downto 0);
 	ch_1_freq_valid <= ch_freq_1_valid_reg;
-	ch_2_freq_data  <= ch_freq_2_reg(15 DOWNTO 0);
+	ch_2_freq_data <= ch_freq_2_reg(15 downto 0);
 	ch_2_freq_valid <= ch_freq_2_valid_reg;
-	ch_3_freq_data  <= ch_freq_3_reg(15 DOWNTO 0);
+	ch_3_freq_data <= ch_freq_3_reg(15 downto 0);
 	ch_3_freq_valid <= ch_freq_3_valid_reg;
-	ch_4_freq_data  <= ch_freq_4_reg(15 DOWNTO 0);
+	ch_4_freq_data <= ch_freq_4_reg(15 downto 0);
 	ch_4_freq_valid <= ch_freq_4_valid_reg;
-	ch_5_freq_data  <= ch_freq_5_reg(15 DOWNTO 0);
+	ch_5_freq_data <= ch_freq_5_reg(15 downto 0);
 	ch_5_freq_valid <= ch_freq_5_valid_reg;
 	-- User logic ends
 
-END arch_imp;
+end arch_imp;

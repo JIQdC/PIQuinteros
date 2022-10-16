@@ -1,19 +1,19 @@
 ----------------------------------------------------------------------------------
 -- Company: IB
 -- Engineer: José Quinteros
--- 
--- Design Name: 
+--
+-- Design Name:
 -- Module Name:
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
+-- Project Name:
+-- Target Devices:
+-- Tool Versions:
 -- Description: FIFO input multiplexing for control and debugging
--- 
--- Dependencies: 
--- 
+--
+-- Dependencies:
+--
 -- Revision: 2020-11-19
 -- Additional Comments:
--- 
+--
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -25,58 +25,58 @@ entity debug_control is
     RES_ADC : integer := 14
   );
   port (
-    clock_i    : in std_logic;
-    rst_i      : in std_logic;
-    enable_i   : in std_logic;                                    --global enable
-    control_i  : in std_logic_vector(3 downto 0);                 --multiplexer control
-    usr_w2w1_i : in std_logic_vector((2 * RES_ADC - 1) downto 0); --user constants
-    data_i     : in std_logic_vector((RES_ADC - 1) downto 0);     --deserializer data
-    valid_i    : in std_logic;                                    --deserializer trigger
+    clock_i         : in std_logic;
+    rst_i           : in std_logic;
+    enable_i        : in std_logic;                                    --global enable
+    control_i       : in std_logic_vector(3 downto 0);                 --multiplexer control
+    usr_w2w1_i      : in std_logic_vector((2 * RES_ADC - 1) downto 0); --user constants
+    data_i          : in std_logic_vector((RES_ADC - 1) downto 0);     --deserializer data
+    valid_i         : in std_logic;                                    --deserializer trigger
 
     counter_count_i : in std_logic_vector((RES_ADC - 1) downto 0);
     counter_ce_o    : out std_logic;
 
-    data_o  : out std_logic_vector((RES_ADC - 1) downto 0);
-    valid_o : out std_logic
+    data_o          : out std_logic_vector((RES_ADC - 1) downto 0);
+    valid_o         : out std_logic
   );
 end debug_control;
 
 architecture arch of debug_control is
-  signal onesNbits  : std_logic_vector((RES_ADC - 1) downto 0) := (others => '1');
+  signal onesNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '1');
   signal zerosNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
 
   signal midscaleShort : std_logic_vector(13 downto 0) := "10000000000000";
-  signal sync_1x       : std_logic_vector(13 downto 0) := "00000001111111";
-  signal mix_freq      : std_logic_vector(13 downto 0) := "10100001100111";
+  signal sync_1x : std_logic_vector(13 downto 0) := "00000001111111";
+  signal mix_freq : std_logic_vector(13 downto 0) := "10100001100111";
 
-  signal out_reg, out_next               : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
-  signal valid_reg, valid_next           : std_logic                                := '0';
-  signal counter_ce_reg, counter_ce_next : std_logic                                := '0';
+  signal out_reg, out_next : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
+  signal valid_reg, valid_next : std_logic := '0';
+  signal counter_ce_reg, counter_ce_next : std_logic := '0';
 
   --Xilinx parameters
-  attribute X_INTERFACE_INFO                      : string;
-  attribute X_INTERFACE_INFO of counter_ce_o      : signal is "xilinx.com:signal:clockenable:1.0 counter_ce_o CE";
-  attribute X_INTERFACE_PARAMETER                 : string;
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of counter_ce_o : signal is "xilinx.com:signal:clockenable:1.0 counter_ce_o CE";
+  attribute X_INTERFACE_PARAMETER : string;
   attribute X_INTERFACE_PARAMETER of counter_ce_o : signal is "POLARITY ACTIVE_HIGH";
 
 begin
   process (clock_i, rst_i)
   begin
     if (rst_i = '1') then
-      out_reg        <= zerosNbits;
-      valid_reg      <= '0';
+      out_reg <= zerosNbits;
+      valid_reg <= '0';
       counter_ce_reg <= '0';
     elsif (rising_edge(clock_i)) then
-      out_reg        <= out_next;
-      valid_reg      <= valid_next;
+      out_reg <= out_next;
+      valid_reg <= valid_next;
       counter_ce_reg <= counter_ce_next;
     end if;
   end process;
 
   process (out_reg, valid_reg, counter_ce_reg, control_i, enable_i, counter_count_i, data_i)
   begin
-    out_next        <= out_reg;
-    valid_next      <= valid_reg;
+    out_next <= out_reg;
+    valid_next <= valid_reg;
     counter_ce_next <= counter_ce_reg;
 
     if (control_i = "0000" or control_i = "0011" or enable_i = '0') then
@@ -115,8 +115,8 @@ begin
 
   end process;
 
-  data_o       <= out_reg;
-  valid_o      <= valid_reg;
+  data_o <= out_reg;
+  valid_o <= valid_reg;
   counter_ce_o <= counter_ce_reg;
 
   --data multiplexing
@@ -132,7 +132,7 @@ begin
   --   data_i when control_i = "1101" else                                               --señal del deserializador (no incluido en secuencias de fábrica)
   --   zerosNbits;
 
-  -- --valid multiplexing       
+  -- --valid multiplexing
   -- valid_o <=
   --   '0' when (control_i = "0000" or enable_i = '0') else
   --   valid_i;

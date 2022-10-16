@@ -1,0 +1,61 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"[vhdl]": {
+			"editor.tabSize": 2,
+			"editor.formatOnSave": true,
+			"editor.defaultFormatter": "Vinrobot.vhdl-formatter"
+		},
+		"[markdown]": {
+			"editor.wordWrap": "off",
+			"editor.codeActionsOnSave": {
+				"source.fixAll.markdownlint": true
+			},
+			"editor.formatOnSave": true,
+		},
+		"vhdl.suggestLibraryCase": "lower",
+		"vhdl.formatter.insertFinalNewline": true,
+		"vhdl.formatter.replaceByAliases": false,
+		"vhdl.formatter.align.mode": "Global",
+		"vhdl.formatter.align.all": false,
+		"vhdl.formatter.align.port": true,
+		"vhdl.formatter.align.function": true,
+		"vhdl.formatter.align.procedure": true,
+		"vhdl.formatter.align.generic": true,
+		"vhdl.formatter.case.keyword": "LowerCase",
+		"vhdl.formatter.case.typename": "LowerCase",
+		"vhdl.formatter.newline.port": "NoNewLine",
+		"vhdl.formatter.newline.then": "NewLine",
+		"vhdl.formatter.newline.semicolon": "NewLine",
+		"vhdl.formatter.newline.else": "None",
+		"vhdl.formatter.newline.generic": "NoNewLine",
+		"markdown.extension.tableFormatter.normalizeIndentation": true,
+		"files.trimTrailingWhitespace": true,
+		"files.associations": {
+			"*.pdc": "tcl",
+			"*.xdc": "tcl",
+			"*.do": "tcl",
+			"io.h": "c",
+			"of_address.h": "c",
+			"mutex": "cpp",
+			"cstdlib": "cpp"
+		},
+		"systemverilog.excludeIndexing": "{**/vivado/**/*,Fpga/prj/adc_receiver/ip/**/*}",
+	},
+	"extensions": {
+		"recommendations": [
+			"eamodio.gitlens",
+			"yzhang.markdown-all-in-one",
+			"davidanson.vscode-markdownlint",
+			"rjyoung.vscode-modern-vhdl-support",
+			"vinrobot.vhdl-formatter",
+			"mshr-h.vivado-ucf-constraints",
+			"bitwisecook.tcl",
+			"bkromhout.vscode-tcl"
+		]
+	},
+}

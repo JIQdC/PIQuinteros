@@ -6,17 +6,18 @@ entity sampler_with_ce is
     generic (
         N : integer := 8
     );
-    Port ( clk, ce, rst_i : in std_logic;
-           din : in std_logic_vector(N - 1 downto 0);
-           dout : out std_logic_vector(N - 1 downto 0);
-           dout_valid : out std_logic);
+    port (
+        clk, ce, rst_i : in std_logic;
+        din            : in std_logic_vector(N - 1 downto 0);
+        dout           : out std_logic_vector(N - 1 downto 0);
+        dout_valid     : out std_logic);
 end sampler_with_ce;
 
 architecture arch of sampler_with_ce is
     signal dout_reg : std_logic_vector(N - 1 downto 0);
     signal dout_valid_reg : std_logic;
 begin
-    process(clk, rst_i)
+    process (clk, rst_i)
     begin
         if (rst_i = '1') then
             dout_reg <= (others => '0');
@@ -25,7 +26,7 @@ begin
             if (ce = '1') then
                 dout_reg <= din;
                 dout_valid_reg <= '1';
-            else 
+            else
                 dout_reg <= dout_reg;
                 dout_valid_reg <= '0';
             end if;

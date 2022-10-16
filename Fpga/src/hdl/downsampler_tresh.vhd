@@ -1,20 +1,20 @@
 ----------------------------------------------------------------------------------
 -- Company:  Instituto Balseiro
 -- Engineer: José Quinteros
--- 
--- Design Name: 
--- Module Name: 
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
+--
+-- Design Name:
+-- Module Name:
+-- Project Name:
+-- Target Devices:
+-- Tool Versions:
 -- Description: Downsampler treshold loadable register
--- 
+--
 -- Dependencies: None.
--- 
+--
 -- Revision: 2020-09-30
 -- Additional Comments:
--- Corregido para 
--- 
+-- Corregido para
+--
 ----------------------------------------------------------------------------------
 
 library ieee;
@@ -39,12 +39,12 @@ architecture arch of downsampler_tresh_reg is
   signal tresh_reg, tresh_next : std_logic_vector((N_tr_b - 1) downto 0) := (others => '0');
 
   --Xilinx attributes
-  attribute X_INTERFACE_INFO                 : string;
-  attribute X_INTERFACE_INFO of d_clk_i      : signal is "xilinx.com:signal:clock:1.0 d_clk_i CLK";
-  attribute X_INTERFACE_INFO of rst_i        : signal is "xilinx.com:signal:reset:1.0 rst_i RST";
-  attribute X_INTERFACE_PARAMETER            : string;
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of d_clk_i : signal is "xilinx.com:signal:clock:1.0 d_clk_i CLK";
+  attribute X_INTERFACE_INFO of rst_i : signal is "xilinx.com:signal:reset:1.0 rst_i RST";
+  attribute X_INTERFACE_PARAMETER : string;
   attribute X_INTERFACE_PARAMETER of d_clk_i : signal is "ASSOCIATED_ASYNC_RESET rst";
-  attribute X_INTERFACE_PARAMETER of rst_i   : signal is "POLARITY ACTIVE_HIGH";
+  attribute X_INTERFACE_PARAMETER of rst_i : signal is "POLARITY ACTIVE_HIGH";
 
 begin
 
@@ -59,7 +59,7 @@ begin
 
   process (tresh_reg, treshold_i, treshold_ld_i)
   begin
-    tresh_next     <= tresh_reg;
+    tresh_next <= tresh_reg;
     treshold_reg_o <= tresh_reg;
 
     if (treshold_ld_i = '1') then
