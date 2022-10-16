@@ -40,10 +40,10 @@ begin
             transition_reg <= '0';
             dest_pulse_reg <= (others => '0');
         elsif rising_edge(dest_clk) then
-            transition_reg <= src_pulse_reg;
-            dest_pulse_reg(0) <= transition_reg;
+            dest_pulse_reg(0) <= src_pulse_reg;
             dest_pulse_reg(1) <= dest_pulse_reg(0);
+            transition_reg <= dest_pulse_reg(1);
         end if;
     end process;
-    pulse_o <= dest_pulse_reg(1) xor dest_pulse_reg(0);
+    pulse_o <= dest_pulse_reg(1) xor transition_reg;
 end arch;

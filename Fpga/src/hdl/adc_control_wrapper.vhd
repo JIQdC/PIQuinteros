@@ -164,7 +164,7 @@ architecture arch of adc_control_wrapper is
   signal delay_refclk : std_logic;
 
   --preprocessing signals
-  signal fifo_input_mux_sel : std_logic_vector;
+  signal fifo_input_mux_sel : std_logic_vector(1 downto 0);
   signal data_source_sel : std_logic_vector(1 downto 0) := (others => '0');
   signal ch_1_freq : std_logic_vector(15 downto 0) := (others => '0');
   signal ch_1_valid : std_logic := '0';
