@@ -325,17 +325,17 @@ begin
 
       --preprocessing signals
       fifo_input_mux_sel_i => fifo_input_mux_sel,
-      data_source_sel      => data_source_sel,
-      ch_1_freq            => ch_1_freq,
-      ch_1_freq_valid      => ch_1_valid,
-      ch_2_freq            => ch_2_freq,
-      ch_2_freq_valid      => ch_2_valid,
-      ch_3_freq            => ch_3_freq,
-      ch_3_freq_valid      => ch_3_valid,
-      ch_4_freq            => ch_4_freq,
-      ch_4_freq_valid      => ch_4_valid,
-      ch_5_freq            => ch_5_freq,
-      ch_5_freq_valid      => ch_5_valid
+      data_source_sel_i    => data_source_sel,
+      ch_1_freq_i          => ch_1_freq,
+      ch_1_freq_valid_i    => ch_1_valid,
+      ch_2_freq_i          => ch_2_freq,
+      ch_2_freq_valid_i    => ch_2_valid,
+      ch_3_freq_i          => ch_3_freq,
+      ch_3_freq_valid_i    => ch_3_valid,
+      ch_4_freq_i          => ch_4_freq,
+      ch_4_freq_valid_i    => ch_4_valid,
+      ch_5_freq_i          => ch_5_freq,
+      ch_5_freq_valid_i    => ch_5_valid
     );
 
   --receiver for bank13 signals
@@ -379,17 +379,17 @@ begin
 
       --preprocessing signals
       fifo_input_mux_sel_i => fifo_input_mux_sel,
-      data_source_sel      => data_source_sel,
-      ch_1_freq            => ch_1_freq,
-      ch_1_freq_valid      => ch_1_valid,
-      ch_2_freq            => ch_2_freq,
-      ch_2_freq_valid      => ch_2_valid,
-      ch_3_freq            => ch_3_freq,
-      ch_3_freq_valid      => ch_3_valid,
-      ch_4_freq            => ch_4_freq,
-      ch_4_freq_valid      => ch_4_valid,
-      ch_5_freq            => ch_5_freq,
-      ch_5_freq_valid      => ch_5_valid
+      data_source_sel_i    => data_source_sel,
+      ch_1_freq_i          => ch_1_freq,
+      ch_1_freq_valid_i    => ch_1_valid,
+      ch_2_freq_i          => ch_2_freq,
+      ch_2_freq_valid_i    => ch_2_valid,
+      ch_3_freq_i          => ch_3_freq,
+      ch_3_freq_valid_i    => ch_3_valid,
+      ch_4_freq_i          => ch_4_freq,
+      ch_4_freq_valid_i    => ch_4_valid,
+      ch_5_freq_i          => ch_5_freq,
+      ch_5_freq_valid_i    => ch_5_valid
     );
 
   --reset handling

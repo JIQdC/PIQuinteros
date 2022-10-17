@@ -63,17 +63,17 @@ entity adc_receiver is
 
     --preprocessing signals
     fifo_input_mux_sel_i : in std_logic_vector(1 downto 0);
-    data_source_sel      : in std_logic_vector(1 downto 0);
-    ch_1_freq            : in std_logic_vector(15 downto 0);
-    ch_1_freq_valid      : in std_logic;
-    ch_2_freq            : in std_logic_vector(15 downto 0);
-    ch_2_freq_valid      : in std_logic;
-    ch_3_freq            : in std_logic_vector(15 downto 0);
-    ch_3_freq_valid      : in std_logic;
-    ch_4_freq            : in std_logic_vector(15 downto 0);
-    ch_4_freq_valid      : in std_logic;
-    ch_5_freq            : in std_logic_vector(15 downto 0);
-    ch_5_freq_valid      : in std_logic
+    data_source_sel_i    : in std_logic_vector(1 downto 0);
+    ch_1_freq_i          : in std_logic_vector(15 downto 0);
+    ch_1_freq_valid_i    : in std_logic;
+    ch_2_freq_i          : in std_logic_vector(15 downto 0);
+    ch_2_freq_valid_i    : in std_logic;
+    ch_3_freq_i          : in std_logic_vector(15 downto 0);
+    ch_3_freq_valid_i    : in std_logic;
+    ch_4_freq_i          : in std_logic_vector(15 downto 0);
+    ch_4_freq_valid_i    : in std_logic;
+    ch_5_freq_i          : in std_logic_vector(15 downto 0);
+    ch_5_freq_valid_i    : in std_logic
   );
 end adc_receiver;
 
@@ -208,8 +208,6 @@ architecture arch of adc_receiver is
   signal data_from_dwsamp : std_logic_vector(16 * N - 1 downto 0);
   --End to be removed
   --Band and channel processing signals
-  signal data_source_sel_cdc : std_logic_vector(1 downto 0);
-
   signal data_local_osc : std_logic_vector(15 downto 0);
   signal valid_local_osc : std_logic;
   signal data_preproc_counter : std_logic_vector(15 downto 0);
@@ -246,7 +244,148 @@ architecture arch of adc_receiver is
 
   signal async_rst_n : std_logic;
 
+  -- synchronize signals from preproc
+  signal fifo_input_mux_sel_sync : std_logic_vector(1 downto 0);
+  signal data_source_sel_sync : std_logic_vector(1 downto 0);
+  signal ch_1_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_1_freq_valid_sync : std_logic;
+  signal ch_2_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_2_freq_valid_sync : std_logic;
+  signal ch_3_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_3_freq_valid_sync : std_logic;
+  signal ch_4_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_4_freq_valid_sync : std_logic;
+  signal ch_5_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_5_freq_valid_sync : std_logic;
+
+  -- synchronize signals from write_side of FIFO
+  signal fifo_full : std_logic_vector((N - 1) downto 0);
+  signal fifo_wr_rst_bsy : std_logic_vector((N - 1) downto 0);
+  signal fifo_prog_full : std_logic_vector((N - 1) downto 0);
+  signal fifo_overflow : std_logic_vector((N - 1) downto 0);
+
+  -- synchronize signals from debug control
+  signal debug_enable_sync : std_logic;
+  signal debug_control_sync : std_logic_vector((N * 4 - 1) downto 0);
+  constant debug_control_width : integer := (N * 4);
+  signal debug_w2w1_sync : std_logic_vector((28 * N - 1) downto 0);
+  constant debug_w2w1_width : integer := (28 * N);
 begin
+
+  ---- Instantiate synchronizers for preproc signals
+  fifo_input_mux_sel_sync_inst : entity work.quasistatic_sync
+    generic map(
+      DATA_WIDTH => 2
+    )
+    port map(
+      src_data_i  => fifo_input_mux_sel_i,
+      sys_clk_i   => clk_260_mhz,
+      sync_data_o => fifo_input_mux_sel_sync
+    );
+  data_source_sel_sync_inst : entity work.quasistatic_sync
+    generic map(
+      DATA_WIDTH => 2
+    )
+    port map(
+      src_data_i  => data_source_sel_i,
+      sys_clk_i   => clk_260_mhz,
+      sync_data_o => data_source_sel_sync
+    );
+
+  ch_1_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 16
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_1_freq_i,
+      src_valid_i => ch_1_freq_valid_i,
+      dst_clk_i   => clk_260_mhz,
+      dst_data_o  => ch_1_freq_sync,
+      dst_valid_o => ch_1_freq_valid_sync
+    );
+  ch_2_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 16
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_2_freq_i,
+      src_valid_i => ch_2_freq_valid_i,
+      dst_clk_i   => clk_260_mhz,
+      dst_data_o  => ch_2_freq_sync,
+      dst_valid_o => ch_2_freq_valid_sync
+    );
+  ch_3_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 16
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_3_freq_i,
+      src_valid_i => ch_3_freq_valid_i,
+      dst_clk_i   => clk_260_mhz,
+      dst_data_o  => ch_3_freq_sync,
+      dst_valid_o => ch_3_freq_valid_sync
+    );
+  ch_4_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 16
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_4_freq_i,
+      src_valid_i => ch_4_freq_valid_i,
+      dst_clk_i   => clk_260_mhz,
+      dst_data_o  => ch_4_freq_sync,
+      dst_valid_o => ch_4_freq_valid_sync
+    );
+  ch_5_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 16
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_5_freq_i,
+      src_valid_i => ch_5_freq_valid_i,
+      dst_clk_i   => clk_260_mhz,
+      dst_data_o  => ch_5_freq_sync,
+      dst_valid_o => ch_5_freq_valid_sync
+    );
+
+  -- Instantiate synchronizers for debug signals
+  debug_control_sync_inst : entity work.quasistatic_sync
+    generic map(
+      DATA_WIDTH => debug_control_width
+    )
+    port map(
+      src_data_i  => debug_control_i,
+      sys_clk_i   => clk_260_mhz,
+      sync_data_o => debug_control_sync
+    );
+
+  debug_w2w1_sync_inst : entity work.quasistatic_sync
+    generic map(
+      DATA_WIDTH => debug_w2w1_width
+    )
+    port map(
+      src_data_i  => debug_w2w1_i,
+      sys_clk_i   => clk_260_mhz,
+      sync_data_o => debug_w2w1_sync
+    );
+
+  debug_enable_sync_inst : entity work.level_sync
+    port map(
+      dest_clk_i => clk_260_mhz,
+      dest_rst_i => async_rst_i,
+      level_i    => debug_enable_i,
+      level_o    => debug_enable_sync
+    );
   ---- Invert reset
   async_rst_n <= not(async_rst_i);
 
@@ -367,8 +506,8 @@ begin
     data_local_osc  => data_local_osc,
     valid_local_osc => valid_local_osc,
     data_osc        => data_band_osc,
-    data_sel_in     => data_source_sel,
-    data_sel_out    => data_source_sel_cdc,
+    data_sel_in => (others => '0'),
+    data_sel_out    => open,
     m_axis_0_tdata  => data_preproc_counter,
     m_axis_0_tvalid => valid_preproc_counter,
     tready_osc_in   => tready_for_osc
@@ -380,8 +519,8 @@ begin
   port map(
     adc_clk_0              => clk_260_mhz,
     adc_rst_ni_0           => async_rst_n,
-    s_axis_config_tdata_0  => ch_1_freq,
-    s_axis_config_tvalid_0 => ch_1_freq_valid,
+    s_axis_config_tdata_0  => ch_1_freq_sync,
+    s_axis_config_tvalid_0 => ch_1_freq_valid_sync,
     m_axis_tdata_0         => ch_oscillator_output
   );
   --Instantiate debug counter
@@ -467,9 +606,9 @@ begin
     --instantiate pulse_sync
     pulse_sync_data : entity work.pulse_sync(arch)
       port map(
-        src_clk    => clk_to_logic,
+        src_clk_i  => clk_to_logic,
         src_rst_i  => async_rst_i,
-        dest_clk   => clk_260_mhz,
+        dest_clk_i => clk_260_mhz,
         dest_rst_i => async_rst_i,
         pulse_i    => valid_from_deser(i),
         pulse_o    => valid_from_pulse_sync(i)
@@ -506,9 +645,9 @@ begin
       port map(
         clock_i         => clk_260_mhz,
         rst_i           => async_rst_i,
-        enable_i        => debug_enable_i,
-        control_i       => debug_control_i(((4 * (i + 1)) - 1) downto (4 * i)),
-        usr_w2w1_i      => debug_w2w1_i(((28 * (i + 1)) - 1) downto (28 * i)),
+        enable_i        => debug_enable_sync,
+        control_i       => debug_control_sync(((4 * (i + 1)) - 1) downto (4 * i)),
+        usr_w2w1_i      => debug_w2w1_sync(((28 * (i + 1)) - 1) downto (28 * i)),
         --data_i     => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
         data_i          => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
         --valid_i    => valid_from_deser(i),
@@ -546,7 +685,7 @@ begin
       adc_clk_0       => clk_260_mhz,
       adc_rst_ni_0    => async_rst_n,
       band_osc_in     => data_band_osc,
-      control_in_0    => data_source_sel_cdc,
+      control_in_0    => data_source_sel_sync,
       data_adc        => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
       data_counter    => data_preproc_counter,
       data_local_osc  => data_local_osc,
@@ -564,7 +703,7 @@ begin
     --   adc_rst_ni_0 => async_rst_n,
     --   m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
     --   m_axis_dout_tvalid => valid_channel_preproc(i),
-    --   s_axis_config_tdata_0 => ch_1_freq,
+    --   s_axis_config_tdata_0 => ch_1_freq_i,
     --   s_axis_tdata_in => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
     --   s_axis_tvalid_in => valid_band_preproc(i)
     -- );
@@ -599,7 +738,7 @@ begin
         sys_clk_i            => clk_260_mhz,
         sys_rst_i            => async_rst_i,
         -- Mux control
-        data_mux_sel_i       => fifo_input_mux_sel_i,
+        data_mux_sel_i       => fifo_input_mux_sel_sync,
         -- Data from preprocessing logic
         data_preproc_i       => data_ch_filter_preproc((32 * (i + 1) - 1) downto (32 * i)),
         data_preproc_valid_i => valid_ch_filter_preproc(i),
@@ -626,14 +765,43 @@ begin
       wr_en         => valid_fifo_input(i),
       rd_en         => fifo_rd_en_i(i),
       dout          => fifo_out_o(i).data_out,
-      full          => fifo_out_o(i).full,
-      overflow      => fifo_out_o(i).overflow,
+      full          => fifo_full(i),
+      overflow      => fifo_overflow(i),
       empty         => fifo_out_o(i).empty,
       rd_data_count => fifo_out_o(i).rd_data_cnt,
-      prog_full     => fifo_out_o(i).prog_full,
-      wr_rst_busy   => fifo_out_o(i).wr_rst_bsy,
+      prog_full     => fifo_prog_full(i),
+      wr_rst_busy   => fifo_wr_rst_bsy(i),
       rd_rst_busy   => fifo_out_o(i).rd_rst_bsy
     );
+
+    fifo_full_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_full(i),
+        level_o    => fifo_out_o(i).full
+      );
+    fifo_wr_rst_busy_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_wr_rst_bsy(i),
+        level_o    => fifo_out_o(i).wr_rst_bsy
+      );
+    fifo_prog_full_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_prog_full(i),
+        level_o    => fifo_out_o(i).prog_full
+      );
+    fifo_overflow_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_overflow(i),
+        level_o    => fifo_out_o(i).overflow
+      );
 
   end generate ADC_data;
 
