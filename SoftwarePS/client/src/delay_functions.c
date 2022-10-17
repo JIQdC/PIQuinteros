@@ -161,16 +161,23 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
     async_reset(10);
     fifo_reset();
 
+    //enable preprocessing bypass (raw data)
+    raw_data_enable();
     //select debug output from deserializer and enable FIFO input
     debug_output(DESERIALIZER_CTRL, adc_ch);
     debug_enable();
 
+
     //acquire
     acquire_data(acqPack, mPtr_flags, mPtr_data, mPtr_progFull);
+
 
     //disable FIFO input and debug output
     debug_disable();
     debug_output(DISABLED_CTRL, adc_ch);
+
+    //disable preprocessing bypass
+    raw_data_disable();
 
     //expand data
     for (j = 0; j<CHDATA_SIZE; j++)

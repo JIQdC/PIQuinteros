@@ -207,11 +207,25 @@ void debug_disable()
     memwrite(DATA_BASE_ADDR + ENABLE_OFF, &data, 1);
 }
 
+// enables FIFO raw data (without preprocessing) input for all ADC channel
+void raw_data_enable()
+{
+    uint32_t data = 3;
+    memwrite(PREPROC_BASE_ADDR + RAW_DATA_OFF, &data, 1);
+}
+
+// disables FIFO raw data (without preprocessing) input for all ADC channel
+void raw_data_disable()
+{
+    uint32_t data = 0;
+    memwrite(PREPROC_BASE_ADDR + RAW_DATA_OFF, &data, 1);
+}
+
 // enable external trigger logic
 void ext_trigger_enable()
 {
-    uint32_t wr_data = 1;
-    memwrite(DATA_BASE_ADDR + EXT_TRIGGER_EN_OFF, &wr_data, 1);
+    uint32_t data = 0;
+    memwrite(DATA_BASE_ADDR + EXT_TRIGGER_EN_OFF, &data, 1);
 }
 
 // disable external trigger logic

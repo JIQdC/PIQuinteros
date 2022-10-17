@@ -36,6 +36,8 @@ Comments:
 
 // Data interface register addresses
 #define DATA_BASE_ADDR      0x43C00000
+#define PREPROC_BASE_ADDR   0x40000000
+#define RAW_DATA_OFF        (0x01<<2)
 #define COREID_OFF          (0x00<<2)
 #define ASYNCRST_OFF        (0x01<<2)
 #define FIFORST_OFF         (0x02<<2)
@@ -128,6 +130,12 @@ void debug_enable();
 
 // disables FIFO input for all ADC channels
 void debug_disable();
+
+// enables FIFO raw data (without preprocessing) input for all ADC channels
+void raw_data_enable();
+
+// disables FIFO raw data (without preprocessing) input for all ADC channels
+void raw_data_disable();
 
 // enable external trigger logic
 void ext_trigger_enable();
