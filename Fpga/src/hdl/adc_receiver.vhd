@@ -244,7 +244,12 @@ architecture arch of adc_receiver is
   signal data_from_deser_slow : std_logic_vector(16 * N - 1 downto 0);
   signal valid_from_deser_slow : std_logic_vector((N - 1) downto 0);
 
+  signal async_rst_n : std_logic;
+
 begin
+  ---- Invert reset
+  async_rst_n <= not(async_rst_i);
+
   ---- BINARY COUNTER
   -- instantiate binary counter for debugging purposes
   binary_counter : c_counter_binary_0
@@ -358,7 +363,7 @@ begin
   preprocessing_setup_inst : preprocessing_setup_bd_0
   port map(
     adc_clk_0       => clk_260_mhz,
-    adc_rst_ni_0    => not(async_rst_i),
+    adc_rst_ni_0    => async_rst_n,
     data_local_osc  => data_local_osc,
     valid_local_osc => valid_local_osc,
     data_osc        => data_band_osc,
@@ -374,7 +379,7 @@ begin
   ch_osc_inst : ch_oscillator_0
   port map(
     adc_clk_0              => clk_260_mhz,
-    adc_rst_ni_0           => not(async_rst_i),
+    adc_rst_ni_0           => async_rst_n,
     s_axis_config_tdata_0  => ch_1_freq,
     s_axis_config_tvalid_0 => ch_1_freq_valid,
     m_axis_tdata_0         => ch_oscillator_output
@@ -386,7 +391,7 @@ begin
   --     DIVIDE_CLK_FREQ_BY => 1600)
   --   port map(
   --     clk_i => clk_260_mhz,
-  --     rst_ni => not(async_rst_i),
+  --     rst_ni => async_rst_n,
   --     m_axis_tdata => data_counter_post_preprocessing,
   --     m_axis_tvalid => valid_counter_post_preprocessing
   --   );
@@ -539,7 +544,7 @@ begin
     band_processing_bd_inst : band_processing_v2_0
     port map(
       adc_clk_0       => clk_260_mhz,
-      adc_rst_ni_0    => not(async_rst_i),
+      adc_rst_ni_0    => async_rst_n,
       band_osc_in     => data_band_osc,
       control_in_0    => data_source_sel_cdc,
       data_adc        => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
@@ -556,7 +561,7 @@ begin
     -- channel_preprocessing_inst : channel_processing_0
     -- port map (
     --   adc_clk_0 => clk_260_mhz,
-    --   adc_rst_ni_0 => not(async_rst_i),
+    --   adc_rst_ni_0 => async_rst_n,
     --   m_axis_dout_tdata => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
     --   m_axis_dout_tvalid => valid_channel_preproc(i),
     --   s_axis_config_tdata_0 => ch_1_freq,
@@ -568,7 +573,7 @@ begin
     ch_mixer_inst : ch_mixer
     port map(
       aclk               => clk_260_mhz,
-      aresetn            => not(async_rst_i),
+      aresetn            => async_rst_n,
       s_axis_a_tvalid    => valid_band_preproc(i),
       s_axis_a_tdata     => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
       s_axis_b_tvalid    => valid_band_preproc(i),
