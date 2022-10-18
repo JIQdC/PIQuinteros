@@ -89,7 +89,7 @@
 proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
-   "c:/IB/PIFran_repo/PIQuinteros/Fpga/vivado_projects/ciaa_sistadq_x16_proj/CIAA_SistAdq_x16.gen/sources_1/ip/band_processing_v2_0/src/bandpass.coe" \
+   "C:/IB/PIFran_repo/Fpga/prj/preprocessing_stage/filters/bandpass.coe" \
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -351,7 +351,7 @@ add_files -norecurse -fileset $obj $files
 
 # Import local files from the original project
 set files [list \
- [file normalize "${origin_dir}/ciaa_sistadq_x16_proj/CIAA_SistAdq_x16.gen/sources_1/ip/band_processing_v2_0/src/bandpass.coe" ]\
+ [file normalize "${origin_dir}/../../../Fpga/prj/preprocessing_stage/filters/bandpass.coe" ]\
 ]
 set imported_files [import_files -fileset sources_1 $files]
 
@@ -567,11 +567,11 @@ set_property -name "file_type" -value "VHDL" -objects $file_obj
 
 
 # Set 'sources_1' fileset file properties for local files
-set file "src/bandpass.coe"
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
-set_property -name "used_in" -value "" -objects $file_obj
-set_property -name "used_in_simulation" -value "0" -objects $file_obj
-set_property -name "used_in_synthesis" -value "0" -objects $file_obj
+# set file "src/bandpass.coe"
+# set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+# set_property -name "used_in" -value "" -objects $file_obj
+# set_property -name "used_in_simulation" -value "0" -objects $file_obj
+# set_property -name "used_in_synthesis" -value "0" -objects $file_obj
 
 
 # Set 'sources_1' fileset properties

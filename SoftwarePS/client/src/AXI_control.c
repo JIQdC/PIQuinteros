@@ -335,4 +335,19 @@ void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemP
     if (clock_gettime(CLOCK_REALTIME, &t) < 0) error("clock_gettime in acquire_data");
     acqPack->header.acq_timestamp_sec = t.tv_sec;
     acqPack->header.acq_timestamp_nsec = t.tv_nsec;
+
+
+    // For debugging: append data to file
+    // FILE *fp;
+    // fp = fopen("data.txt", "a");
+    // if (fp == NULL) error("fopen in acquire_data");
+    // for (i = 0; i < CHDATA_SIZE; i++)
+    // {
+    //     for (j = 0; j < multiPtr_data->mem_num; j++)
+    //     {
+    //         fprintf(fp, "%d ", acqPack->data[i][j].data);
+    //     }
+    //     fprintf(fp, "\n");
+    // }
+    // fclose(fp);    
 }

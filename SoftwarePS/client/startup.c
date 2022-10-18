@@ -70,6 +70,8 @@ int main()
 
     //default configuration for AXI module and ADC
     spi_defaultConfig();
+
+    //TODO: el default config tiene que ser muestrear en complemento a 2
     adc_defaultConfig();
 
     //run input delay calibration routine

@@ -201,7 +201,7 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
     multi_mdestroy(mPtr_progFull);
 
     return result;
-}
+}   
 
 // prints bad samples matrix for a specified adc_ch, using a testPattern for ADC
 int inputDelayTest(adc_testPattern_t testPattern, uint8_t adc_ch)
