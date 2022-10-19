@@ -98,7 +98,8 @@ begin
       f_reg <= '0';
       valid_reg <= '0';
     elsif (rising_edge(adc_clk_i)) then
-      d_reg <= d_reg(11 downto 0) & data_RE_i & data_FE_i;
+      -- d_reg <= d_reg(11 downto 0) & data_RE_i & data_FE_i;
+      d_reg <= d_reg(11 downto 0) & data_FE_i & data_RE_i;
       f_reg <= frame_i;
       if (f_reg = '0' and frame_i = '1') then --rising edge del frame
         out_reg <= d_reg;

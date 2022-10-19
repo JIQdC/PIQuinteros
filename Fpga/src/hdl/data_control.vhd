@@ -26,7 +26,7 @@ entity data_control is
     -- Core ID and version
     USER_CORE_ID_VER : std_logic_vector(31 downto 0) := X"00020003";
     N                : integer                       := 1;     --number of ADC channels
-    FIFO_EMPTY_VAL   : std_logic_vector(31 downto 0) := X"DEF" --output value when attempting to read from empty FIFO
+    FIFO_EMPTY_VAL   : std_logic_vector(31 downto 0) := X"0000_0DEF" --output value when attempting to read from empty FIFO
   );
   port (
     -- Global Clock Signal

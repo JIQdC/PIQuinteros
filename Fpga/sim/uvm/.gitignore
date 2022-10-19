@@ -1,0 +1,4 @@
+run/*
+!run/compile.do
+!run/sim.do
+!run/wave.do

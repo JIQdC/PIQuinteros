@@ -49,13 +49,12 @@ package remake_vseq_pkg;
   class remake_vseq_stream_trasm extends remake_vseq_base;
     // UVM Factory Registration Macro
     `uvm_object_utils(remake_vseq_stream_trasm)
-    logic [223:0] trama;
 
     function new(string name = "remake_vseq_stream_trasm");
       super.new(name);
     endfunction : new
 
-    task body()
+    task body();
 
      real tono;
      logic [13:0] tono_adc;

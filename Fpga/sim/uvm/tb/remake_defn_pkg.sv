@@ -4,9 +4,9 @@ package remake_defn_pkg;
   localparam int RESET_CLOCK_COUNT = 50;
   localparam int ADC_CLK_FREQ = 455e6*2;
   localparam realtime ADC_CLK_PERIOD = 1s / ADC_CLK_FREQ;
-  // localparam real FREQ_TONO_GHz = 0.01725;
-  // localparam real FREQ_TONO_GHz_2 = 0.0163;
-  // localparam real PI_CONST = 3.14159265;
+  localparam real FREQ_TONO_GHz = 0.01725;
+  localparam real FREQ_TONO_GHz_2 = 0.0163;
+  localparam real PI_CONST = 3.14159265;
   localparam int LARGO_TONO = 50000;
 
   localparam int SIM_PKT_NUM = 10;

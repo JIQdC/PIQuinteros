@@ -108,24 +108,24 @@ package remake_test_pkg;
 
     function void init_axi_vseq(remake_vseq_base vseq);
       if (env_config.has_araddr_stream_if) begin
-        seq.araddr_sqr = m_env.m_araddr_stream.m_sequencer;
+        vseq.araddr_sqr = m_env.m_araddr_stream.m_sequencer;
       end
 
       if (env_config.has_rresp_if_stream_slave_if) begin
-        seq.rresp_sqr = m_env.m_rresp_stream_slave.m_sequencer;
+        vseq.rresp_sqr = m_env.m_rresp_stream_slave.m_sequencer;
       end
 
 
       if(env_config.has_awaddr_stream_if) begin
-        seq.awaddr_sqr = m_env.m_awaddr_stream.m_sequencer;
+        vseq.awaddr_sqr = m_env.m_awaddr_stream.m_sequencer;
       end
       
       if(env_config.has_wdata_stream_if) begin
-        seq.wdata_sqr = m_env.m_wdata_stream.m_sequencer;
+        vseq.wdata_sqr = m_env.m_wdata_stream.m_sequencer;
       end
 
       if(env_config.has_bresp_if_stream_slave_if) begin
-        seq.bresp_sqr = m_env.m_bresp_stream_slave.m_sequencer;
+        vseq.bresp_sqr = m_env.m_bresp_stream_slave.m_sequencer;
       end
       
     endfunction : init_axi_vseq
@@ -179,7 +179,6 @@ package remake_test_pkg;
       * 9. Disable raw data - write
       */
       remake_vseq_stream_trasm eth_trasm_vseq;
-      eth_trasm_vseq = remake_vseq_stream_trasm::type_id::create("eth_trasm_vseq");
 
       remake_seq_read  read_FIFO;
       remake_seq_write write_seq;
@@ -187,6 +186,7 @@ package remake_test_pkg;
       remake_seq_write write_seq3;
       remake_seq_write write_seq4;
       
+      eth_trasm_vseq = remake_vseq_stream_trasm::type_id::create("eth_trasm_vseq");
       read_FIFO  = remake_seq_read::type_id::create("read_FIFO");
       write_seq = remake_seq_write::type_id::create("write_seq");
       write_seq2 = remake_seq_write::type_id::create("write_seq2");
@@ -211,8 +211,8 @@ package remake_test_pkg;
         end
 
         begin
- #(300ns);
-          $display("Leyendo CORE ID");
+ #(2us);
+        /*  $display("Leyendo CORE ID");
           if (!read_FIFO.randomize() with {
                 addr == CORE_ID_ADDR + OFFSET_ADDR;
               }) begin
@@ -262,7 +262,7 @@ package remake_test_pkg;
               }) begin
             `uvm_error(get_full_name(), "Failed to randomize sequence!");
           end
-          write_seq3.start(null);
+          write_seq3.start(null);*/
          end
 
       join

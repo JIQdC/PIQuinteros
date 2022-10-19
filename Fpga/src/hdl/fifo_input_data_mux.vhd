@@ -44,19 +44,19 @@ begin
       data_valid_o <= '0';
 
       case data_mux_sel_i is
-        when x"0" => --disabled
+        when "00" => --disabled
           data_valid_o <= '0';
-        when x"1" => --preprocessing data
+        when "01" => --preprocessing data
           if (data_preproc_valid_i = '1') then
             data_o <= data_preproc_i;
             data_valid_o <= '1';
           end if;
-        when x"2" => -- debug counter
+        when "10" => -- debug counter
           if (data_counter_valid_i = '1') then
             data_o <= data_counter_i;
             data_valid_o <= '1';
           end if;
-        when x"3" => -- raw data. Group by two to fit in FIFO input
+        when "11" => -- raw data. Group by two to fit in FIFO input
           if (data_raw_valid_i = '1') then
             data_raw_shift_reg(31 downto 16) <= data_raw_shift_reg(15 downto 0);
             data_raw_shift_reg(15 downto 0) <= "00" & data_raw_i;

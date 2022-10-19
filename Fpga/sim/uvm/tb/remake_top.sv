@@ -64,20 +64,20 @@ module remake_top;
 
 
   always_comb begin
-    cpo <= #(CLK_PERIOD / 2) stream_if_inst.data[2];
+    cpo <= #(ADC_CLK_PERIOD / 2) stream_if_inst.data[2];
     fco <= stream_if_inst.data[1];
     pd  <= stream_if_inst.data[0];
   end
 
   //DUT
-SistAdq_i SistAdq (
+SistAdq_wrapper SistAdq (
     .AXI_ACLK(axi_clk),
     .AXI_ARESETN(rst_n),
-    .AXI_IN_araddr(araddr_if.data[ADDR_WIDTH-1:0]),
+    .AXI_IN_araddr({25'd0,araddr_if.data[ADDR_WIDTH-1:0]}),
     .AXI_IN_arprot(3'b0),
     .AXI_IN_arready(araddr_if.ready),
     .AXI_IN_arvalid(araddr_if.valid),
-    .AXI_IN_awaddr(awaddr_if.data[ADDR_WIDTH-1:0]),
+    .AXI_IN_awaddr({25'd0,awaddr_if.data[ADDR_WIDTH-1:0]}),
     .AXI_IN_awprot(3'b0),
     .AXI_IN_awready(awaddr_if.ready),
     .AXI_IN_awvalid(awaddr_if.valid),
@@ -104,8 +104,8 @@ SistAdq_i SistAdq (
     .adc_FCO1_i_v_p(fco),
     .adc_FCO2_i_v_n(~fco),
     .adc_FCO2_i_v_p(fco),
-    .adc_data_i_v_n(~pd),
-    .adc_data_i_v_p(pd),
+    .adc_data_i_v_n(~{16{pd}}),
+    .adc_data_i_v_p({16{pd}}),
     .adc_sclk_o(),
     .adc_sdio_o(),
     .adc_ss1_o(),
@@ -128,7 +128,7 @@ SistAdq_i SistAdq (
             adc_clk   = 0;
             rst_n = 0;
             aux_rst_n = 0;
-            //#(CLK_PERIOD/2) adc_clk <= ~adc_clk;
+            //#(ADC_CLK_PERIOD/2) adc_clk <= ~adc_clk;
             // Wait for reset completion (RESET_CLOCK_COUNT).
             repeat (RESET_CLOCK_COUNT) begin
             #(ADC_CLK_PERIOD / 2) adc_clk = 0;
