@@ -333,6 +333,6 @@ set_property IOSTANDARD LVDS_25 [get_ports {adc_data_i_v_p[15]}]
 # set_input_delay -clock [get_clocks adc_DCO1] -max -add_delay 0.599 [get_ports {adc_data_i_v_p[15]}]
 
 #Terminacion diferencial
-set_property DIFF_TERM TRUE [get_ports adc_DCO*_i_clk_*]
-set_property DIFF_TERM TRUE [get_ports adc_FCO*_i_v_*]
-set_property DIFF_TERM TRUE [get_ports adc_data_i_v_*[*]]
+#set_property DIFF_TERM TRUE [get_ports adc_DCO*_i_clk_*]
+#set_property DIFF_TERM TRUE [get_ports adc_FCO*_i_v_*]
+#set_property DIFF_TERM TRUE [get_ports adc_data_i_v_*[*]]

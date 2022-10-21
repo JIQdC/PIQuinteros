@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
                 fprintf(fout, "%d", j);
                 for (k = 0; k<16; k++)
                 {
-                    fprintf(fout, ",%d", acqPack->data[k][i].data16[l]);
+                    fprintf(fout, ",%d", acqPack->data[i][k].data16[l]);
                 }
                 fprintf(fout, "\n");
                 j++;

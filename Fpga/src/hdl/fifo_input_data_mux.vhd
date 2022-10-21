@@ -8,7 +8,7 @@ entity fifo_input_data_mux is
     sys_rst_i            : in std_logic;
 
     -- Mux control
-    data_mux_sel_i       : in std_logic_vector(1 downto 0);
+    data_mux_sel_i       : in std_logic_vector(2 downto 0);
 
     -- Data from preprocessing logic
     data_preproc_i       : in std_logic_vector(31 downto 0);
@@ -21,6 +21,19 @@ entity fifo_input_data_mux is
     -- Raw data from deserializer
     data_raw_i           : in std_logic_vector(13 downto 0);
     data_raw_valid_i     : in std_logic;
+
+    
+    -- Band mixer for debug
+    data_band_mixer_i   : in std_logic_vector(31 downto 0);
+    data_band_mixer_valid_i : in std_logic;
+    
+    -- Channel mixer for debug
+    data_channel_mixer_i   : in std_logic_vector(31 downto 0);
+    data_channel_mixer_valid_i : in std_logic;
+
+    -- Preprocessing counter for debug
+    data_preproc_counter_i   : in std_logic_vector(15 downto 0);
+    data_preproc_counter_valid_i : in std_logic;
 
     -- Output data
     data_o               : out std_logic_vector(31 downto 0);
@@ -44,19 +57,19 @@ begin
       data_valid_o <= '0';
 
       case data_mux_sel_i is
-        when "00" => --disabled
+        when "000" => --disabled
           data_valid_o <= '0';
-        when "01" => --preprocessing data
+        when "001" => --preprocessing data
           if (data_preproc_valid_i = '1') then
             data_o <= data_preproc_i;
             data_valid_o <= '1';
           end if;
-        when "10" => -- debug counter
+        when "010" => -- debug counter
           if (data_counter_valid_i = '1') then
             data_o <= data_counter_i;
             data_valid_o <= '1';
           end if;
-        when "11" => -- raw data. Group by two to fit in FIFO input
+        when "011" => -- raw data. Group by two to fit in FIFO input
           if (data_raw_valid_i = '1') then
             data_raw_shift_reg(31 downto 16) <= data_raw_shift_reg(15 downto 0);
             data_raw_shift_reg(15 downto 0) <= "00" & data_raw_i;
@@ -65,6 +78,21 @@ begin
               data_o <= data_raw_shift_reg;
               data_valid_o <= '1';
             end if;
+          end if;
+        when "100" => -- band mixer
+          if (data_band_mixer_valid_i = '1') then
+            data_o <= data_band_mixer_i;
+            data_valid_o <= '1';
+          end if;
+        when "101" => -- channel mixer
+          if (data_channel_mixer_valid_i = '1') then
+            data_o <= data_channel_mixer_i;
+            data_valid_o <= '1';
+          end if;
+        when "110" => --preprocessing counter bypassing mixers and multipliers
+          if (data_preproc_counter_valid_i = '1') then
+            data_o(31 downto 0) <= data_preproc_counter_i(15 downto 0) & data_preproc_counter_i(15 downto 0);
+            data_valid_o <= '1';
           end if;
         when others =>
           data_valid_o <= '0';

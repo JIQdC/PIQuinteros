@@ -74,9 +74,9 @@ int main(int argc, char* argv[])
     //print required samples
     for (j = 0; j<sample_num/2; j++)
     {
-        buffer = intToBase((acqPack->data[0][j].data16[1]) >> 14, 2);
+        buffer = intToBase((acqPack->data[j][0].data16[1]) >> 14, 2);
         printf("%s\n", buffer);
-        buffer = intToBase(acqPack->data[0][j].data16[0], 2);
+        buffer = intToBase(acqPack->data[j][0].data16[0], 2);
         printf("%s\n", buffer);
     }
 

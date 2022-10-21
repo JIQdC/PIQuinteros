@@ -62,7 +62,7 @@ entity adc_receiver is
     delay_frame_output_o : out std_logic_vector((5 - 1) downto 0);
 
     --preprocessing signals
-    fifo_input_mux_sel_i : in std_logic_vector(1 downto 0);
+    fifo_input_mux_sel_i : in std_logic_vector(2 downto 0);
     data_source_sel_i    : in std_logic_vector(1 downto 0);
     ch_1_freq_i          : in std_logic_vector(15 downto 0);
     ch_1_freq_valid_i    : in std_logic;
@@ -141,6 +141,8 @@ architecture arch of adc_receiver is
     port (
       adc_clk_0       : in std_logic;
       adc_rst_ni_0    : in std_logic;
+      band_mixer_data_o : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      band_mixer_valid_o : OUT STD_LOGIC;
       band_osc_in     : in std_logic_vector(31 downto 0);
       control_in_0    : in std_logic_vector(1 downto 0);
       data_adc        : in std_logic_vector(13 downto 0);
@@ -217,6 +219,9 @@ architecture arch of adc_receiver is
 
   signal ch_oscillator_output : std_logic_vector(31 downto 0);
 
+  signal data_band_mixer_debug : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_band_mixer_debug : std_logic_vector((N - 1) downto 0);
+  
   signal data_band_preproc : std_logic_vector(32 * N - 1 downto 0);
   signal valid_band_preproc : std_logic_vector((N - 1) downto 0);
   signal data_channel_preproc : std_logic_vector(32 * N - 1 downto 0);
@@ -245,7 +250,7 @@ architecture arch of adc_receiver is
   signal async_rst_n : std_logic;
 
   -- synchronize signals from preproc
-  signal fifo_input_mux_sel_sync : std_logic_vector(1 downto 0);
+  signal fifo_input_mux_sel_sync : std_logic_vector(2 downto 0);
   signal data_source_sel_sync : std_logic_vector(1 downto 0);
   signal ch_1_freq_sync : std_logic_vector(15 downto 0);
   signal ch_1_freq_valid_sync : std_logic;
@@ -293,7 +298,7 @@ begin
   ---- Instantiate synchronizers for preproc signals
   fifo_input_mux_sel_sync_inst : entity work.quasistatic_sync
     generic map(
-      DATA_WIDTH => 2
+      DATA_WIDTH => 3
     )
     port map(
       src_data_i  => fifo_input_mux_sel_i,
@@ -711,6 +716,8 @@ begin
       valid_adc       => valid_from_debug(i),
       valid_counter   => valid_preproc_counter,
       valid_local_osc => valid_local_osc,
+      band_mixer_data_o => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
+      band_mixer_valid_o => valid_band_mixer_debug(i),
       valid_mux_out   => tready_for_osc,
       valid_out       => valid_band_preproc(i)
     );
@@ -766,6 +773,15 @@ begin
         -- Raw data from deserializer
         data_raw_i           => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
         data_raw_valid_i     => valid_from_debug(i),
+        -- Band mixer
+        data_band_mixer_i         => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
+        data_band_mixer_valid_i   => valid_band_mixer_debug(i),
+        -- Channel mixer    
+        data_channel_mixer_i => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
+        data_channel_mixer_valid_i => valid_channel_preproc(i),
+        -- Preprocessing counter for debug
+      data_preproc_counter_i   => data_preproc_counter,
+      data_preproc_counter_valid_i => valid_preproc_counter,
         -- Output data
         data_o               => data_fifo_input((32 * (i + 1) - 1) downto (32 * i)),
         data_valid_o         => valid_fifo_input(i)

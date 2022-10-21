@@ -48,16 +48,16 @@ begin
       adc_DCO_n => adc_DCO_n, adc_FCO_n => adc_FCO_n, adc_D_n => adc_D_n
     );
 
-  SelectIO : entity work.deser_test_wrapper(STRUCTURE)
-    port map(
-      clk_in_n_0               => adc_DCO_n,
-      clk_in_p_0               => adc_DCO_p,
-      data_in_from_pins_n_0(1) => adc_D_n,
-      data_in_from_pins_n_0(0) => adc_FCO_n,
-      data_in_from_pins_p_0(1) => adc_D_p,
-      data_in_from_pins_p_0(0) => adc_FCO_p,
-      io_reset_0               => rst
-    );
+--  SelectIO : entity work.deser_test_wrapper(STRUCTURE)
+--    port map(
+--      clk_in_n_0               => adc_DCO_n,
+--      clk_in_p_0               => adc_DCO_p,
+--      data_in_from_pins_n_0(1) => adc_D_n,
+--      data_in_from_pins_n_0(0) => adc_FCO_n,
+--      data_in_from_pins_p_0(1) => adc_D_p,
+--      data_in_from_pins_p_0(0) => adc_FCO_p,
+--      io_reset_0               => rst
+--    );
 
   simProcess : process
   begin

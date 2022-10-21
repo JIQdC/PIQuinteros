@@ -182,8 +182,8 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
     //expand data
     for (j = 0; j<CHDATA_SIZE; j++)
     {
-        expanded_data[2*j] = acqPack->data[0][j].data16[1];
-        expanded_data[2*j+1] = acqPack->data[0][j].data16[0];
+        expanded_data[2*j] = acqPack->data[j][0].data16[1];
+        expanded_data[2*j+1] = acqPack->data[j][0].data16[0];
     }
 
     result = 0;

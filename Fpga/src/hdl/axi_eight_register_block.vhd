@@ -15,7 +15,7 @@ entity eight_regs_block is
 	);
 	port (
 		-- Users to add ports here
-		fifo_input_mux_o     : out std_logic_vector(1 downto 0);
+		fifo_input_mux_o     : out std_logic_vector(2 downto 0);
 		data_source_selector : out std_logic_vector(1 downto 0);
 		ch_1_freq_data       : out std_logic_vector(15 downto 0);
 		ch_1_freq_valid      : out std_logic;
@@ -120,7 +120,7 @@ architecture arch_imp of eight_regs_block is
 	---- Number of Slave Registers 8
 	signal slv_reg0 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal fifo_input_mux_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
-	signal slv_reg2 : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal data_source_selector_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal ch_freq_1_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal ch_freq_1_valid_reg : std_logic;
 	signal ch_freq_2_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
@@ -235,7 +235,7 @@ begin
 			if S_AXI_ARESETN = '0' then
 				slv_reg0 <= (others => '0');
 				fifo_input_mux_reg <= (others => '0');
-				slv_reg2 <= (others => '0');
+				data_source_selector_reg <= (others => '0');
 				ch_freq_1_reg <= (others => '0');
 				ch_freq_2_reg <= (others => '0');
 				ch_freq_3_reg <= (others => '0');
@@ -271,7 +271,7 @@ begin
 								if (S_AXI_WSTRB(byte_index) = '1') then
 									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 2
-									slv_reg2(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+									data_source_selector_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
 								end if;
 							end loop;
 						when b"011" =>
@@ -412,7 +412,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid);
 
-	process (slv_reg0, fifo_input_mux_reg, slv_reg2, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+	process (slv_reg0, fifo_input_mux_reg, data_source_selector_reg, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
 		variable loc_addr : std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -423,7 +423,7 @@ begin
 			when b"001" =>
 				reg_data_out <= fifo_input_mux_reg;
 			when b"010" =>
-				reg_data_out <= slv_reg2;
+				reg_data_out <= data_source_selector_reg;
 			when b"011" =>
 				reg_data_out <= ch_freq_1_reg;
 			when b"100" =>
@@ -457,8 +457,8 @@ begin
 		end if;
 	end process;
 	-- Add user logic here
-	fifo_input_mux_o <= fifo_input_mux_reg(1 downto 0);
-	data_source_selector <= slv_reg2(1 downto 0);
+	fifo_input_mux_o <= fifo_input_mux_reg(2 downto 0);
+	data_source_selector <= data_source_selector_reg(1 downto 0);
 	ch_1_freq_data <= ch_freq_1_reg(15 downto 0);
 	ch_1_freq_valid <= ch_freq_1_valid_reg;
 	ch_2_freq_data <= ch_freq_2_reg(15 downto 0);
