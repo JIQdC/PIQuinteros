@@ -120,20 +120,6 @@ entity adc_control_wrapper is
 end adc_control_wrapper;
 
 architecture arch of adc_control_wrapper is
-
-  --Debug signals
-  -- attribute MARK_DEBUG : string;
-  -- attribute MARK_DEBUG of adc_DCO1_p_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_DCO1_n_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_DCO2_p_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_DCO2_n_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_FCO1_p_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_FCO1_n_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_FCO2_p_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_FCO2_n_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_data_p_i : signal is "true";
-  -- attribute MARK_DEBUG of adc_data_n_i : signal is "true";
-
   --Xilinx attributes
   attribute X_INTERFACE_INFO : string;
   attribute X_INTERFACE_INFO of adc_DCO1_p_i : signal is "xilinx.com:interface:diff_clock:1.0 adc_DCO1_i CLK_P";

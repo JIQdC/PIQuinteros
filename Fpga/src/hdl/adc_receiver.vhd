@@ -277,21 +277,21 @@ architecture arch of adc_receiver is
   constant debug_w2w1_width : integer := (28 * N);
 
   --Debug signals
-  attribute MARK_DEBUG : string;
-  attribute MARK_DEBUG of data_from_debug : signal is "true";
-  attribute MARK_DEBUG of valid_from_debug : signal is "true";
-  attribute MARK_DEBUG of data_from_deser : signal is "true";
-  attribute MARK_DEBUG of valid_from_deser : signal is "true";
-  attribute MARK_DEBUG of data_from_deser_slow : signal is "true";
-  attribute MARK_DEBUG of valid_from_deser_slow : signal is "true";
-  attribute MARK_DEBUG of data_fifo_input : signal is "true";
-  attribute MARK_DEBUG of valid_fifo_input : signal is "true";
-  attribute MARK_DEBUG of fifo_input_mux_sel_i : signal is "true";
-  attribute MARK_DEBUG of fifo_input_mux_sel_sync : signal is "true";
-  attribute MARK_DEBUG of data_to_iddr : signal is "true";
-  attribute MARK_DEBUG of data_to_des_RE : signal is "true";
-  attribute MARK_DEBUG of data_to_des_FE : signal is "true";
-  attribute MARK_DEBUG of frame_to_iddr : signal is "true";
+  -- attribute MARK_DEBUG : string;
+  -- attribute MARK_DEBUG of data_from_debug : signal is "true";
+  -- attribute MARK_DEBUG of valid_from_debug : signal is "true";
+  -- attribute MARK_DEBUG of data_from_deser : signal is "true";
+  -- attribute MARK_DEBUG of valid_from_deser : signal is "true";
+  -- attribute MARK_DEBUG of data_from_deser_slow : signal is "true";
+  -- attribute MARK_DEBUG of valid_from_deser_slow : signal is "true";
+  -- attribute MARK_DEBUG of data_fifo_input : signal is "true";
+  -- attribute MARK_DEBUG of valid_fifo_input : signal is "true";
+  -- attribute MARK_DEBUG of fifo_input_mux_sel_i : signal is "true";
+  -- attribute MARK_DEBUG of fifo_input_mux_sel_sync : signal is "true";
+  -- attribute MARK_DEBUG of data_to_iddr : signal is "true";
+  -- attribute MARK_DEBUG of data_to_des_RE : signal is "true";
+  -- attribute MARK_DEBUG of data_to_des_FE : signal is "true";
+  -- attribute MARK_DEBUG of frame_to_iddr : signal is "true";
   
 begin
 
