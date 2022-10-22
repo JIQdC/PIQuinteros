@@ -1,7 +1,7 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
---Date        : Wed Oct 19 21:14:59 2022
+--Date        : Fri Oct 21 20:07:36 2022
 --Host        : fedora running 64-bit unknown
 --Command     : generate_target band_processing_bd.bd
 --Design      : band_processing_bd
@@ -22,7 +22,7 @@ entity Band_filter_hier_imp_Q8IROE is
 end Band_filter_hier_imp_Q8IROE;
 
 architecture STRUCTURE of Band_filter_hier_imp_Q8IROE is
-  component band_processing_bd_Band_filter_2 is
+  component band_processing_bd_Band_filter_0 is
   port (
     aclk : in STD_LOGIC;
     s_axis_data_tvalid : in STD_LOGIC;
@@ -31,7 +31,7 @@ architecture STRUCTURE of Band_filter_hier_imp_Q8IROE is
     m_axis_data_tvalid : out STD_LOGIC;
     m_axis_data_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  end component band_processing_bd_Band_filter_2;
+  end component band_processing_bd_Band_filter_0;
   component band_processing_bd_dsp_complex_gain_0_0 is
   port (
     data_in : in STD_LOGIC_VECTOR ( 31 downto 0 );
@@ -51,7 +51,7 @@ begin
   aclk_0_1 <= adc_clk;
   m_axis_data_tdata(31 downto 0) <= Band_filter_m_axis_data_tdata(31 downto 0);
   m_axis_data_tvalid <= Band_filter_m_axis_data_tvalid;
-Band_filter: component band_processing_bd_Band_filter_2
+Band_filter: component band_processing_bd_Band_filter_0
      port map (
       aclk => aclk_0_1,
       m_axis_data_tdata(31 downto 0) => Band_filter_m_axis_data_tdata(31 downto 0),
@@ -95,7 +95,7 @@ entity band_processing_bd is
 end band_processing_bd;
 
 architecture STRUCTURE of band_processing_bd is
-  component band_processing_bd_Band_mixer_2 is
+  component band_processing_bd_Band_mixer_0 is
   port (
     aclk : in STD_LOGIC;
     aresetn : in STD_LOGIC;
@@ -106,7 +106,7 @@ architecture STRUCTURE of band_processing_bd is
     m_axis_dout_tvalid : out STD_LOGIC;
     m_axis_dout_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  end component band_processing_bd_Band_mixer_2;
+  end component band_processing_bd_Band_mixer_0;
   component band_processing_bd_dsp_data_source_mux_0_0 is
   port (
     counter_tdata : in STD_LOGIC_VECTOR ( 15 downto 0 );
@@ -190,7 +190,7 @@ Band_filter_hier: entity work.Band_filter_hier_imp_Q8IROE
       m_axis_data_tvalid => Band_filter_hier_m_axis_data_tvalid,
       s_axis_data_tvalid => Band_mixer_m_axis_dout_tvalid
     );
-Band_mixer: component band_processing_bd_Band_mixer_2
+Band_mixer: component band_processing_bd_Band_mixer_0
      port map (
       aclk => adc_clk_0_1,
       aresetn => adc_rst_ni_0_1,

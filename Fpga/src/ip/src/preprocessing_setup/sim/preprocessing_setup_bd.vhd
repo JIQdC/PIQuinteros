@@ -1,8 +1,8 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
---Date        : Fri Oct 14 07:45:32 2022
---Host        : ib-pcteleco10.cabib.local running 64-bit unknown
+--Date        : Fri Oct 21 19:58:43 2022
+--Host        : fedora running 64-bit unknown
 --Command     : generate_target preprocessing_setup_bd.bd
 --Design      : preprocessing_setup_bd
 --Purpose     : IP block netlist
@@ -21,14 +21,14 @@ entity Local_osc_hier_imp_B52PYN is
 end Local_osc_hier_imp_B52PYN;
 
 architecture STRUCTURE of Local_osc_hier_imp_B52PYN is
-  component preprocessing_setup_bd_Local_oscillator_1 is
+  component preprocessing_setup_bd_Local_oscillator_0 is
   port (
     aclk : in STD_LOGIC;
     m_axis_data_tvalid : out STD_LOGIC;
     m_axis_data_tready : in STD_LOGIC;
     m_axis_data_tdata : out STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  end component preprocessing_setup_bd_Local_oscillator_1;
+  end component preprocessing_setup_bd_Local_oscillator_0;
   component preprocessing_setup_bd_dsp_dds_compiler_con_0_0 is
   port (
     aclk : in STD_LOGIC;
@@ -52,7 +52,7 @@ begin
   m_axis_tdata(15 downto 0) <= dsp_dds_compiler_con_0_m_axis_tdata(15 downto 0);
   m_axis_tvalid <= dsp_dds_compiler_con_0_m_axis_tvalid;
   rst_ni_0_1 <= adc_rst_ni;
-Local_oscillator: component preprocessing_setup_bd_Local_oscillator_1
+Local_oscillator: component preprocessing_setup_bd_Local_oscillator_0
      port map (
       aclk => aclk_0_1,
       m_axis_data_tdata(15 downto 0) => Local_oscillator_M_AXIS_DATA_TDATA(15 downto 0),
@@ -157,7 +157,7 @@ entity preprocessing_setup_bd is
     data_sel_out : out STD_LOGIC_VECTOR ( 1 downto 0 );
     m_axis_0_tdata : out STD_LOGIC_VECTOR ( 15 downto 0 );
     m_axis_0_tvalid : out STD_LOGIC;
-    tready_osc_in : out STD_LOGIC;
+    tready_osc_in : in STD_LOGIC;
     valid_local_osc : out STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
@@ -167,14 +167,14 @@ entity preprocessing_setup_bd is
 end preprocessing_setup_bd;
 
 architecture STRUCTURE of preprocessing_setup_bd is
-  component preprocessing_setup_bd_Band_selector_oscillator_1 is
+  component preprocessing_setup_bd_Band_selector_oscillator_0 is
   port (
     aclk : in STD_LOGIC;
     m_axis_data_tvalid : out STD_LOGIC;
     m_axis_data_tready : in STD_LOGIC;
     m_axis_data_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  end component preprocessing_setup_bd_Band_selector_oscillator_1;
+  end component preprocessing_setup_bd_Band_selector_oscillator_0;
   component preprocessing_setup_bd_basic_counter_0_0 is
   port (
     clk_i : in STD_LOGIC;
@@ -192,7 +192,7 @@ architecture STRUCTURE of preprocessing_setup_bd is
   signal basic_counter_0_m_axis_TVALID : STD_LOGIC;
   signal cdc_hier_data_out : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal data_in_0_1 : STD_LOGIC_VECTOR ( 1 downto 0 );
-  signal NLW_Band_selector_oscillator_m_axis_data_tready_UNCONNECTED : STD_LOGIC;
+  signal m_axis_data_tready_0_1 : STD_LOGIC;
   signal NLW_Band_selector_oscillator_m_axis_data_tvalid_UNCONNECTED : STD_LOGIC;
   attribute X_INTERFACE_INFO : string;
   attribute X_INTERFACE_INFO of adc_clk_0 : signal is "xilinx.com:signal:clock:1.0 CLK.ADC_CLK_0 CLK";
@@ -210,13 +210,13 @@ begin
   data_sel_out(1 downto 0) <= cdc_hier_data_out(1 downto 0);
   m_axis_0_tdata(15 downto 0) <= basic_counter_0_m_axis_TDATA(15 downto 0);
   m_axis_0_tvalid <= basic_counter_0_m_axis_TVALID;
+  m_axis_data_tready_0_1 <= tready_osc_in;
   valid_local_osc <= Local_osc_hier_m_axis_tvalid;
-  tready_osc_in <= 'Z';
-Band_selector_oscillator: component preprocessing_setup_bd_Band_selector_oscillator_1
+Band_selector_oscillator: component preprocessing_setup_bd_Band_selector_oscillator_0
      port map (
       aclk => adc_clk_0_2,
       m_axis_data_tdata(31 downto 0) => Band_selector_oscillator_m_axis_data_tdata(31 downto 0),
-      m_axis_data_tready => NLW_Band_selector_oscillator_m_axis_data_tready_UNCONNECTED,
+      m_axis_data_tready => m_axis_data_tready_0_1,
       m_axis_data_tvalid => NLW_Band_selector_oscillator_m_axis_data_tvalid_UNCONNECTED
     );
 Local_osc_hier: entity work.Local_osc_hier_imp_B52PYN

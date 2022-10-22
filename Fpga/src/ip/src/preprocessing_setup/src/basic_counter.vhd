@@ -16,7 +16,7 @@ entity basic_counter is
 end basic_counter;
 architecture rtl of basic_counter is
     -- signals
-    signal q_r : std_logic_vector(2 downto 0);
+    signal q_r : std_logic_vector(10 downto 0);
     signal m_axis_tdata_reg : std_logic_vector(COUNTER_WIDTH - 1 downto 0);
     signal m_axis_tvalid_reg : std_logic;
 begin
@@ -30,7 +30,7 @@ begin
             else
                 q_r <= q_r + 1;
                 m_axis_tvalid_reg <= '0';
-                if (q_r = std_logic_vector(to_unsigned(DIVIDE_CLK_FREQ_BY, 3) - 1)) then
+                if (q_r = std_logic_vector(to_unsigned(DIVIDE_CLK_FREQ_BY, 10) - 1)) then
                     m_axis_tdata_reg <= m_axis_tdata_reg + 1;
                     m_axis_tvalid_reg <= '1';
                     q_r <= (others => '0');

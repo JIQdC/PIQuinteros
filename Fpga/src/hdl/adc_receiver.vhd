@@ -132,7 +132,7 @@ architecture arch of adc_receiver is
       data_sel_out    : out std_logic_vector(1 downto 0);
       m_axis_0_tdata  : out std_logic_vector(15 downto 0);
       m_axis_0_tvalid : out std_logic;
-      tready_osc_in   : out std_logic;
+      tready_osc_in   : in std_logic;
       valid_local_osc : out std_logic
     );
   end component;
@@ -214,7 +214,7 @@ architecture arch of adc_receiver is
   signal valid_local_osc : std_logic;
   signal data_preproc_counter : std_logic_vector(15 downto 0);
   signal valid_preproc_counter : std_logic;
-  signal tready_for_osc : std_logic;
+  signal tready_for_osc : std_logic_vector((N - 1) downto 0);
   signal data_band_osc : std_logic_vector(31 downto 0);
 
   signal ch_oscillator_output : std_logic_vector(31 downto 0);
@@ -533,7 +533,7 @@ begin
     data_sel_out    => open,
     m_axis_0_tdata  => data_preproc_counter,
     m_axis_0_tvalid => valid_preproc_counter,
-    tready_osc_in   => tready_for_osc
+    tready_osc_in   => tready_for_osc(0)
   );
 
   --Instantiate ch_oscillator (for now only one)
@@ -718,7 +718,7 @@ begin
       valid_local_osc => valid_local_osc,
       band_mixer_data_o => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
       band_mixer_valid_o => valid_band_mixer_debug(i),
-      valid_mux_out   => tready_for_osc,
+      valid_mux_out   => tready_for_osc(i),
       valid_out       => valid_band_preproc(i)
     );
 
