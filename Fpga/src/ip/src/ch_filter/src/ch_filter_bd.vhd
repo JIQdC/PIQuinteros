@@ -1,7 +1,7 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
---Date        : Sun Oct 16 17:02:29 2022
+--Date        : Sat Oct 22 16:57:34 2022
 --Host        : desktop-ump4eln.cabib.local running 64-bit unknown
 --Command     : generate_target ch_filter_bd.bd
 --Design      : ch_filter_bd

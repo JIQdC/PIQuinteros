@@ -89,7 +89,7 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component clk_wiz_0_0
+  component clk_wiz_preproc_0
     port (-- Clock in ports
       -- Clock out ports
       clk_out1_0 : out std_logic;
@@ -137,7 +137,7 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component band_processing_v2_0
+  component band_processing_bd_0
     port (
       adc_clk_0       : in std_logic;
       adc_rst_ni_0    : in std_logic;
@@ -157,7 +157,7 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component ch_oscillator_0
+  component ch_oscillator_bd_0
     port (
       adc_clk_0              : in std_logic;
       adc_rst_ni_0           : in std_logic;
@@ -180,7 +180,7 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component ch_filter_0
+  component ch_filter_bd_0
     port (
       adc_clk_0       : in std_logic;
       axis_out_tdata  : out std_logic_vector(31 downto 0);
@@ -508,7 +508,7 @@ begin
     S  => '0'            -- 1-bit set
   );
 
-  FCO_clk_wiz : clk_wiz_0_0
+  FCO_clk_wiz : clk_wiz_preproc_0
   port map(
     -- Clock out ports
     clk_out1_0 => clk_260_mhz,
@@ -538,7 +538,7 @@ begin
 
   --Instantiate ch_oscillator (for now only one)
 
-  ch_osc_inst : ch_oscillator_0
+  ch_osc_inst : ch_oscillator_bd_0
   port map(
     adc_clk_0              => clk_260_mhz,
     adc_rst_ni_0           => async_rst_n,
@@ -703,7 +703,7 @@ begin
 
     -- Band preprocessing: Multiplies and filters
 
-    band_processing_bd_inst : band_processing_v2_0
+    band_processing_bd_inst : band_processing_bd_0
     port map(
       adc_clk_0       => clk_260_mhz,
       adc_rst_ni_0    => async_rst_n,
@@ -748,7 +748,7 @@ begin
 
     --Aca falta incorporar el mux para seleccionar el beam
 
-    ch_filter_inst : ch_filter_0
+    ch_filter_inst : ch_filter_bd_0
     port map(
       adc_clk_0       => clk_260_mhz,
       data_in_0       => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),

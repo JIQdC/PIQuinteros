@@ -1,8 +1,8 @@
 --Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
---Date        : Thu Oct 13 17:59:33 2022
---Host        : desktop-skcct8h.cabib.local running 64-bit unknown
+--Date        : Sat Oct 22 16:57:06 2022
+--Host        : desktop-ump4eln.cabib.local running 64-bit unknown
 --Command     : generate_target ch_oscillator_bd.bd
 --Design      : ch_oscillator_bd
 --Purpose     : IP block netlist
@@ -22,15 +22,6 @@ entity Ch_oscillator_hier_imp_1HV78C6 is
 end Ch_oscillator_hier_imp_1HV78C6;
 
 architecture STRUCTURE of Ch_oscillator_hier_imp_1HV78C6 is
-  component ch_oscillator_bd_Channel_selector_oscillator_1 is
-  port (
-    aclk : in STD_LOGIC;
-    s_axis_config_tvalid : in STD_LOGIC;
-    s_axis_config_tdata : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    m_axis_data_tvalid : out STD_LOGIC;
-    m_axis_data_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
-  );
-  end component ch_oscillator_bd_Channel_selector_oscillator_1;
   component ch_oscillator_bd_Ch_sel_osc_cont_0 is
   port (
     aclk : in STD_LOGIC;
@@ -42,6 +33,15 @@ architecture STRUCTURE of Ch_oscillator_hier_imp_1HV78C6 is
     m_axis_tvalid : out STD_LOGIC
   );
   end component ch_oscillator_bd_Ch_sel_osc_cont_0;
+  component ch_oscillator_bd_Channel_selector_oscillator_0 is
+  port (
+    aclk : in STD_LOGIC;
+    s_axis_config_tvalid : in STD_LOGIC;
+    s_axis_config_tdata : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    m_axis_data_tvalid : out STD_LOGIC;
+    m_axis_data_tdata : out STD_LOGIC_VECTOR ( 31 downto 0 )
+  );
+  end component ch_oscillator_bd_Channel_selector_oscillator_0;
   signal Ch_sel_osc_cont_m_axis_tdata : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal Oscilador_local_M_AXIS_DATA_1_TDATA : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal Oscilador_local_M_AXIS_DATA_1_TVALID : STD_LOGIC;
@@ -67,7 +67,7 @@ Ch_sel_osc_cont: component ch_oscillator_bd_Ch_sel_osc_cont_0
       s_axis_tready => NLW_Ch_sel_osc_cont_s_axis_tready_UNCONNECTED,
       s_axis_tvalid => Oscilador_local_M_AXIS_DATA_1_TVALID
     );
-Channel_selector_oscillator: component ch_oscillator_bd_Channel_selector_oscillator_1
+Channel_selector_oscillator: component ch_oscillator_bd_Channel_selector_oscillator_0
      port map (
       aclk => aclk_0_1,
       m_axis_data_tdata(31 downto 0) => Oscilador_local_M_AXIS_DATA_1_TDATA(31 downto 0),
@@ -88,10 +88,10 @@ entity ch_oscillator_bd is
     s_axis_config_tdata_0 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     s_axis_config_tvalid_0 : in STD_LOGIC
   );
-  attribute core_generation_info : string;
-  attribute core_generation_info of ch_oscillator_bd : entity is "ch_oscillator_bd,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=ch_oscillator_bd,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=3,numReposBlks=2,numNonXlnxBlks=0,numHierBlks=1,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=1,numPkgbdBlks=0,bdsource=USER,synth_mode=OOC_per_IP}";
-  attribute hw_handoff : string;
-  attribute hw_handoff of ch_oscillator_bd : entity is "ch_oscillator_bd.hwdef";
+  attribute CORE_GENERATION_INFO : string;
+  attribute CORE_GENERATION_INFO of ch_oscillator_bd : entity is "ch_oscillator_bd,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=ch_oscillator_bd,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=3,numReposBlks=2,numNonXlnxBlks=0,numHierBlks=1,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=1,numPkgbdBlks=0,bdsource=USER,synth_mode=OOC_per_IP}";
+  attribute HW_HANDOFF : string;
+  attribute HW_HANDOFF of ch_oscillator_bd : entity is "ch_oscillator_bd.hwdef";
 end ch_oscillator_bd;
 
 architecture STRUCTURE of ch_oscillator_bd is
@@ -100,10 +100,10 @@ architecture STRUCTURE of ch_oscillator_bd is
   signal adc_rst_ni_0_1 : STD_LOGIC;
   signal s_axis_config_data : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal s_axis_config_tvalid_0_1 : STD_LOGIC;
-  attribute x_interface_info : string;
-  attribute x_interface_info of adc_clk_0 : signal is "xilinx.com:signal:clock:1.0 CLK.ADC_CLK_0 CLK";
-  attribute x_interface_parameter : string;
-  attribute x_interface_parameter of adc_clk_0 : signal is "XIL_INTERFACENAME CLK.ADC_CLK_0, CLK_DOMAIN ch_oscillator_bd_adc_clk_0, FREQ_HZ 260000000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.000";
+  attribute X_INTERFACE_INFO : string;
+  attribute X_INTERFACE_INFO of adc_clk_0 : signal is "xilinx.com:signal:clock:1.0 CLK.ADC_CLK_0 CLK";
+  attribute X_INTERFACE_PARAMETER : string;
+  attribute X_INTERFACE_PARAMETER of adc_clk_0 : signal is "XIL_INTERFACENAME CLK.ADC_CLK_0, CLK_DOMAIN ch_oscillator_bd_adc_clk_0, FREQ_HZ 260000000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.000";
 begin
   adc_clk_0_1 <= adc_clk_0;
   adc_rst_ni_0_1 <= adc_rst_ni_0;
