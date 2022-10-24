@@ -31,7 +31,7 @@ use IEEE.STD_LOGIC_1164.all;
 entity ADCmodel_wrapper is
   generic (
     N            : integer := 14;
-    T_SAMPLE     : time    := 14 ns;  --período de muestreo del ADC
+    T_SAMPLE     : time    := 15.3846 ns;  --período de muestreo del ADC
     T_DELAY      : time    := 2.3 ns; --tiempo de propagación entre muestreo y dato
     T_CLK_PERIOD : time    := 1 ns    --período del clock usado para los generadores de secuencias 
   );
