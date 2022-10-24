@@ -163,8 +163,8 @@ void adc_defaultConfig()
         wr_data = 0;
         spi_write(ADC_TESTMODE, &wr_data, 1);
 
-        //output mode: offset binary
-        wr_data = 0;
+        //output mode: twos complement
+        wr_data = 1;
         spi_write(ADC_OUTPUTMODE, &wr_data, 1);
 
         //V_Ref is set to 2Vpp

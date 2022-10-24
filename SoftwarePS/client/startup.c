@@ -77,6 +77,6 @@ int main()
     //run input delay calibration routine
     printf("Running input delay calibration routine with testPattern checkerboard...\n");
     inputDelayCalibrate(checkerboard);
-
+    adc_testPattern(off);
     return 0;
 }
