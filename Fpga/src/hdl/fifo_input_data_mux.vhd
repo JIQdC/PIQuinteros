@@ -23,17 +23,13 @@ entity fifo_input_data_mux is
     data_raw_valid_i     : in std_logic;
 
     
-    -- Band mixer for debug
-    data_band_mixer_i   : in std_logic_vector(31 downto 0);
-    data_band_mixer_valid_i : in std_logic;
+    -- Data source mux
+    data_mux_data_source_i   : in std_logic_vector(15 downto 0);
+    data_mux_data_source_valid_i : in std_logic;
     
     -- Channel mixer for debug
     data_channel_mixer_i   : in std_logic_vector(31 downto 0);
     data_channel_mixer_valid_i : in std_logic;
-
-    -- Preprocessing counter for debug
-    data_preproc_counter_i   : in std_logic_vector(15 downto 0);
-    data_preproc_counter_valid_i : in std_logic;
 
     -- Output data
     data_o               : out std_logic_vector(31 downto 0);
@@ -64,7 +60,7 @@ begin
             data_o <= data_preproc_i;
             data_valid_o <= '1';
           end if;
-        when "010" => -- debug counter
+        when "010" => -- debug postproc counter
           if (data_counter_valid_i = '1') then
             data_o <= data_counter_i;
             data_valid_o <= '1';
@@ -79,19 +75,14 @@ begin
               data_valid_o <= '1';
             end if;
           end if;
-        when "100" => -- band mixer
-          if (data_band_mixer_valid_i = '1') then
-            data_o <= data_band_mixer_i;
+        when "100" => -- data source mux
+          if (data_mux_data_source_valid_i = '1') then
+            data_o(31 downto 0 ) <= data_mux_data_source_i(15 downto 0) & data_mux_data_source_i(15 downto 0);
             data_valid_o <= '1';
           end if;
         when "101" => -- channel mixer
           if (data_channel_mixer_valid_i = '1') then
             data_o <= data_channel_mixer_i;
-            data_valid_o <= '1';
-          end if;
-        when "110" => --preprocessing counter bypassing mixers and multipliers
-          if (data_preproc_counter_valid_i = '1') then
-            data_o(31 downto 0) <= data_preproc_counter_i(15 downto 0) & data_preproc_counter_i(15 downto 0);
             data_valid_o <= '1';
           end if;
         when others =>
