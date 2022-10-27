@@ -64,15 +64,15 @@ entity adc_receiver is
     --preprocessing signals
     fifo_input_mux_sel_i : in std_logic_vector(2 downto 0);
     data_source_sel_i    : in std_logic_vector(1 downto 0);
-    ch_1_freq_i          : in std_logic_vector(15 downto 0);
+    ch_1_freq_i          : in std_logic_vector(31 downto 0);
     ch_1_freq_valid_i    : in std_logic;
-    ch_2_freq_i          : in std_logic_vector(15 downto 0);
+    ch_2_freq_i          : in std_logic_vector(31 downto 0);
     ch_2_freq_valid_i    : in std_logic;
-    ch_3_freq_i          : in std_logic_vector(15 downto 0);
+    ch_3_freq_i          : in std_logic_vector(31 downto 0);
     ch_3_freq_valid_i    : in std_logic;
-    ch_4_freq_i          : in std_logic_vector(15 downto 0);
+    ch_4_freq_i          : in std_logic_vector(31 downto 0);
     ch_4_freq_valid_i    : in std_logic;
-    ch_5_freq_i          : in std_logic_vector(15 downto 0);
+    ch_5_freq_i          : in std_logic_vector(31 downto 0);
     ch_5_freq_valid_i    : in std_logic
   );
 end adc_receiver;
@@ -132,6 +132,8 @@ architecture arch of adc_receiver is
       data_sel_out    : out std_logic_vector(1 downto 0);
       m_axis_0_tdata  : out std_logic_vector(15 downto 0);
       m_axis_0_tvalid : out std_logic;
+      s_axis_freq_config_tdata : in STD_LOGIC_VECTOR ( 31 downto 0 );
+      s_axis_freq_config_tvalid : in STD_LOGIC;
       tready_osc_in   : in std_logic;
       valid_local_osc : out std_logic
     );
@@ -180,7 +182,7 @@ architecture arch of adc_receiver is
       adc_clk_0              : in std_logic;
       adc_rst_ni_0           : in std_logic;
       m_axis_tdata_0         : out std_logic_vector(31 downto 0);
-      s_axis_config_tdata_0  : in std_logic_vector(15 downto 0);
+      s_axis_config_tdata_0  : in std_logic_vector(31 downto 0);
       s_axis_config_tvalid_0 : in std_logic
     );
   end component;
@@ -219,7 +221,12 @@ architecture arch of adc_receiver is
 
   --End preprocessing components
   signal clk_to_bufs, clk_to_iddr, clk_to_logic, clk_260_mhz : std_logic;
-  signal data_to_idelays, data_to_iddr, data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
+  signal data_to_idelays, data_to_iddr: std_logic_vector((N - 1) downto 0);
+
+  signal data_from_IDDR_RE, data_from_IDDR_FE : std_logic_vector((N - 1) downto 0);
+  signal data_to_des_RE, data_to_des_FE : std_logic_vector((N - 1) downto 0);
+  
+
   signal data_from_deser, data_from_debug : std_logic_vector((RES_ADC * N - 1) downto 0);
   signal valid_from_deser, valid_from_debug : std_logic_vector((N - 1) downto 0);
 
@@ -270,15 +277,15 @@ architecture arch of adc_receiver is
   -- synchronize signals from preproc
   signal fifo_input_mux_sel_sync : std_logic_vector(2 downto 0);
   signal data_source_sel_sync : std_logic_vector(1 downto 0);
-  signal ch_1_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_1_freq_sync : std_logic_vector(31 downto 0);
   signal ch_1_freq_valid_sync : std_logic;
-  signal ch_2_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_2_freq_sync : std_logic_vector(31 downto 0);
   signal ch_2_freq_valid_sync : std_logic;
-  signal ch_3_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_3_freq_sync : std_logic_vector(31 downto 0);
   signal ch_3_freq_valid_sync : std_logic;
-  signal ch_4_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_4_freq_sync : std_logic_vector(31 downto 0);
   signal ch_4_freq_valid_sync : std_logic;
-  signal ch_5_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_5_freq_sync : std_logic_vector(31 downto 0);
   signal ch_5_freq_valid_sync : std_logic;
 
   -- synchronize signals from write_side of FIFO
@@ -335,7 +342,7 @@ begin
 
   ch_1_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -348,7 +355,7 @@ begin
     );
   ch_2_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -361,7 +368,7 @@ begin
     );
   ch_3_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -374,7 +381,7 @@ begin
     );
   ch_4_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -387,7 +394,7 @@ begin
     );
   ch_5_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -551,6 +558,8 @@ begin
     data_sel_out    => open,
     m_axis_0_tdata  => data_preproc_counter,
     m_axis_0_tvalid => valid_preproc_counter,
+    s_axis_freq_config_tdata => ch_1_freq_sync,
+    s_axis_freq_config_tvalid => ch_1_freq_valid_sync,
     tready_osc_in   => tready_for_osc(0)
   );
 
@@ -582,6 +591,20 @@ begin
     SCLR => async_rst_i,
     Q    => data_counter_post_preprocessing
   );
+
+  --process to register data_from_IDDR_FE to data_to_deserializer
+  process(clk_to_logic, async_rst_i)
+  begin
+    if async_rst_i = '1' then
+      data_to_des_RE <= (others => '0');
+      data_to_des_FE <= (others => '0');
+    elsif rising_edge(clk_to_logic) then
+      data_to_des_RE <= data_from_IDDR_RE;
+      data_to_des_FE <= data_from_IDDR_FE;
+    end if;
+  end process;
+
+
   -- Generate IBUFDS, IDELAYs, IDDR, deserializer, downsampler for ADC data inputs
   ADC_data : for i in 0 to (N - 1) generate
 
@@ -621,8 +644,8 @@ begin
       INIT_Q2      => '0',                   -- Initial value of Q2: '0' or '1'
       SRTYPE       => "ASYNC")               -- Set/Reset type: "SYNC" or "ASYNC"
     port map(
-      Q1 => data_to_des_RE(i), -- 1-bit output for positive edge of clock
-      Q2 => data_to_des_FE(i), -- 1-bit output for negative edge of clock
+      Q1 => data_from_IDDR_RE(i), -- 1-bit output for positive edge of clock
+      Q2 => data_from_IDDR_FE(i), -- 1-bit output for negative edge of clock
       C  => clk_to_iddr,       -- 1-bit clock input
       CE => '1',               -- 1-bit clock enable input
       D  => data_to_iddr(i),   -- 1-bit DDR data input

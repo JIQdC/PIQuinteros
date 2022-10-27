@@ -17,15 +17,15 @@ entity eight_regs_block is
 		-- Users to add ports here
 		fifo_input_mux_o     : out std_logic_vector(2 downto 0);
 		data_source_selector : out std_logic_vector(1 downto 0);
-		ch_1_freq_data       : out std_logic_vector(15 downto 0);
+		ch_1_freq_data       : out std_logic_vector(31 downto 0);
 		ch_1_freq_valid      : out std_logic;
-		ch_2_freq_data       : out std_logic_vector(15 downto 0);
+		ch_2_freq_data       : out std_logic_vector(31 downto 0);
 		ch_2_freq_valid      : out std_logic;
-		ch_3_freq_data       : out std_logic_vector(15 downto 0);
+		ch_3_freq_data       : out std_logic_vector(31 downto 0);
 		ch_3_freq_valid      : out std_logic;
-		ch_4_freq_data       : out std_logic_vector(15 downto 0);
+		ch_4_freq_data       : out std_logic_vector(31 downto 0);
 		ch_4_freq_valid      : out std_logic;
-		ch_5_freq_data       : out std_logic_vector(15 downto 0);
+		ch_5_freq_data       : out std_logic_vector(31 downto 0);
 		ch_5_freq_valid      : out std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
@@ -459,15 +459,15 @@ begin
 	-- Add user logic here
 	fifo_input_mux_o <= fifo_input_mux_reg(2 downto 0);
 	data_source_selector <= data_source_selector_reg(1 downto 0);
-	ch_1_freq_data <= ch_freq_1_reg(15 downto 0);
+	ch_1_freq_data <= ch_freq_1_reg(31 downto 0);
 	ch_1_freq_valid <= ch_freq_1_valid_reg;
-	ch_2_freq_data <= ch_freq_2_reg(15 downto 0);
+	ch_2_freq_data <= ch_freq_2_reg(31 downto 0);
 	ch_2_freq_valid <= ch_freq_2_valid_reg;
-	ch_3_freq_data <= ch_freq_3_reg(15 downto 0);
+	ch_3_freq_data <= ch_freq_3_reg(31 downto 0);
 	ch_3_freq_valid <= ch_freq_3_valid_reg;
-	ch_4_freq_data <= ch_freq_4_reg(15 downto 0);
+	ch_4_freq_data <= ch_freq_4_reg(31 downto 0);
 	ch_4_freq_valid <= ch_freq_4_valid_reg;
-	ch_5_freq_data <= ch_freq_5_reg(15 downto 0);
+	ch_5_freq_data <= ch_freq_5_reg(31 downto 0);
 	ch_5_freq_valid <= ch_freq_5_valid_reg;
 	-- User logic ends
 

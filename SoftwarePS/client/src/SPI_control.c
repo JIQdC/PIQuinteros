@@ -179,7 +179,7 @@ void adc_defaultConfig()
     printf("\t100 Ohm output driver termination\n");
     printf("\tClock divider 0\n");
     printf("\tTest pattern 0\n");
-    printf("\tOutput mode offset binary\n");
+    printf("\tOutput mode twos complement\n");
     printf("\tVref 2 Vpp\n");
     printf("\n");
 }
