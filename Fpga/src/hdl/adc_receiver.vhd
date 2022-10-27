@@ -64,15 +64,15 @@ entity adc_receiver is
     --preprocessing signals
     fifo_input_mux_sel_i : in std_logic_vector(2 downto 0);
     data_source_sel_i    : in std_logic_vector(1 downto 0);
-    ch_1_freq_i          : in std_logic_vector(15 downto 0);
+    ch_1_freq_i          : in std_logic_vector(31 downto 0);
     ch_1_freq_valid_i    : in std_logic;
-    ch_2_freq_i          : in std_logic_vector(15 downto 0);
+    ch_2_freq_i          : in std_logic_vector(31 downto 0);
     ch_2_freq_valid_i    : in std_logic;
-    ch_3_freq_i          : in std_logic_vector(15 downto 0);
+    ch_3_freq_i          : in std_logic_vector(31 downto 0);
     ch_3_freq_valid_i    : in std_logic;
-    ch_4_freq_i          : in std_logic_vector(15 downto 0);
+    ch_4_freq_i          : in std_logic_vector(31 downto 0);
     ch_4_freq_valid_i    : in std_logic;
-    ch_5_freq_i          : in std_logic_vector(15 downto 0);
+    ch_5_freq_i          : in std_logic_vector(31 downto 0);
     ch_5_freq_valid_i    : in std_logic
   );
 end adc_receiver;
@@ -180,7 +180,7 @@ architecture arch of adc_receiver is
       adc_clk_0              : in std_logic;
       adc_rst_ni_0           : in std_logic;
       m_axis_tdata_0         : out std_logic_vector(31 downto 0);
-      s_axis_config_tdata_0  : in std_logic_vector(15 downto 0);
+      s_axis_config_tdata_0  : in std_logic_vector(31 downto 0);
       s_axis_config_tvalid_0 : in std_logic
     );
   end component;
@@ -198,7 +198,7 @@ architecture arch of adc_receiver is
     );
   end component;
 
-  component ch_filter_bd_sin_gain_0
+  component ch_filter_bd_0
     port (
       adc_clk_0       : in std_logic;
       axis_out_tdata  : out std_logic_vector(31 downto 0);
@@ -270,15 +270,15 @@ architecture arch of adc_receiver is
   -- synchronize signals from preproc
   signal fifo_input_mux_sel_sync : std_logic_vector(2 downto 0);
   signal data_source_sel_sync : std_logic_vector(1 downto 0);
-  signal ch_1_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_1_freq_sync : std_logic_vector(31 downto 0);
   signal ch_1_freq_valid_sync : std_logic;
-  signal ch_2_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_2_freq_sync : std_logic_vector(31 downto 0);
   signal ch_2_freq_valid_sync : std_logic;
-  signal ch_3_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_3_freq_sync : std_logic_vector(31 downto 0);
   signal ch_3_freq_valid_sync : std_logic;
-  signal ch_4_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_4_freq_sync : std_logic_vector(31 downto 0);
   signal ch_4_freq_valid_sync : std_logic;
-  signal ch_5_freq_sync : std_logic_vector(15 downto 0);
+  signal ch_5_freq_sync : std_logic_vector(31 downto 0);
   signal ch_5_freq_valid_sync : std_logic;
 
   -- synchronize signals from write_side of FIFO
@@ -335,7 +335,7 @@ begin
 
   ch_1_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -348,7 +348,7 @@ begin
     );
   ch_2_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -361,7 +361,7 @@ begin
     );
   ch_3_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -374,7 +374,7 @@ begin
     );
   ch_4_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -387,7 +387,7 @@ begin
     );
   ch_5_freq_sync_inst : entity work.vector_valid_sync
     generic map(
-      DATA_WIDTH => 16
+      DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
@@ -758,7 +758,7 @@ begin
 
     --Aca falta incorporar el mux para seleccionar el beam
 
-    ch_filter_inst : ch_filter_bd_sin_gain_0
+    ch_filter_inst : ch_filter_bd_0
     port map(
       adc_clk_0       => clk_260_mhz,
       data_in_0       => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),

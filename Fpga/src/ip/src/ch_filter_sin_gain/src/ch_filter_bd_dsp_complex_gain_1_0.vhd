@@ -84,7 +84,7 @@ ARCHITECTURE ch_filter_bd_dsp_complex_gain_1_0_arch OF ch_filter_bd_dsp_complex_
 BEGIN
   U0 : dsp_complex_gain
     GENERIC MAP (
-      SHIFT_BY => 0,
+      SHIFT_BY => 2,
       DATA_WIDTH => 32
     )
     PORT MAP (

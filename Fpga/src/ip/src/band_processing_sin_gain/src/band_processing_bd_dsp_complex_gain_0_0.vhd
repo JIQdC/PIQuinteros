@@ -84,7 +84,7 @@ ARCHITECTURE band_processing_bd_dsp_complex_gain_0_0_arch OF band_processing_bd_
 BEGIN
   U0 : dsp_complex_gain
     GENERIC MAP (
-      SHIFT_BY => 0,
+      SHIFT_BY => 2,
       DATA_WIDTH => 32
     )
     PORT MAP (

@@ -165,15 +165,15 @@ architecture arch of adc_control_wrapper is
   --preprocessing signals
   signal fifo_input_mux_sel : std_logic_vector(2 downto 0);
   signal data_source_sel : std_logic_vector(1 downto 0) := (others => '0');
-  signal ch_1_freq : std_logic_vector(15 downto 0) := (others => '0');
+  signal ch_1_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_1_valid : std_logic := '0';
-  signal ch_2_freq : std_logic_vector(15 downto 0) := (others => '0');
+  signal ch_2_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_2_valid : std_logic := '0';
-  signal ch_3_freq : std_logic_vector(15 downto 0) := (others => '0');
+  signal ch_3_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_3_valid : std_logic := '0';
-  signal ch_4_freq : std_logic_vector(15 downto 0) := (others => '0');
+  signal ch_4_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_4_valid : std_logic := '0';
-  signal ch_5_freq : std_logic_vector(15 downto 0) := (others => '0');
+  signal ch_5_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_5_valid : std_logic := '0';
 
 begin
