@@ -72,8 +72,8 @@ entity adc_receiver is
     ch_3_freq_valid_i    : in std_logic;
     ch_4_freq_i          : in std_logic_vector(31 downto 0);
     ch_4_freq_valid_i    : in std_logic;
-    ch_5_freq_i          : in std_logic_vector(31 downto 0);
-    ch_5_freq_valid_i    : in std_logic
+    local_osc_freq_i          : in std_logic_vector(31 downto 0);
+    local_osc_freq_valid_i    : in std_logic
   );
 end adc_receiver;
 
@@ -240,6 +240,7 @@ architecture arch of adc_receiver is
   signal data_band_osc : std_logic_vector(31 downto 0);
 
   signal ch_oscillator_output : std_logic_vector(31 downto 0);
+  signal ch_osc_out_ffs : std_logic_vector(32 * N - 1 downto 0);
 
   -- Not interested in data_band_mixer anymore
   -- signal data_band_mixer_debug : std_logic_vector(32 * N - 1 downto 0);
@@ -260,7 +261,8 @@ architecture arch of adc_receiver is
   signal data_fifo_input : std_logic_vector(32 * N - 1 downto 0);
   signal valid_fifo_input : std_logic_vector((N - 1) downto 0);
 
-  signal frame_to_idelay, frame_to_iddr, frame_delayed : std_logic;
+  signal frame_to_idelay, frame_to_iddr : std_logic;
+  signal frame_delayed_from_iddr, frame_delayed_to_deser : std_logic;
   signal treshold_reg : std_logic_vector((N_tr_b - 1) downto 0);
   signal counter_ce_v : std_logic_vector((N - 1) downto 0);
   signal debug_counter : std_logic_vector(13 downto 0);
@@ -285,8 +287,8 @@ architecture arch of adc_receiver is
   signal ch_3_freq_valid_sync : std_logic;
   signal ch_4_freq_sync : std_logic_vector(31 downto 0);
   signal ch_4_freq_valid_sync : std_logic;
-  signal ch_5_freq_sync : std_logic_vector(31 downto 0);
-  signal ch_5_freq_valid_sync : std_logic;
+  signal local_osc_freq_sync : std_logic_vector(31 downto 0);
+  signal local_osc_freq_valid_sync : std_logic;
 
   -- synchronize signals from write_side of FIFO
   signal fifo_full : std_logic_vector((N - 1) downto 0);
@@ -392,18 +394,18 @@ begin
       dst_data_o  => ch_4_freq_sync,
       dst_valid_o => ch_4_freq_valid_sync
     );
-  ch_5_freq_sync_inst : entity work.vector_valid_sync
+  local_osc_freq_sync_inst : entity work.vector_valid_sync
     generic map(
       DATA_WIDTH => 32
     )
     port map(
       src_clk_i   => fpga_clk_i,
       src_rst_i   => async_rst_i,
-      src_data_i  => ch_5_freq_i,
-      src_valid_i => ch_5_freq_valid_i,
+      src_data_i  => local_osc_freq_i,
+      src_valid_i => local_osc_freq_valid_i,
       dst_clk_i   => clk_260_mhz,
-      dst_data_o  => ch_5_freq_sync,
-      dst_valid_o => ch_5_freq_valid_sync
+      dst_data_o  => local_osc_freq_sync,
+      dst_valid_o => local_osc_freq_valid_sync
     );
 
   -- Instantiate synchronizers for debug signals
@@ -525,7 +527,7 @@ begin
     SRTYPE       => "ASYNC")               -- Set/Reset type: "SYNC" or "ASYNC"
   port map(
     Q1 => open,          -- 1-bit output for positive edge of clock
-    Q2 => frame_delayed, -- 1-bit output for negative edge of clock
+    Q2 => frame_delayed_from_iddr, -- 1-bit output for negative edge of clock
     C  => clk_to_iddr,   -- 1-bit clock input
     CE => '1',           -- 1-bit clock enable input
     D  => frame_to_iddr, -- 1-bit DDR data input
@@ -558,8 +560,8 @@ begin
     data_sel_out    => open,
     m_axis_0_tdata  => data_preproc_counter,
     m_axis_0_tvalid => valid_preproc_counter,
-    s_axis_freq_config_tdata => ch_1_freq_sync,
-    s_axis_freq_config_tvalid => ch_1_freq_valid_sync,
+    s_axis_freq_config_tdata => local_osc_freq_sync,
+    s_axis_freq_config_tvalid => local_osc_freq_valid_sync,
     tready_osc_in   => tready_for_osc(0)
   );
 
@@ -593,12 +595,10 @@ begin
   );
 
   --process to register data_from_IDDR_FE to data_to_deserializer
-  process(clk_to_logic, async_rst_i)
+  process(clk_to_logic)
   begin
-    if async_rst_i = '1' then
-      data_to_des_RE <= (others => '0');
-      data_to_des_FE <= (others => '0');
-    elsif rising_edge(clk_to_logic) then
+    if rising_edge(clk_to_logic) then
+      frame_delayed_to_deser <= frame_delayed_from_iddr;
       data_to_des_RE <= data_from_IDDR_RE;
       data_to_des_FE <= data_from_IDDR_FE;
     end if;
@@ -663,7 +663,7 @@ begin
         rst_i     => async_rst_i,
         data_RE_i => data_to_des_RE(i),
         data_FE_i => data_to_des_FE(i),
-        frame_i   => frame_delayed,
+        frame_i   => frame_delayed_to_deser,
         data_o    => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
         d_valid_o => valid_from_deser(i)
       );
@@ -766,6 +766,13 @@ begin
     --Valid del mux and tready are the same signal
     valid_mux_data_source(i) <= tready_for_osc(i);
 
+    process (clk_260_mhz)
+    begin
+      if rising_edge(clk_260_mhz) then
+        ch_osc_out_ffs((32 * (i + 1) - 1) downto (32 * i)) <= ch_oscillator_output;
+      end if;
+    end process;
+
     --Aca debe hacerse un for para 5 beams
     ch_mixer_inst : ch_mixer
     port map(
@@ -774,7 +781,7 @@ begin
       s_axis_a_tvalid    => valid_band_preproc(i),
       s_axis_a_tdata     => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
       s_axis_b_tvalid    => valid_band_preproc(i),
-      s_axis_b_tdata     => ch_oscillator_output,
+      s_axis_b_tdata     => ch_osc_out_ffs((32 * (i + 1) - 1) downto (32 * i)),
       m_axis_dout_tvalid => valid_channel_preproc(i),
       m_axis_dout_tdata  => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i))
     );

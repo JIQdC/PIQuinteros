@@ -536,7 +536,7 @@ void ClientRun(Client_t* client)
     for (i = 0; i < 16; i++) debug_output(client->params->debug_output, i);
 
     //set downsampler threshold
-    downsampling_set(client->params->downsampler_tresh);
+    //downsampling_set(client->params->downsampler_tresh);
 
     switch (client->params->trigMode)
     {

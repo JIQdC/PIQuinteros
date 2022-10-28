@@ -25,8 +25,8 @@ entity eight_regs_block is
 		ch_3_freq_valid      : out std_logic;
 		ch_4_freq_data       : out std_logic_vector(31 downto 0);
 		ch_4_freq_valid      : out std_logic;
-		ch_5_freq_data       : out std_logic_vector(31 downto 0);
-		ch_5_freq_valid      : out std_logic;
+		local_osc_data       : out std_logic_vector(31 downto 0);
+		local_osc_valid      : out std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -129,8 +129,8 @@ architecture arch_imp of eight_regs_block is
 	signal ch_freq_3_valid_reg : std_logic;
 	signal ch_freq_4_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
 	signal ch_freq_4_valid_reg : std_logic;
-	signal ch_freq_5_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
-	signal ch_freq_5_valid_reg : std_logic;
+	signal local_osc_reg : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
+	signal local_osc_valid_reg : std_logic;
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
 	signal reg_data_out : std_logic_vector(C_S_AXI_DATA_WIDTH - 1 downto 0);
@@ -240,12 +240,12 @@ begin
 				ch_freq_2_reg <= (others => '0');
 				ch_freq_3_reg <= (others => '0');
 				ch_freq_4_reg <= (others => '0');
-				ch_freq_5_reg <= (others => '0');
+				local_osc_reg <= (others => '0');
 				ch_freq_1_valid_reg <= '0';
 				ch_freq_2_valid_reg <= '0';
 				ch_freq_3_valid_reg <= '0';
 				ch_freq_4_valid_reg <= '0';
-				ch_freq_5_valid_reg <= '0';
+				local_osc_valid_reg <= '0';
 			else
 				loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 				if (slv_reg_wren = '1') then
@@ -315,16 +315,16 @@ begin
 								if (S_AXI_WSTRB(byte_index) = '1') then
 									-- Respective byte enables are asserted as per write strobes
 									-- slave registor 7
-									ch_freq_5_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
+									local_osc_reg(byte_index * 8 + 7 downto byte_index * 8) <= S_AXI_WDATA(byte_index * 8 + 7 downto byte_index * 8);
 								end if;
 							end loop;
-							ch_freq_5_valid_reg <= '1';
+							local_osc_valid_reg <= '1';
 						when others =>
 							ch_freq_1_valid_reg <= '0';
 							ch_freq_2_valid_reg <= '0';
 							ch_freq_3_valid_reg <= '0';
 							ch_freq_4_valid_reg <= '0';
-							ch_freq_5_valid_reg <= '0';
+							local_osc_valid_reg <= '0';
 					end case;
 				end if;
 			end if;
@@ -412,7 +412,7 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid);
 
-	process (slv_reg0, fifo_input_mux_reg, data_source_selector_reg, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, ch_freq_5_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+	process (slv_reg0, fifo_input_mux_reg, data_source_selector_reg, ch_freq_1_reg, ch_freq_2_reg, ch_freq_3_reg, ch_freq_4_reg, local_osc_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
 		variable loc_addr : std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
 	begin
 		-- Address decoding for reading registers
@@ -433,7 +433,7 @@ begin
 			when b"110" =>
 				reg_data_out <= ch_freq_4_reg;
 			when b"111" =>
-				reg_data_out <= ch_freq_5_reg;
+				reg_data_out <= local_osc_reg;
 			when others =>
 				reg_data_out <= (others => '0');
 		end case;
@@ -467,8 +467,8 @@ begin
 	ch_3_freq_valid <= ch_freq_3_valid_reg;
 	ch_4_freq_data <= ch_freq_4_reg(31 downto 0);
 	ch_4_freq_valid <= ch_freq_4_valid_reg;
-	ch_5_freq_data <= ch_freq_5_reg(31 downto 0);
-	ch_5_freq_valid <= ch_freq_5_valid_reg;
+	local_osc_data <= local_osc_reg(31 downto 0);
+	local_osc_valid <= local_osc_valid_reg;
 	-- User logic ends
 
 end arch_imp;
