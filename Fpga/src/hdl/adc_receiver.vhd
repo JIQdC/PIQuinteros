@@ -139,29 +139,12 @@ architecture arch of adc_receiver is
     );
   end component;
 
-    -- component band_processing_bd_0
-    --   port (
-    --     adc_clk_0       : in std_logic;
-    --     adc_rst_ni_0    : in std_logic;
-    --     band_mixer_data_o : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-    --     band_mixer_valid_o : OUT STD_LOGIC;
-    --     band_osc_in     : in std_logic_vector(31 downto 0);
-    --     control_in_0    : in std_logic_vector(1 downto 0);
-    --     data_adc        : in std_logic_vector(13 downto 0);
-    --     data_counter    : in std_logic_vector(15 downto 0);
-    --     data_local_osc  : in std_logic_vector(15 downto 0);
-    --     data_out        : out std_logic_vector(31 downto 0);
-    --     valid_adc       : in std_logic;
-    --     valid_counter   : in std_logic;
-    --     valid_local_osc : in std_logic;
-    --     valid_mux_out   : out std_logic;
-    --     valid_out       : out std_logic
-    --   );
-    -- end component;
     COMPONENT band_processing_bd
     PORT (
       adc_clk_0 : IN STD_LOGIC;
       adc_rst_ni_0 : IN STD_LOGIC;
+      band_mixer_data_o : out STD_LOGIC_VECTOR ( 31 downto 0 );
+      band_mixer_valid_o : out STD_LOGIC;
       band_osc_in : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
       control_in_0 : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
       data_adc : IN STD_LOGIC_VECTOR(13 DOWNTO 0);
@@ -242,9 +225,8 @@ architecture arch of adc_receiver is
   signal ch_oscillator_output : std_logic_vector(31 downto 0);
   signal ch_osc_out_ffs : std_logic_vector(32 * N - 1 downto 0);
 
-  -- Not interested in data_band_mixer anymore
-  -- signal data_band_mixer_debug : std_logic_vector(32 * N - 1 downto 0);
-  -- signal valid_band_mixer_debug : std_logic_vector((N - 1) downto 0);
+  signal data_band_mixer_debug : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_band_mixer_debug : std_logic_vector((N - 1) downto 0);
   signal data_mux_data_source : std_logic_vector(16 * N - 1 downto 0);
   signal valid_mux_data_source : std_logic_vector((N - 1) downto 0);
   
@@ -726,24 +708,6 @@ begin
 
     -- Band preprocessing: Multiplies and filters
 
-    -- band_processing_bd_inst : band_processing_bd_0
-    -- port map(
-    --   adc_clk_0       => clk_260_mhz,
-    --   adc_rst_ni_0    => async_rst_n,
-    --   band_osc_in     => data_band_osc,
-    --   control_in_0    => data_source_sel_sync,
-    --   data_adc        => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
-    --   data_counter    => data_preproc_counter,
-    --   data_local_osc  => data_local_osc,
-    --   data_out        => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
-    --   valid_adc       => valid_from_debug(i),
-    --   valid_counter   => valid_preproc_counter,
-    --   valid_local_osc => valid_local_osc,
-    --   band_mixer_data_o => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
-    --   band_mixer_valid_o => valid_band_mixer_debug(i),
-    --   valid_mux_out   => tready_for_osc(i),
-    --   valid_out       => valid_band_preproc(i)
-    -- );
     band_processing_bd_inst : band_processing_bd
     port map(
       adc_clk_0       => clk_260_mhz,
@@ -757,8 +721,8 @@ begin
       valid_adc       => valid_from_debug(i),
       valid_counter   => valid_preproc_counter,
       valid_local_osc => valid_local_osc,
-      -- band_mixer_data_o => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
-      -- band_mixer_valid_o => valid_band_mixer_debug(i),
+      band_mixer_data_o => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
+      band_mixer_valid_o => valid_band_mixer_debug(i),
       data_mux_out    => data_mux_data_source((16 * (i + 1) - 1) downto (16 * i)),
       valid_mux_out   => tready_for_osc(i),
       valid_out       => valid_band_preproc(i)
@@ -816,6 +780,12 @@ begin
         -- Data source mux
         data_mux_data_source_i         => data_mux_data_source((16 * (i + 1) - 1) downto (16 * i)),
         data_mux_data_source_valid_i   => valid_mux_data_source(i),
+        -- Band mixer
+        data_band_mixer_i         => data_band_mixer_debug((32 * (i + 1) - 1) downto (32 * i)),
+        data_band_mixer_valid_i   => valid_band_mixer_debug(i),
+        -- Band filter
+        data_band_filter_i         => data_band_preproc((32 * (i + 1) - 1) downto (32 * i)),
+        data_band_filter_valid_i   => valid_band_preproc(i),
         -- Channel mixer    
         data_channel_mixer_i => data_channel_preproc((32 * (i + 1) - 1) downto (32 * i)),
         data_channel_mixer_valid_i => valid_channel_preproc(i),

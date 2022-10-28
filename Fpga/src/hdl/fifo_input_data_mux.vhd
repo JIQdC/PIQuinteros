@@ -26,6 +26,14 @@ entity fifo_input_data_mux is
     -- Data source mux
     data_mux_data_source_i   : in std_logic_vector(15 downto 0);
     data_mux_data_source_valid_i : in std_logic;
+
+    -- Data band mixer
+    data_band_mixer_i   : in std_logic_vector(31 downto 0);
+    data_band_mixer_valid_i : in std_logic;
+
+    -- Data band filter
+    data_band_filter_i   : in std_logic_vector(31 downto 0);
+    data_band_filter_valid_i : in std_logic;
     
     -- Channel mixer for debug
     data_channel_mixer_i   : in std_logic_vector(31 downto 0);
@@ -80,7 +88,17 @@ begin
             data_o(31 downto 0 ) <= data_mux_data_source_i(15 downto 0) & data_mux_data_source_i(15 downto 0);
             data_valid_o <= '1';
           end if;
-        when "101" => -- channel mixer
+        when "101" => -- band mixer
+          if (data_band_mixer_valid_i = '1') then
+            data_o <= data_band_mixer_i;
+            data_valid_o <= '1';
+          end if;
+        when "110" => --band filter
+          if (data_band_filter_valid_i = '1') then
+            data_o <= data_band_filter_i;
+            data_valid_o <= '1';
+          end if;
+        when "111" => --channel mixer
           if (data_channel_mixer_valid_i = '1') then
             data_o <= data_channel_mixer_i;
             data_valid_o <= '1';
