@@ -36,7 +36,7 @@ Comments:
 
 // Data interface register addresses
 #define DATA_BASE_ADDR      0x43C00000
-#define PREPROC_BASE_ADDR   0x40000000
+#define PREPROC_BASE_ADDR   0x43C30000
 #define RAW_DATA_OFF        (0x01<<2)
 #define COREID_OFF          (0x00<<2)
 #define ASYNCRST_OFF        (0x01<<2)

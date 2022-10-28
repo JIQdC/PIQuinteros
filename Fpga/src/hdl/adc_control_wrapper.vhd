@@ -35,87 +35,85 @@ entity adc_control_wrapper is
     N_tr_b           : integer                       := 10           --bits for downsampler treshold register
   );
   port (
+    ps_clk_i                : in std_logic;
+    ps_rst_n_i              : in std_logic;
     --AXI interface
-    S_AXI_ACLK            : in std_logic;
-    S_AXI_ARESETN         : in std_logic;
-    S_AXI_AWADDR          : in std_logic_vector(10 - 1 downto 0);
-    S_AXI_AWPROT          : in std_logic_vector(2 downto 0);
-    S_AXI_AWVALID         : in std_logic;
-    S_AXI_AWREADY         : out std_logic;
-    S_AXI_WDATA           : in std_logic_vector(32 - 1 downto 0);
-    S_AXI_WSTRB           : in std_logic_vector((32/8) - 1 downto 0);
-    S_AXI_WVALID          : in std_logic;
-    S_AXI_WREADY          : out std_logic;
-    S_AXI_BRESP           : out std_logic_vector(1 downto 0);
-    S_AXI_BVALID          : out std_logic;
-    S_AXI_BREADY          : in std_logic;
-    S_AXI_ARADDR          : in std_logic_vector(10 - 1 downto 0);
-    S_AXI_ARPROT          : in std_logic_vector(2 downto 0);
-    S_AXI_ARVALID         : in std_logic;
-    S_AXI_ARREADY         : out std_logic;
-    S_AXI_RDATA           : out std_logic_vector(32 - 1 downto 0);
-    S_AXI_RRESP           : out std_logic_vector(1 downto 0);
-    S_AXI_RVALID          : out std_logic;
-    S_AXI_RREADY          : in std_logic;
+    s_axi4l_control_awaddr  : in std_logic_vector(10 - 1 downto 0);
+    s_axi4l_control_awprot  : in std_logic_vector(2 downto 0);
+    s_axi4l_control_awvalid : in std_logic;
+    s_axi4l_control_awready : out std_logic;
+    s_axi4l_control_wdata   : in std_logic_vector(32 - 1 downto 0);
+    s_axi4l_control_wstrb   : in std_logic_vector((32/8) - 1 downto 0);
+    s_axi4l_control_wvalid  : in std_logic;
+    s_axi4l_control_wready  : out std_logic;
+    s_axi4l_control_bresp   : out std_logic_vector(1 downto 0);
+    s_axi4l_control_bvalid  : out std_logic;
+    s_axi4l_control_bready  : in std_logic;
+    s_axi4l_control_araddr  : in std_logic_vector(10 - 1 downto 0);
+    s_axi4l_control_arprot  : in std_logic_vector(2 downto 0);
+    s_axi4l_control_arvalid : in std_logic;
+    s_axi4l_control_arready : out std_logic;
+    s_axi4l_control_rdata   : out std_logic_vector(32 - 1 downto 0);
+    s_axi4l_control_rresp   : out std_logic_vector(1 downto 0);
+    s_axi4l_control_rvalid  : out std_logic;
+    s_axi4l_control_rready  : in std_logic;
 
     --AXI interface for preprocessing regs
-    S_AXI_PREPROC_ACLK    : in std_logic;
-    S_AXI_PREPROC_ARESETN : in std_logic;
-    S_AXI_PREPROC_AWADDR  : in std_logic_vector(5 - 1 downto 0);
-    S_AXI_PREPROC_AWPROT  : in std_logic_vector(2 downto 0);
-    S_AXI_PREPROC_AWVALID : in std_logic;
-    S_AXI_PREPROC_AWREADY : out std_logic;
-    S_AXI_PREPROC_WDATA   : in std_logic_vector(32 - 1 downto 0);
-    S_AXI_PREPROC_WSTRB   : in std_logic_vector((32/8) - 1 downto 0);
-    S_AXI_PREPROC_WVALID  : in std_logic;
-    S_AXI_PREPROC_WREADY  : out std_logic;
-    S_AXI_PREPROC_BRESP   : out std_logic_vector(1 downto 0);
-    S_AXI_PREPROC_BVALID  : out std_logic;
-    S_AXI_PREPROC_BREADY  : in std_logic;
-    S_AXI_PREPROC_ARADDR  : in std_logic_vector(5 - 1 downto 0);
-    S_AXI_PREPROC_ARPROT  : in std_logic_vector(2 downto 0);
-    S_AXI_PREPROC_ARVALID : in std_logic;
-    S_AXI_PREPROC_ARREADY : out std_logic;
-    S_AXI_PREPROC_RDATA   : out std_logic_vector(32 - 1 downto 0);
-    S_AXI_PREPROC_RRESP   : out std_logic_vector(1 downto 0);
-    S_AXI_PREPROC_RVALID  : out std_logic;
-    S_AXI_PREPROC_RREADY  : in std_logic;
+    s_axi4l_preproc_awaddr  : in std_logic_vector(5 - 1 downto 0);
+    s_axi4l_preproc_awprot  : in std_logic_vector(2 downto 0);
+    s_axi4l_preproc_awvalid : in std_logic;
+    s_axi4l_preproc_awready : out std_logic;
+    s_axi4l_preproc_wdata   : in std_logic_vector(32 - 1 downto 0);
+    s_axi4l_preproc_wstrb   : in std_logic_vector((32/8) - 1 downto 0);
+    s_axi4l_preproc_wvalid  : in std_logic;
+    s_axi4l_preproc_wready  : out std_logic;
+    s_axi4l_preproc_bresp   : out std_logic_vector(1 downto 0);
+    s_axi4l_preproc_bvalid  : out std_logic;
+    s_axi4l_preproc_bready  : in std_logic;
+    s_axi4l_preproc_araddr  : in std_logic_vector(5 - 1 downto 0);
+    s_axi4l_preproc_arprot  : in std_logic_vector(2 downto 0);
+    s_axi4l_preproc_arvalid : in std_logic;
+    s_axi4l_preproc_arready : out std_logic;
+    s_axi4l_preproc_rdata   : out std_logic_vector(32 - 1 downto 0);
+    s_axi4l_preproc_rresp   : out std_logic_vector(1 downto 0);
+    s_axi4l_preproc_rvalid  : out std_logic;
+    s_axi4l_preproc_rready  : in std_logic;
 
     --external reset for peripherals
-    rst_peripherals_i     : in std_logic;
+    rst_peripherals_i       : in std_logic;
 
     --ADC signals
-    adc_DCO1_p_i          : in std_logic;
-    adc_DCO1_n_i          : in std_logic;
-    adc_DCO2_p_i          : in std_logic;
-    adc_DCO2_n_i          : in std_logic;
-    adc_FCO1_p_i          : in std_logic;
-    adc_FCO1_n_i          : in std_logic;
-    adc_FCO2_p_i          : in std_logic;
-    adc_FCO2_n_i          : in std_logic;
-    adc_data_p_i          : in std_logic_vector((N - 1) downto 0);
-    adc_data_n_i          : in std_logic_vector((N - 1) downto 0);
-    adc_FCO1lck_o         : out std_logic;
-    adc_FCO2lck_o         : out std_logic;
+    adc_DCO1_p_i            : in std_logic;
+    adc_DCO1_n_i            : in std_logic;
+    adc_DCO2_p_i            : in std_logic;
+    adc_DCO2_n_i            : in std_logic;
+    adc_FCO1_p_i            : in std_logic;
+    adc_FCO1_n_i            : in std_logic;
+    adc_FCO2_p_i            : in std_logic;
+    adc_FCO2_n_i            : in std_logic;
+    adc_data_p_i            : in std_logic_vector((N - 1) downto 0);
+    adc_data_n_i            : in std_logic_vector((N - 1) downto 0);
+    adc_FCO1lck_o           : out std_logic;
+    adc_FCO2lck_o           : out std_logic;
 
     --downsampler control signals
-    treshold_value_i      : in std_logic_vector((N_tr_b - 1) downto 0);
-    treshold_ld_i         : in std_logic;
+    treshold_value_i        : in std_logic_vector((N_tr_b - 1) downto 0);
+    treshold_ld_i           : in std_logic;
 
     --delay control signals
-    delay_locked_o        : out std_logic;
-    delay_data_ld_i       : in std_logic_vector((N - 1) downto 0);
-    delay_data_input_i    : in std_logic_vector((5 * N - 1) downto 0);
-    delay_data_output_o   : out std_logic_vector((5 * N - 1) downto 0);
-    delay_frame1_ld_i     : in std_logic;
-    delay_frame1_input_i  : in std_logic_vector((5 - 1) downto 0);
-    delay_frame1_output_o : out std_logic_vector((5 - 1) downto 0);
-    delay_frame2_ld_i     : in std_logic;
-    delay_frame2_input_i  : in std_logic_vector((5 - 1) downto 0);
-    delay_frame2_output_o : out std_logic_vector((5 - 1) downto 0);
+    delay_locked_o          : out std_logic;
+    delay_data_ld_i         : in std_logic_vector((N - 1) downto 0);
+    delay_data_input_i      : in std_logic_vector((5 * N - 1) downto 0);
+    delay_data_output_o     : out std_logic_vector((5 * N - 1) downto 0);
+    delay_frame1_ld_i       : in std_logic;
+    delay_frame1_input_i    : in std_logic_vector((5 - 1) downto 0);
+    delay_frame1_output_o   : out std_logic_vector((5 - 1) downto 0);
+    delay_frame2_ld_i       : in std_logic;
+    delay_frame2_input_i    : in std_logic_vector((5 - 1) downto 0);
+    delay_frame2_output_o   : out std_logic_vector((5 - 1) downto 0);
 
     --external trigger signal
-    ext_trigger_i         : in std_logic
+    ext_trigger_i           : in std_logic
   );
 end adc_control_wrapper;
 
@@ -173,8 +171,8 @@ architecture arch of adc_control_wrapper is
   signal ch_3_valid : std_logic := '0';
   signal ch_4_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_4_valid : std_logic := '0';
-  signal ch_5_freq : std_logic_vector(31 downto 0) := (others => '0');
-  signal ch_5_valid : std_logic := '0';
+  signal local_osc : std_logic_vector(31 downto 0) := (others => '0');
+  signal local_osc_valid : std_logic := '0';
 
 begin
 
@@ -185,27 +183,27 @@ begin
       FIFO_EMPTY_VAL   => FIFO_EMPTY_VAL
     )
     port map(
-      S_AXI_ACLK      => S_AXI_ACLK,    --: in std_logic;
-      S_AXI_ARESETN   => S_AXI_ARESETN, -- in std_logic;
-      S_AXI_AWADDR    => S_AXI_AWADDR,  --: in std_logic_vector(10-1 downto 0);
-      S_AXI_AWPROT    => S_AXI_AWPROT,  --: in std_logic_vector(2 downto 0);
-      S_AXI_AWVALID   => S_AXI_AWVALID, --: in std_logic;
-      S_AXI_AWREADY   => S_AXI_AWREADY, -- : out std_logic;
-      S_AXI_WDATA     => S_AXI_WDATA,
-      S_AXI_WSTRB     => S_AXI_WSTRB,
-      S_AXI_WVALID    => S_AXI_WVALID,
-      S_AXI_WREADY    => S_AXI_WREADY,
-      S_AXI_BRESP     => S_AXI_BRESP,
-      S_AXI_BVALID    => S_AXI_BVALID,
-      S_AXI_BREADY    => S_AXI_BREADY,
-      S_AXI_ARADDR    => S_AXI_ARADDR,
-      S_AXI_ARPROT    => S_AXI_ARPROT,
-      S_AXI_ARVALID   => S_AXI_ARVALID,
-      S_AXI_ARREADY   => S_AXI_ARREADY,
-      S_AXI_RDATA     => S_AXI_RDATA,
-      S_AXI_RRESP     => S_AXI_RRESP,
-      S_AXI_RVALID    => S_AXI_RVALID,
-      S_AXI_RREADY    => S_AXI_RREADY,
+      S_AXI_ACLK      => ps_clk_i,                --: in std_logic;
+      S_AXI_ARESETN   => ps_rst_n_i,              -- in std_logic;
+      S_AXI_AWADDR    => s_axi4l_control_awaddr,  --: in std_logic_vector(10-1 downto 0);
+      S_AXI_AWPROT    => s_axi4l_control_awprot,  --: in std_logic_vector(2 downto 0);
+      S_AXI_AWVALID   => s_axi4l_control_awvalid, --: in std_logic;
+      S_AXI_AWREADY   => s_axi4l_control_awready, -- : out std_logic;
+      S_AXI_WDATA     => s_axi4l_control_wdata,
+      S_AXI_WSTRB     => s_axi4l_control_wstrb,
+      S_AXI_WVALID    => s_axi4l_control_wvalid,
+      S_AXI_WREADY    => s_axi4l_control_wready,
+      S_AXI_BRESP     => s_axi4l_control_bresp,
+      S_AXI_BVALID    => s_axi4l_control_bvalid,
+      S_AXI_BREADY    => s_axi4l_control_bready,
+      S_AXI_ARADDR    => s_axi4l_control_araddr,
+      S_AXI_ARPROT    => s_axi4l_control_arprot,
+      S_AXI_ARVALID   => s_axi4l_control_arvalid,
+      S_AXI_ARREADY   => s_axi4l_control_arready,
+      S_AXI_RDATA     => s_axi4l_control_rdata,
+      S_AXI_RRESP     => s_axi4l_control_rresp,
+      S_AXI_RVALID    => s_axi4l_control_rvalid,
+      S_AXI_RREADY    => s_axi4l_control_rready,
       async_rst_o     => async_rst_from_AXI,
       fifo_rst_o      => fifo_rst_from_AXI,
       debug_enable_o  => debug_enable_from_AXI,
@@ -222,33 +220,30 @@ begin
       CORE_CONTROL => USER_CORE_ID_VER
     )
     port map(
-      S_AXI_ACLK           => S_AXI_PREPROC_ACLK,
-      S_AXI_ARESETN        => S_AXI_PREPROC_ARESETN,
-      S_AXI_AWADDR         => S_AXI_PREPROC_AWADDR,
-      S_AXI_AWPROT         => S_AXI_PREPROC_AWPROT,
-      S_AXI_AWVALID        => S_AXI_PREPROC_AWVALID,
-      S_AXI_AWREADY        => S_AXI_PREPROC_AWREADY,
-      S_AXI_WDATA          => S_AXI_PREPROC_WDATA,
-      S_AXI_WSTRB          => S_AXI_PREPROC_WSTRB,
-      S_AXI_WVALID         => S_AXI_PREPROC_WVALID,
-      S_AXI_WREADY         => S_AXI_PREPROC_WREADY,
-      S_AXI_BRESP          => S_AXI_PREPROC_BRESP,
-      S_AXI_BVALID         => S_AXI_PREPROC_BVALID,
-      S_AXI_BREADY         => S_AXI_PREPROC_BREADY,
-      S_AXI_ARADDR         => S_AXI_PREPROC_ARADDR,
-      S_AXI_ARPROT         => S_AXI_PREPROC_ARPROT,
-      S_AXI_ARVALID        => S_AXI_PREPROC_ARVALID,
-      S_AXI_ARREADY        => S_AXI_PREPROC_ARREADY,
-      S_AXI_RDATA          => S_AXI_PREPROC_RDATA,
-      S_AXI_RRESP          => S_AXI_PREPROC_RRESP,
-      S_AXI_RVALID         => S_AXI_PREPROC_RVALID,
-      S_AXI_RREADY         => S_AXI_PREPROC_RREADY,
+      S_AXI_ACLK           => ps_clk_i,
+      S_AXI_ARESETN        => ps_rst_n_i,
+      S_AXI_AWADDR         => s_axi4l_preproc_awaddr,
+      S_AXI_AWPROT         => s_axi4l_preproc_awprot,
+      S_AXI_AWVALID        => s_axi4l_preproc_awvalid,
+      S_AXI_AWREADY        => s_axi4l_preproc_awready,
+      S_AXI_WDATA          => s_axi4l_preproc_wdata,
+      S_AXI_WSTRB          => s_axi4l_preproc_wstrb,
+      S_AXI_WVALID         => s_axi4l_preproc_wvalid,
+      S_AXI_WREADY         => s_axi4l_preproc_wready,
+      S_AXI_BRESP          => s_axi4l_preproc_bresp,
+      S_AXI_BVALID         => s_axi4l_preproc_bvalid,
+      S_AXI_BREADY         => s_axi4l_preproc_bready,
+      S_AXI_ARADDR         => s_axi4l_preproc_araddr,
+      S_AXI_ARPROT         => s_axi4l_preproc_arprot,
+      S_AXI_ARVALID        => s_axi4l_preproc_arvalid,
+      S_AXI_ARREADY        => s_axi4l_preproc_arready,
+      S_AXI_RDATA          => s_axi4l_preproc_rdata,
+      S_AXI_RRESP          => s_axi4l_preproc_rresp,
+      S_AXI_RVALID         => s_axi4l_preproc_rvalid,
+      S_AXI_RREADY         => s_axi4l_preproc_rready,
       fifo_input_mux_o     => fifo_input_mux_sel,
       data_source_selector => data_source_sel,
 
-      --TODO: Hacer CDC para estas señales
-      --Como el AXI_clk es de 200 MHz, y el preproc es 260 MHz, no debería haber problema
-      --De todas formas, hay que hacerlo
       ch_1_freq_data       => ch_1_freq,
       ch_1_freq_valid      => ch_1_valid,
       ch_2_freq_data       => ch_2_freq,
@@ -257,8 +252,8 @@ begin
       ch_3_freq_valid      => ch_3_valid,
       ch_4_freq_data       => ch_4_freq,
       ch_4_freq_valid      => ch_4_valid,
-      ch_5_freq_data       => ch_5_freq,
-      ch_5_freq_valid      => ch_5_valid
+      local_osc_data       => local_osc,
+      local_osc_valid      => local_osc_valid
     );
 
   --CRC block
@@ -271,7 +266,7 @@ begin
   BUFG_inst_IDELAYCTRL : BUFG
   port map(
     O => delay_refclk, -- 1-bit output: Clock output
-    I => S_AXI_ACLK    -- 1-bit input: Clock input
+    I => ps_clk_i      -- 1-bit input: Clock input
   );
 
   -- IDELAYCTRL: IDELAYE2/ODELAYE2 Tap Delay Value Control
@@ -292,49 +287,49 @@ begin
       N_tr_b  => N_tr_b
     )
     port map(
-      fpga_clk_i           => S_AXI_ACLK,
-      async_rst_i          => debug_rst,
+      fpga_clk_i             => ps_clk_i,
+      async_rst_i            => debug_rst,
 
-      adc_clk_p_i          => adc_DCO2_p_i,
-      adc_clk_n_i          => adc_DCO2_n_i,
-      adc_frame_p_i        => adc_FCO2_p_i,
-      adc_frame_n_i        => adc_FCO2_n_i,
-      adc_data_p_i         => adc_data_to_r1_p,
-      adc_data_n_i         => adc_data_to_r1_n,
-      adc_FCOlck_o         => adc_FCO2lck_o,
+      adc_clk_p_i            => adc_DCO2_p_i,
+      adc_clk_n_i            => adc_DCO2_n_i,
+      adc_frame_p_i          => adc_FCO2_p_i,
+      adc_frame_n_i          => adc_FCO2_n_i,
+      adc_data_p_i           => adc_data_to_r1_p,
+      adc_data_n_i           => adc_data_to_r1_n,
+      adc_FCOlck_o           => adc_FCO2lck_o,
 
-      treshold_value_i     => treshold_value_i,
-      treshold_ld_i        => treshold_ld_i,
+      treshold_value_i       => treshold_value_i,
+      treshold_ld_i          => treshold_ld_i,
 
-      debug_enable_i       => debug_enable_from_AXI,
-      debug_control_i      => debug_control_to_r1,
-      debug_w2w1_i         => debug_w2w1_to_r1,
+      debug_enable_i         => debug_enable_from_AXI,
+      debug_control_i        => debug_control_to_r1,
+      debug_w2w1_i           => debug_w2w1_to_r1,
 
-      fifo_rst_i           => fifo_rst,
-      fifo_rd_en_i         => fifo_rd_en_to_r1,
-      fifo_out_o           => fifo_out_from_r1,
+      fifo_rst_i             => fifo_rst,
+      fifo_rd_en_i           => fifo_rd_en_to_r1,
+      fifo_out_o             => fifo_out_from_r1,
 
-      delay_refclk_i       => delay_refclk,
-      delay_data_ld_i      => delay_data_ld_to_r1,
-      delay_data_input_i   => delay_data_input_to_r1,
-      delay_data_output_o  => delay_data_output_from_r1,
-      delay_frame_ld_i     => delay_frame1_ld_i,
-      delay_frame_input_i  => delay_frame1_input_i,
-      delay_frame_output_o => delay_frame1_output_o,
+      delay_refclk_i         => delay_refclk,
+      delay_data_ld_i        => delay_data_ld_to_r1,
+      delay_data_input_i     => delay_data_input_to_r1,
+      delay_data_output_o    => delay_data_output_from_r1,
+      delay_frame_ld_i       => delay_frame1_ld_i,
+      delay_frame_input_i    => delay_frame1_input_i,
+      delay_frame_output_o   => delay_frame1_output_o,
 
       --preprocessing signals
-      fifo_input_mux_sel_i => fifo_input_mux_sel,
-      data_source_sel_i    => data_source_sel,
-      ch_1_freq_i          => ch_1_freq,
-      ch_1_freq_valid_i    => ch_1_valid,
-      ch_2_freq_i          => ch_2_freq,
-      ch_2_freq_valid_i    => ch_2_valid,
-      ch_3_freq_i          => ch_3_freq,
-      ch_3_freq_valid_i    => ch_3_valid,
-      ch_4_freq_i          => ch_4_freq,
-      ch_4_freq_valid_i    => ch_4_valid,
-      ch_5_freq_i          => ch_5_freq,
-      ch_5_freq_valid_i    => ch_5_valid
+      fifo_input_mux_sel_i   => fifo_input_mux_sel,
+      data_source_sel_i      => data_source_sel,
+      ch_1_freq_i            => ch_1_freq,
+      ch_1_freq_valid_i      => ch_1_valid,
+      ch_2_freq_i            => ch_2_freq,
+      ch_2_freq_valid_i      => ch_2_valid,
+      ch_3_freq_i            => ch_3_freq,
+      ch_3_freq_valid_i      => ch_3_valid,
+      ch_4_freq_i            => ch_4_freq,
+      ch_4_freq_valid_i      => ch_4_valid,
+      local_osc_freq_i       => local_osc,
+      local_osc_freq_valid_i => local_osc_valid
     );
 
   --receiver for bank13 signals
@@ -346,49 +341,49 @@ begin
       N_tr_b  => N_tr_b
     )
     port map(
-      fpga_clk_i           => S_AXI_ACLK,
-      async_rst_i          => debug_rst,
+      fpga_clk_i             => ps_clk_i,
+      async_rst_i            => debug_rst,
 
-      adc_clk_p_i          => adc_DCO1_p_i,
-      adc_clk_n_i          => adc_DCO1_n_i,
-      adc_frame_p_i        => adc_FCO1_p_i,
-      adc_frame_n_i        => adc_FCO1_n_i,
-      adc_data_p_i         => adc_data_to_r2_p,
-      adc_data_n_i         => adc_data_to_r2_n,
-      adc_FCOlck_o         => adc_FCO1lck_o,
+      adc_clk_p_i            => adc_DCO1_p_i,
+      adc_clk_n_i            => adc_DCO1_n_i,
+      adc_frame_p_i          => adc_FCO1_p_i,
+      adc_frame_n_i          => adc_FCO1_n_i,
+      adc_data_p_i           => adc_data_to_r2_p,
+      adc_data_n_i           => adc_data_to_r2_n,
+      adc_FCOlck_o           => adc_FCO1lck_o,
 
-      treshold_value_i     => treshold_value_i,
-      treshold_ld_i        => treshold_ld_i,
+      treshold_value_i       => treshold_value_i,
+      treshold_ld_i          => treshold_ld_i,
 
-      debug_enable_i       => debug_enable_from_AXI,
-      debug_control_i      => debug_control_to_r2,
-      debug_w2w1_i         => debug_w2w1_to_r2,
+      debug_enable_i         => debug_enable_from_AXI,
+      debug_control_i        => debug_control_to_r2,
+      debug_w2w1_i           => debug_w2w1_to_r2,
 
-      fifo_rst_i           => fifo_rst,
-      fifo_rd_en_i         => fifo_rd_en_to_r2,
-      fifo_out_o           => fifo_out_from_r2,
+      fifo_rst_i             => fifo_rst,
+      fifo_rd_en_i           => fifo_rd_en_to_r2,
+      fifo_out_o             => fifo_out_from_r2,
 
-      delay_refclk_i       => delay_refclk,
-      delay_data_ld_i      => delay_data_ld_to_r2,
-      delay_data_input_i   => delay_data_input_to_r2,
-      delay_data_output_o  => delay_data_output_from_r2,
-      delay_frame_ld_i     => delay_frame2_ld_i,
-      delay_frame_input_i  => delay_frame2_input_i,
-      delay_frame_output_o => delay_frame2_output_o,
+      delay_refclk_i         => delay_refclk,
+      delay_data_ld_i        => delay_data_ld_to_r2,
+      delay_data_input_i     => delay_data_input_to_r2,
+      delay_data_output_o    => delay_data_output_from_r2,
+      delay_frame_ld_i       => delay_frame2_ld_i,
+      delay_frame_input_i    => delay_frame2_input_i,
+      delay_frame_output_o   => delay_frame2_output_o,
 
       --preprocessing signals
-      fifo_input_mux_sel_i => fifo_input_mux_sel,
-      data_source_sel_i    => data_source_sel,
-      ch_1_freq_i          => ch_1_freq,
-      ch_1_freq_valid_i    => ch_1_valid,
-      ch_2_freq_i          => ch_2_freq,
-      ch_2_freq_valid_i    => ch_2_valid,
-      ch_3_freq_i          => ch_3_freq,
-      ch_3_freq_valid_i    => ch_3_valid,
-      ch_4_freq_i          => ch_4_freq,
-      ch_4_freq_valid_i    => ch_4_valid,
-      ch_5_freq_i          => ch_5_freq,
-      ch_5_freq_valid_i    => ch_5_valid
+      fifo_input_mux_sel_i   => fifo_input_mux_sel,
+      data_source_sel_i      => data_source_sel,
+      ch_1_freq_i            => ch_1_freq,
+      ch_1_freq_valid_i      => ch_1_valid,
+      ch_2_freq_i            => ch_2_freq,
+      ch_2_freq_valid_i      => ch_2_valid,
+      ch_3_freq_i            => ch_3_freq,
+      ch_3_freq_valid_i      => ch_3_valid,
+      ch_4_freq_i            => ch_4_freq,
+      ch_4_freq_valid_i      => ch_4_valid,
+      local_osc_freq_i       => local_osc,
+      local_osc_freq_valid_i => local_osc_valid
     );
 
   --reset handling

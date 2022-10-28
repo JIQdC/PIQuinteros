@@ -22,7 +22,7 @@ Comments:
 #include "AXI_control.h"
 
 // AXI SPI addresses
-#define SPI_BASE_ADDR 0x83C00000
+#define SPI_BASE_ADDR 0x81E00000
 #define SPI_SRR_OFF 0X40
 #define SPI_CR_OFF 0X60
 #define SPI_SR_OFF 0X64
