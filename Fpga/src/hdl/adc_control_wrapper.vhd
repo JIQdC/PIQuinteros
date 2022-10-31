@@ -160,6 +160,18 @@ architecture arch of adc_control_wrapper is
   signal delay_data_input_to_r2, delay_data_output_from_r2 : std_logic_vector((5 * N2 - 1) downto 0) := (others => '0');
   signal delay_refclk : std_logic;
 
+  --260 MHz clock
+  signal clk_260_mhz : std_logic;
+  --data from adcs
+  signal data_adc_1 : std_logic_vector(RES_ADC * N1 - 1 downto 0);
+  signal valid_adc_1 : std_logic_vector(N1 - 1 downto 0);
+  signal data_adc_2 : std_logic_vector(RES_ADC * N2 - 1 downto 0);
+  signal valid_adc_2 : std_logic_vector(N2 - 1 downto 0);
+  --data to adcs
+  signal data_1_from_data_handler : std_logic_vector(32 * N1 - 1 downto 0);
+  signal valid_1_from_data_handler : std_logic_vector(N1 - 1 downto 0);
+  signal data_2_from_data_handler : std_logic_vector(32 * N2 - 1 downto 0);
+  signal valid_2_from_data_handler : std_logic_vector(N2 - 1 downto 0);
   --preprocessing signals
   signal fifo_input_mux_sel : std_logic_vector(2 downto 0);
   signal data_source_sel : std_logic_vector(1 downto 0) := (others => '0');
@@ -287,49 +299,44 @@ begin
       N_tr_b  => N_tr_b
     )
     port map(
-      fpga_clk_i             => ps_clk_i,
-      async_rst_i            => debug_rst,
+      fpga_clk_i           => ps_clk_i,
+      async_rst_i          => debug_rst,
 
-      adc_clk_p_i            => adc_DCO2_p_i,
-      adc_clk_n_i            => adc_DCO2_n_i,
-      adc_frame_p_i          => adc_FCO2_p_i,
-      adc_frame_n_i          => adc_FCO2_n_i,
-      adc_data_p_i           => adc_data_to_r1_p,
-      adc_data_n_i           => adc_data_to_r1_n,
-      adc_FCOlck_o           => adc_FCO2lck_o,
+      adc_clk_p_i          => adc_DCO2_p_i,
+      adc_clk_n_i          => adc_DCO2_n_i,
+      adc_frame_p_i        => adc_FCO2_p_i,
+      adc_frame_n_i        => adc_FCO2_n_i,
+      adc_data_p_i         => adc_data_to_r1_p,
+      adc_data_n_i         => adc_data_to_r1_n,
+      adc_FCOlck_o         => adc_FCO2lck_o,
 
-      treshold_value_i       => treshold_value_i,
-      treshold_ld_i          => treshold_ld_i,
+      treshold_value_i     => treshold_value_i,
+      treshold_ld_i        => treshold_ld_i,
 
-      debug_enable_i         => debug_enable_from_AXI,
-      debug_control_i        => debug_control_to_r1,
-      debug_w2w1_i           => debug_w2w1_to_r1,
+      debug_enable_i       => debug_enable_from_AXI,
+      debug_control_i      => debug_control_to_r1,
+      debug_w2w1_i         => debug_w2w1_to_r1,
 
-      fifo_rst_i             => fifo_rst,
-      fifo_rd_en_i           => fifo_rd_en_to_r1,
-      fifo_out_o             => fifo_out_from_r1,
+      fifo_rst_i           => fifo_rst,
+      fifo_rd_en_i         => fifo_rd_en_to_r1,
+      fifo_out_o           => fifo_out_from_r1,
 
-      delay_refclk_i         => delay_refclk,
-      delay_data_ld_i        => delay_data_ld_to_r1,
-      delay_data_input_i     => delay_data_input_to_r1,
-      delay_data_output_o    => delay_data_output_from_r1,
-      delay_frame_ld_i       => delay_frame1_ld_i,
-      delay_frame_input_i    => delay_frame1_input_i,
-      delay_frame_output_o   => delay_frame1_output_o,
+      delay_refclk_i       => delay_refclk,
+      delay_data_ld_i      => delay_data_ld_to_r1,
+      delay_data_input_i   => delay_data_input_to_r1,
+      delay_data_output_o  => delay_data_output_from_r1,
+      delay_frame_ld_i     => delay_frame1_ld_i,
+      delay_frame_input_i  => delay_frame1_input_i,
+      delay_frame_output_o => delay_frame1_output_o,
 
-      --preprocessing signals
-      fifo_input_mux_sel_i   => fifo_input_mux_sel,
-      data_source_sel_i      => data_source_sel,
-      ch_1_freq_i            => ch_1_freq,
-      ch_1_freq_valid_i      => ch_1_valid,
-      ch_2_freq_i            => ch_2_freq,
-      ch_2_freq_valid_i      => ch_2_valid,
-      ch_3_freq_i            => ch_3_freq,
-      ch_3_freq_valid_i      => ch_3_valid,
-      ch_4_freq_i            => ch_4_freq,
-      ch_4_freq_valid_i      => ch_4_valid,
-      local_osc_freq_i       => local_osc,
-      local_osc_freq_valid_i => local_osc_valid
+      --input
+      data_fifo_input_i    => data_1_from_data_handler,
+      valid_fifo_input_i   => valid_1_from_data_handler,
+
+      --output
+      clk_260_mhz_o        => clk_260_mhz,
+      data_adc_o           => data_adc_1,
+      valid_adc_o          => valid_adc_1
     );
 
   --receiver for bank13 signals
@@ -341,37 +348,63 @@ begin
       N_tr_b  => N_tr_b
     )
     port map(
-      fpga_clk_i             => ps_clk_i,
+      fpga_clk_i           => ps_clk_i,
+      async_rst_i          => debug_rst,
+
+      adc_clk_p_i          => adc_DCO1_p_i,
+      adc_clk_n_i          => adc_DCO1_n_i,
+      adc_frame_p_i        => adc_FCO1_p_i,
+      adc_frame_n_i        => adc_FCO1_n_i,
+      adc_data_p_i         => adc_data_to_r2_p,
+      adc_data_n_i         => adc_data_to_r2_n,
+      adc_FCOlck_o         => adc_FCO1lck_o,
+
+      treshold_value_i     => treshold_value_i,
+      treshold_ld_i        => treshold_ld_i,
+
+      debug_enable_i       => debug_enable_from_AXI,
+      debug_control_i      => debug_control_to_r2,
+      debug_w2w1_i         => debug_w2w1_to_r2,
+
+      fifo_rst_i           => fifo_rst,
+      fifo_rd_en_i         => fifo_rd_en_to_r2,
+      fifo_out_o           => fifo_out_from_r2,
+
+      delay_refclk_i       => delay_refclk,
+      delay_data_ld_i      => delay_data_ld_to_r2,
+      delay_data_input_i   => delay_data_input_to_r2,
+      delay_data_output_o  => delay_data_output_from_r2,
+      delay_frame_ld_i     => delay_frame2_ld_i,
+      delay_frame_input_i  => delay_frame2_input_i,
+      delay_frame_output_o => delay_frame2_output_o,
+
+      --input
+      data_fifo_input_i    => data_2_from_data_handler,
+      valid_fifo_input_i   => valid_2_from_data_handler,
+
+      --output
+      clk_260_mhz_o        => open,
+      data_adc_o           => data_adc_2,
+      valid_adc_o          => valid_adc_2
+    );
+
+  --Instantiate data handler
+  data_handler_inst : entity work.data_handler(arch)
+    generic map(
+      RES_ADC => RES_ADC,
+      N1      => N1,
+      N2      => N2
+    )
+    port map(
+      sys_clk_i              => clk_260_mhz,
       async_rst_i            => debug_rst,
+      fpga_clk_i             => ps_clk_i,
 
-      adc_clk_p_i            => adc_DCO1_p_i,
-      adc_clk_n_i            => adc_DCO1_n_i,
-      adc_frame_p_i          => adc_FCO1_p_i,
-      adc_frame_n_i          => adc_FCO1_n_i,
-      adc_data_p_i           => adc_data_to_r2_p,
-      adc_data_n_i           => adc_data_to_r2_n,
-      adc_FCOlck_o           => adc_FCO1lck_o,
+      data_adc_1_i           => data_adc_1,
+      valid_adc_1_i          => valid_adc_1,
+      data_adc_2_i           => data_adc_2,
+      valid_adc_2_i          => valid_adc_2,
 
-      treshold_value_i       => treshold_value_i,
-      treshold_ld_i          => treshold_ld_i,
-
-      debug_enable_i         => debug_enable_from_AXI,
-      debug_control_i        => debug_control_to_r2,
-      debug_w2w1_i           => debug_w2w1_to_r2,
-
-      fifo_rst_i             => fifo_rst,
-      fifo_rd_en_i           => fifo_rd_en_to_r2,
-      fifo_out_o             => fifo_out_from_r2,
-
-      delay_refclk_i         => delay_refclk,
-      delay_data_ld_i        => delay_data_ld_to_r2,
-      delay_data_input_i     => delay_data_input_to_r2,
-      delay_data_output_o    => delay_data_output_from_r2,
-      delay_frame_ld_i       => delay_frame2_ld_i,
-      delay_frame_input_i    => delay_frame2_input_i,
-      delay_frame_output_o   => delay_frame2_output_o,
-
-      --preprocessing signals
       fifo_input_mux_sel_i   => fifo_input_mux_sel,
       data_source_sel_i      => data_source_sel,
       ch_1_freq_i            => ch_1_freq,
@@ -383,9 +416,14 @@ begin
       ch_4_freq_i            => ch_4_freq,
       ch_4_freq_valid_i      => ch_4_valid,
       local_osc_freq_i       => local_osc,
-      local_osc_freq_valid_i => local_osc_valid
-    );
+      local_osc_freq_valid_i => local_osc_valid,
 
+      --output
+      data_1_o               => data_1_from_data_handler,
+      valid_1_o              => valid_1_from_data_handler,
+      data_2_o               => data_2_from_data_handler,
+      valid_2_o              => valid_2_from_data_handler
+    );
   --reset handling
   fifo_rst <= fifo_rst_from_AXI or rst_peripherals_i;
   debug_rst <= async_rst_from_AXI or rst_peripherals_i;
