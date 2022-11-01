@@ -62,33 +62,45 @@ begin
         when "000" => --disabled
           data_valid_o <= '0';
         when "001" => --preprocessing data
+        if (data_preproc_valid_i(0) = '1') then
           data_o <= data_preproc_i;
-          data_valid_o <= data_preproc_valid_i(0);
+          data_valid_o <= '1';
+        end if;
           --Falta el caso "010"
         when "011" => -- raw data. Group by two to fit in FIFO input
-          for i in 0 to NUM_CHANNELS - 1 loop
-            data_raw_shift_reg(32 * (i + 1) - 1 downto 16 * (2 * i + 1)) <= data_raw_shift_reg(16 * (2 * i + 1) - 1 downto 32 * i);
-            data_raw_shift_reg(16 * (2 * i + 1) - 1 downto 32 * i) <= "00" & data_raw_i(RES_ADC * (i + 1) - 1 downto RES_ADC * i);
-          end loop;
-          data_raw_toggle_reg <= not data_raw_toggle_reg;
-          if (data_raw_toggle_reg = '1') then
-            data_o <= data_raw_shift_reg;
-            data_valid_o <= data_raw_valid_i(0);
+          if (data_raw_valid_i(0) = '1')then
+            for i in 0 to NUM_CHANNELS - 1 loop
+              data_raw_shift_reg(32 * (i + 1) - 1 downto 16 * (2 * i + 1)) <= data_raw_shift_reg(16 * (2 * i + 1) - 1 downto 32 * i);
+              data_raw_shift_reg(16 * (2 * i + 1) - 1 downto 32 * i) <= "00" & data_raw_i(RES_ADC * (i + 1) - 1 downto RES_ADC * i);
+            end loop;
+            data_raw_toggle_reg <= not data_raw_toggle_reg;
+            if (data_raw_toggle_reg = '1') then
+              data_o <= data_raw_shift_reg;
+              data_valid_o <= '1';
+            end if;
           end if;
         when "100" => -- data source mux
-          for i in 0 to NUM_CHANNELS - 1 loop
-            data_o(32 * (i + 1) - 1 downto 32 * i) <= data_mux_data_source_i(16 * (i + 1) - 1 downto 16 * i) & data_mux_data_source_i(16 * (i + 1) - 1 downto 16 * i);
-          end loop;
-          data_valid_o <= data_mux_data_source_valid_i(0);
+          if (data_mux_data_source_valid_i(0) = '1') then
+            for i in 0 to NUM_CHANNELS - 1 loop
+              data_o(32 * (i + 1) - 1 downto 32 * i) <= data_mux_data_source_i(16 * (i + 1) - 1 downto 16 * i) & data_mux_data_source_i(16 * (i + 1) - 1 downto 16 * i);
+            end loop;
+            data_valid_o <= '1';
+          end if;
         when "101" => -- band mixer
-          data_o <= data_band_mixer_i;
-          data_valid_o <= data_band_mixer_valid_i(0);
+          if (data_band_mixer_valid_i(0) = '1') then
+            data_o <= data_band_mixer_i;
+            data_valid_o <= '1';
+          end if;
         when "110" => -- band filter
-          data_o <= data_band_filter_i;
-          data_valid_o <= data_band_filter_valid_i(0);
+          if (data_band_filter_valid_i(0) = '1') then
+            data_o <= data_band_filter_i;
+            data_valid_o <= '1';
+          end if;
         when "111" => -- channel mixer
-          data_o <= data_channel_mixer_i;
-          data_valid_o <= data_channel_mixer_valid_i(0);
+          if (data_channel_mixer_valid_i(0) = '1') then
+            data_o <= data_channel_mixer_i;
+            data_valid_o <= '1';
+          end if;
         when others =>
           data_valid_o <= '0';
       end case;
