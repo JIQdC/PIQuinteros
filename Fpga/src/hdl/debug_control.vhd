@@ -42,16 +42,16 @@ entity debug_control is
 end debug_control;
 
 architecture arch of debug_control is
-  signal onesNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '1');
-  signal zerosNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
+  constant onesNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '1');
+  constant zerosNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
 
   constant midscaleShort : std_logic_vector(13 downto 0) := "10000000000000";
   constant sync_1x : std_logic_vector(13 downto 0) := "00000001111111";
   constant mix_freq : std_logic_vector(13 downto 0) := "10100001100111";
 
-  signal out_reg, out_next : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
-  signal valid_reg, valid_next : std_logic := '0';
-  signal counter_ce_reg, counter_ce_next : std_logic := '0';
+  signal out_reg : std_logic_vector((RES_ADC - 1) downto 0);
+  signal valid_reg : std_logic;
+  signal counter_ce_reg : std_logic;
 
   --Xilinx parameters
   attribute X_INTERFACE_INFO : string;
@@ -63,82 +63,43 @@ begin
   process (clock_i, rst_i)
   begin
     if (rst_i = '1') then
-      out_reg <= zerosNbits;
       valid_reg <= '0';
       counter_ce_reg <= '0';
     elsif (rising_edge(clock_i)) then
-      out_reg <= out_next;
-      valid_reg <= valid_next;
-      counter_ce_reg <= counter_ce_next;
+      valid_reg <= '0';
+      counter_ce_reg <= '0';
+      out_reg <= zerosNbits;
+      if (enable_i = '1') then
+        valid_reg <= valid_i;
+        case control_i is
+          when x"0" | x"3" =>
+            out_reg <= zerosNbits;
+          when x"1" | x"b" =>
+            out_reg <= midscaleShort;
+          when x"2" =>
+            out_reg <= onesNbits;
+          when x"8" =>
+            out_reg <= usr_w2w1_i((RES_ADC - 1) downto 0);
+          when x"9" =>
+            out_reg <= usr_w2w1_i((2 * RES_ADC - 1) downto RES_ADC);
+          when x"a" =>
+            out_reg <= sync_1x;
+          when x"c" =>
+            out_reg <= mix_freq;
+          when x"D" =>
+            out_reg <= data_i;
+          when x"F" =>
+            out_reg <= counter_count_i;
+            counter_ce_reg <= '1';
+          when others =>
+            out_reg <= zerosNbits;
+        end case;
+      end if;
     end if;
-  end process;
-
-  process (out_reg, valid_reg, counter_ce_reg, control_i, enable_i, counter_count_i, data_i)
-  begin
-    out_next <= out_reg;
-    valid_next <= valid_reg;
-    counter_ce_next <= counter_ce_reg;
-
-    if (control_i = "0000" or control_i = "0011" or enable_i = '0') then
-      out_next <= zerosNbits;
-    elsif (control_i = "1101") then
-      out_next <= data_i;
-    elsif (control_i = "1111") then
-      out_next <= counter_count_i;
-    elsif (control_i = "0001" or control_i = "1011") then
-      out_next <= midscaleShort;
-    elsif (control_i = "0010") then
-      out_next <= onesNbits;
-    elsif (control_i = "1001") then
-      out_next <= usr_w2w1_i((2 * RES_ADC - 1) downto RES_ADC);
-    elsif (control_i = "1000") then
-      out_next <= usr_w2w1_i((RES_ADC - 1) downto 0);
-    elsif (control_i = "1010") then
-      out_next <= sync_1x;
-    elsif (control_i = "1100") then
-      out_next <= mix_freq;
-    else
-      out_next <= zerosNbits;
-    end if;
-
-    if (control_i = "0000" or enable_i = '0') then
-      valid_next <= '0';
-    else
-      valid_next <= valid_i;
-    end if;
-
-    if (control_i = "1111" and enable_i = '1') then
-      counter_ce_next <= '1';
-    else
-      counter_ce_next <= '0';
-    end if;
-
   end process;
 
   data_o <= out_reg;
   valid_o <= valid_reg;
   counter_ce_o <= counter_ce_reg;
-
-  --data multiplexing
-  -- data_o <=
-  --   zerosNbits when (control_i = "0000" or control_i = "0011" or enable_i = '0') else --Off(default) / -Full-scale short / Disabled
-  --   midscaleShort when (control_i = "0001" or control_i = "1011") else                --Midscale short / one bit high
-  --   onesNbits when control_i = "0010" else                                            --+Full-scale short
-  --   usr_w2w1_i((2 * RES_ADC - 1) downto RES_ADC) when control_i = "1001" else         --usr_w2
-  --   usr_w2w1_i((RES_ADC - 1) downto 0) when control_i = "1000" else                   --usr_w1
-  --   sync_1x when control_i = "1010" else                                              --1x sync
-  --   mix_freq when control_i = "1100" else                                             --mixed frequency
-  --   counter_count_i when control_i = "1111" else                                      --contador de RES_ADC bits (no incluido en secuencias de fábrica)
-  --   data_i when control_i = "1101" else                                               --señal del deserializador (no incluido en secuencias de fábrica)
-  --   zerosNbits;
-
-  -- --valid multiplexing
-  -- valid_o <=
-  --   '0' when (control_i = "0000" or enable_i = '0') else
-  --   valid_i;
-
-  -- --counter CE
-  -- counter_ce_o <= '1' when control_i = "1111" else
-  --   '0';
 
 end arch;
