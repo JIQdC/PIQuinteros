@@ -7,8 +7,8 @@ set_false_path -from [get_pins {ps_axi_spi_bd_wrapper_inst/ps_axi_spi_bd_i/reset
 set deserializer_max_delay [expr 2*1e3/260]
 set_max_delay \
     -datapath_only \
-    -from [get_pins adc_control_wrapper_inst/data_handler_inst/adc_data_concatenator_inst/data_o_reg[*]/C] \
-    -to [get_pins adc_control_wrapper_inst/data_handler_inst/sampler_data/dout_reg_reg[*]/D] $deserializer_max_delay
+    -from [get_pins adc_control_wrapper_inst/adc_receiver*_inst/ADC_data[*].deserializer_data/out_reg_reg[*]/C] \
+    -to [get_pins adc_control_wrapper_inst/data_handler_inst/debug_control_loop[*].sampler_data/dout_reg_reg[*]/D] $deserializer_max_delay
 
 # false path to pulse synchronizer
 set_false_path -to [get_pins adc_control_wrapper_inst/data_handler_inst/pulse_sync_data/dest_pulse_reg_reg[0]/D]

@@ -20,15 +20,12 @@ begin
     process (clk, rst_i)
     begin
         if (rst_i = '1') then
-            dout_reg <= (others => '0');
             dout_valid_reg <= '0';
         elsif (rising_edge(clk)) then
+            dout_valid_reg <= '0';
             if (ce = '1') then
                 dout_reg <= din;
                 dout_valid_reg <= '1';
-            else
-                dout_reg <= dout_reg;
-                dout_valid_reg <= '0';
             end if;
         end if;
     end process;
