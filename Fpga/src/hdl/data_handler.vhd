@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+use work.fifo_record_pkg.all;
+use work.adc_receiver_def_pkg.all;
 
 entity data_handler is
   generic (
@@ -15,8 +17,7 @@ entity data_handler is
     clk_455_mhz_i          : in std_logic;
 
     --data input
-    data_adc_1_i           : in std_logic_vector(RES_ADC * N1 - 1 downto 0);
-    data_adc_2_i           : in std_logic_vector(RES_ADC * N2 - 1 downto 0);
+    data_adc_i             : in adc_data_t((N1 + N2) - 1 downto 0);
     valid_adc_i            : in std_logic;
     --debug input
     debug_enable_i         : in std_logic;
@@ -36,10 +37,9 @@ entity data_handler is
     local_osc_freq_i       : in std_logic_vector(31 downto 0);
     local_osc_freq_valid_i : in std_logic;
     --output
-    data_1_o               : out std_logic_vector(32 * N1 - 1 downto 0);
-    valid_1_o              : out std_logic;
-    data_2_o               : out std_logic_vector(32 * N2 - 1 downto 0);
-    valid_2_o              : out std_logic
+    fifo_rst_i             : in std_logic;
+    fifo_rd_en_i           : in std_logic_vector((N1 + N2 - 1) downto 0);
+    fifo_out_o             : out fifo_out_vector_t((N1 + N2 - 1) downto 0)
   );
 end data_handler;
 
@@ -54,6 +54,27 @@ architecture arch of data_handler is
       Q    : out std_logic_vector(13 downto 0)
     );
   end component;
+
+  --FIFO generator declaration
+  component fifo_generator
+    port (
+      rst           : in std_logic;
+      wr_clk        : in std_logic;
+      rd_clk        : in std_logic;
+      din           : in std_logic_vector(31 downto 0);
+      wr_en         : in std_logic;
+      rd_en         : in std_logic;
+      dout          : out std_logic_vector(31 downto 0);
+      full          : out std_logic;
+      overflow      : out std_logic;
+      empty         : out std_logic;
+      rd_data_count : out std_logic_vector(10 downto 0);
+      prog_full     : out std_logic;
+      wr_rst_busy   : out std_logic;
+      rd_rst_busy   : out std_logic
+    );
+  end component;
+
   --signals
   signal data_both_adc : std_logic_vector(RES_ADC * (N1 + N2) - 1 downto 0);
   signal valid_both_adc : std_logic;
@@ -63,7 +84,7 @@ architecture arch of data_handler is
   --sync signals
   signal valid_pulse_sync : std_logic;
   signal data_both_adc_sync : std_logic_vector(RES_ADC * (N1 + N2) - 1 downto 0);
-  signal valid_adc_sync : std_logic;
+  signal valid_adc_sync : std_logic_vector((N1 + N2) - 1 downto 0);
 
   signal fifo_input_mux_sel_sync : std_logic_vector(2 downto 0);
   signal data_source_sel_sync : std_logic_vector(1 downto 0);
@@ -105,32 +126,14 @@ architecture arch of data_handler is
   signal valid_band_filter_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
   signal data_channel_mixer_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
   signal valid_channel_mixer_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
+
+  -- synchronize signals from write_side of FIFO
+  signal fifo_full : std_logic_vector((N1 + N2 - 1) downto 0);
+  signal fifo_wr_rst_bsy : std_logic_vector((N1 + N2 - 1) downto 0);
+  signal fifo_prog_full : std_logic_vector((N1 + N2 - 1) downto 0);
+  signal fifo_overflow : std_logic_vector((N1 + N2 - 1) downto 0);
+
 begin
-  --Concatenate data
-  adc_data_concatenator_inst : entity work.concatenator(Behavioral)
-    generic map(
-      DATA_WIDTH_1 => RES_ADC * N1,
-      DATA_WIDTH_2 => RES_ADC * N2
-    )
-    port map(
-      sys_clk_i => clk_455_mhz_i,
-      sys_rst_i => async_rst_i,
-      data_1_i  => data_adc_1_i,
-      data_2_i  => data_adc_2_i,
-      data_o    => data_both_adc
-    );
-  --Delay valid 1 clock cycle to sync with data
-  process (clk_455_mhz_i)
-  begin
-    if (rising_edge(clk_455_mhz_i)) then
-      if (async_rst_i = '1') then
-        valid_both_adc <= '0';
-        else
-        valid_both_adc <= valid_adc_i;
-      end if;
-    end if;
-  end process;
-  --End concatenate data
 
   --Begin signals sync
   pulse_sync_data : entity work.pulse_sync(arch)
@@ -139,21 +142,8 @@ begin
       src_rst_i  => async_rst_i,
       dest_clk_i => sys_clk_i,
       dest_rst_i => async_rst_i,
-      pulse_i    => valid_both_adc,
+      pulse_i    => valid_adc_i,
       pulse_o    => valid_pulse_sync
-    );
-
-  sampler_data : entity work.sampler_with_ce(arch)
-    generic map(
-      N => RES_ADC * (N1 + N2)
-    )
-    port map(
-      clk        => sys_clk_i,
-      rst_i      => async_rst_i,
-      ce         => valid_pulse_sync,
-      din        => data_both_adc,
-      dout       => data_both_adc_sync,
-      dout_valid => valid_adc_sync
     );
 
   fifo_input_mux_sel_sync_inst : entity work.quasistatic_sync
@@ -283,10 +273,23 @@ begin
   );
   --drive debug_counter_ce
   debug_counter_ce <= '1' when (counter_ce_v > zerosN) else
-  '0';
+    '0';
 
   --instantiate debug control
   debug_control_loop : for i in 0 to (N1 + N2 - 1) generate
+
+    sampler_data : entity work.sampler_with_ce(arch)
+      generic map(
+        N => RES_ADC
+      )
+      port map(
+        clk        => sys_clk_i,
+        rst_i      => async_rst_i,
+        ce         => valid_pulse_sync,
+        din        => data_adc_i(i),
+        dout       => data_both_adc_sync(14 * (i + 1) - 1 downto 14 * i),
+        dout_valid => valid_adc_sync(i)
+      );
     deb_control_data : entity work.debug_control(arch)
       generic map(
         RES_ADC => RES_ADC
@@ -298,7 +301,7 @@ begin
         control_i       => debug_control_sync(((4 * (i + 1)) - 1) downto (4 * i)),
         usr_w2w1_i      => debug_w2w1_sync(((28 * (i + 1)) - 1) downto (28 * i)),
         data_i          => data_both_adc_sync(14 * (i + 1) - 1 downto 14 * i),
-        valid_i         => valid_adc_sync,
+        valid_i         => valid_adc_sync(i),
 
         counter_count_i => debug_counter,
         counter_ce_o    => counter_ce_v(i),
@@ -376,19 +379,54 @@ begin
       data_valid_o                 => valid_joined_output
     );
 
-  data_output_splitter_inst : entity work.splitter(Behavioral)
-    generic map(
-      DATA_WIDTH_1 => 32 * N1,
-      DATA_WIDTH_2 => 32 * N2
-    )
+  --instantiate FIFO
+  fifo_loop : for i in 0 to (N1 + N2 - 1) generate
+    --instantiate FIFO
+    fifo_inst : fifo_generator
     port map(
-      sys_clk_i => sys_clk_i,
-      sys_rst_i => async_rst_i,
-      data_i    => data_joined_output,
-      data_1_o  => data_1_o,
-      data_2_o  => data_2_o
+      rst           => fifo_rst_i,
+      wr_clk        => sys_clk_i,
+      rd_clk        => fpga_clk_i,
+      din           => data_joined_output((32 * (i + 1) - 1) downto (32 * i)),
+      wr_en         => valid_joined_output,
+      rd_en         => fifo_rd_en_i(i),
+      dout          => fifo_out_o(i).data_out,
+      full          => fifo_full(i),
+      overflow      => fifo_overflow(i),
+      empty         => fifo_out_o(i).empty,
+      rd_data_count => fifo_out_o(i).rd_data_cnt,
+      prog_full     => fifo_prog_full(i),
+      wr_rst_busy   => fifo_wr_rst_bsy(i),
+      rd_rst_busy   => fifo_out_o(i).rd_rst_bsy
     );
 
-  valid_1_o <= valid_joined_output;
-  valid_2_o <= valid_joined_output;
+    fifo_full_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_full(i),
+        level_o    => fifo_out_o(i).full
+      );
+    fifo_wr_rst_busy_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_wr_rst_bsy(i),
+        level_o    => fifo_out_o(i).wr_rst_bsy
+      );
+    fifo_prog_full_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_prog_full(i),
+        level_o    => fifo_out_o(i).prog_full
+      );
+    fifo_overflow_sync_inst : entity work.level_sync
+      port map(
+        dest_clk_i => fpga_clk_i,
+        dest_rst_i => async_rst_i,
+        level_i    => fifo_overflow(i),
+        level_o    => fifo_out_o(i).overflow
+      );
+  end generate fifo_loop;
 end arch;

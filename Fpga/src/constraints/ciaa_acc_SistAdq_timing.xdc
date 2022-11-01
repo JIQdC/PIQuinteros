@@ -24,7 +24,7 @@ set_false_path -to [get_pins adc_control_wrapper_inst/data_handler_inst/local_os
 
 # fifo registers CDC
 # false path to synchronizers
-set_false_path -to [get_pins adc_control_wrapper_inst/adc_receiver*_inst/ADC_data[*].fifo_*_sync_inst/dest_level_reg_reg[0]/D]
+set_false_path -to [get_pins adc_control_wrapper_inst/data_handler_inst/fifo_loop[*].fifo_*_sync_inst/dest_level_reg_reg[0]/D]
 
 # debug control registers CDC
 # false path to synchronizers

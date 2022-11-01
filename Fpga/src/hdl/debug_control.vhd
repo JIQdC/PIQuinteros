@@ -45,9 +45,9 @@ architecture arch of debug_control is
   signal onesNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '1');
   signal zerosNbits : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
 
-  signal midscaleShort : std_logic_vector(13 downto 0) := "10000000000000";
-  signal sync_1x : std_logic_vector(13 downto 0) := "00000001111111";
-  signal mix_freq : std_logic_vector(13 downto 0) := "10100001100111";
+  constant midscaleShort : std_logic_vector(13 downto 0) := "10000000000000";
+  constant sync_1x : std_logic_vector(13 downto 0) := "00000001111111";
+  constant mix_freq : std_logic_vector(13 downto 0) := "10100001100111";
 
   signal out_reg, out_next : std_logic_vector((RES_ADC - 1) downto 0) := (others => '0');
   signal valid_reg, valid_next : std_logic := '0';
