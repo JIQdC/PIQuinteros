@@ -143,9 +143,15 @@ architecture arch of adc_control_wrapper is
   signal debug_control_from_AXI : std_logic_vector((N * 4 - 1) downto 0) := (others => '0');
   signal debug_control_to_r1 : std_logic_vector((N1 * 4 - 1) downto 0) := (others => '0');
   signal debug_control_to_r2 : std_logic_vector((N2 * 4 - 1) downto 0) := (others => '0');
+
+  signal debug_control_conc : std_logic_vector(((N1 + N2) * 4 - 1) downto 0) := (others => '0');
+
   signal debug_w2w1_from_AXI : std_logic_vector((28 * N - 1) downto 0) := (others => '0');
   signal debug_w2w1_to_r1 : std_logic_vector((28 * N1 - 1) downto 0) := (others => '0');
   signal debug_w2w1_to_r2 : std_logic_vector((28 * N2 - 1) downto 0) := (others => '0');
+
+  signal debug_w2w1_conc : std_logic_vector((28 * (N1 + N2) - 1) downto 0) := (others => '0');
+
   signal fifo_rd_en_from_AXI : std_logic_vector((N - 1) downto 0) := (others => '0');
   signal fifo_rd_en_to_r1 : std_logic_vector((N1 - 1) downto 0) := (others => '0');
   signal fifo_rd_en_to_r2 : std_logic_vector((N2 - 1) downto 0) := (others => '0');
@@ -162,16 +168,17 @@ architecture arch of adc_control_wrapper is
 
   --260 MHz clock
   signal clk_260_mhz : std_logic;
+  --455 MHz clock
+  signal clk_455_mhz : std_logic;
   --data from adcs
   signal data_adc_1 : std_logic_vector(RES_ADC * N1 - 1 downto 0);
-  signal valid_adc_1 : std_logic_vector(N1 - 1 downto 0);
+  signal valid_adc : std_logic;
   signal data_adc_2 : std_logic_vector(RES_ADC * N2 - 1 downto 0);
-  signal valid_adc_2 : std_logic_vector(N2 - 1 downto 0);
   --data to adcs
   signal data_1_from_data_handler : std_logic_vector(32 * N1 - 1 downto 0);
-  signal valid_1_from_data_handler : std_logic_vector(N1 - 1 downto 0);
+  signal valid_1_from_data_handler : std_logic;
   signal data_2_from_data_handler : std_logic_vector(32 * N2 - 1 downto 0);
-  signal valid_2_from_data_handler : std_logic_vector(N2 - 1 downto 0);
+  signal valid_2_from_data_handler : std_logic;
   --preprocessing signals
   signal fifo_input_mux_sel : std_logic_vector(2 downto 0);
   signal data_source_sel : std_logic_vector(1 downto 0) := (others => '0');
@@ -313,10 +320,6 @@ begin
       treshold_value_i     => treshold_value_i,
       treshold_ld_i        => treshold_ld_i,
 
-      debug_enable_i       => debug_enable_from_AXI,
-      debug_control_i      => debug_control_to_r1,
-      debug_w2w1_i         => debug_w2w1_to_r1,
-
       fifo_rst_i           => fifo_rst,
       fifo_rd_en_i         => fifo_rd_en_to_r1,
       fifo_out_o           => fifo_out_from_r1,
@@ -335,8 +338,9 @@ begin
 
       --output
       clk_260_mhz_o        => clk_260_mhz,
+      clk_455_mhz_o        => clk_455_mhz,
       data_adc_o           => data_adc_1,
-      valid_adc_o          => valid_adc_1
+      valid_adc_o          => valid_adc
     );
 
   --receiver for bank13 signals
@@ -361,11 +365,6 @@ begin
 
       treshold_value_i     => treshold_value_i,
       treshold_ld_i        => treshold_ld_i,
-
-      debug_enable_i       => debug_enable_from_AXI,
-      debug_control_i      => debug_control_to_r2,
-      debug_w2w1_i         => debug_w2w1_to_r2,
-
       fifo_rst_i           => fifo_rst,
       fifo_rd_en_i         => fifo_rd_en_to_r2,
       fifo_out_o           => fifo_out_from_r2,
@@ -384,10 +383,13 @@ begin
 
       --output
       clk_260_mhz_o        => open,
+      clk_455_mhz_o        => open,
       data_adc_o           => data_adc_2,
-      valid_adc_o          => valid_adc_2
+      valid_adc_o          => open
     );
 
+  debug_control_conc <= debug_control_to_r1 & debug_control_to_r2;
+  debug_w2w1_conc <= debug_w2w1_to_r1 & debug_w2w1_to_r2;
   --Instantiate data handler
   data_handler_inst : entity work.data_handler(arch)
     generic map(
@@ -399,11 +401,15 @@ begin
       sys_clk_i              => clk_260_mhz,
       async_rst_i            => debug_rst,
       fpga_clk_i             => ps_clk_i,
+      clk_455_mhz_i          => clk_455_mhz,
 
       data_adc_1_i           => data_adc_1,
-      valid_adc_1_i          => valid_adc_1,
       data_adc_2_i           => data_adc_2,
-      valid_adc_2_i          => valid_adc_2,
+      valid_adc_i            => valid_adc,
+
+      debug_enable_i         => debug_enable_from_AXI,
+      debug_control_i        => debug_control_conc,
+      debug_w2w1_i           => debug_w2w1_conc,
 
       fifo_input_mux_sel_i   => fifo_input_mux_sel,
       data_source_sel_i      => data_source_sel,

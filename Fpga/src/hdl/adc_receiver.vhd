@@ -45,9 +45,9 @@ entity adc_receiver is
     treshold_value_i     : in std_logic_vector((N_tr_b - 1) downto 0);
     treshold_ld_i        : in std_logic;
 
-    debug_enable_i       : in std_logic;
-    debug_control_i      : in std_logic_vector((N * 4 - 1) downto 0);
-    debug_w2w1_i         : in std_logic_vector((28 * N - 1) downto 0);
+    -- debug_enable_i       : in std_logic;
+    -- debug_control_i      : in std_logic_vector((N * 4 - 1) downto 0);
+    -- debug_w2w1_i         : in std_logic_vector((28 * N - 1) downto 0);
 
     fifo_rst_i           : in std_logic;
     fifo_rd_en_i         : in std_logic_vector((N - 1) downto 0);
@@ -63,25 +63,26 @@ entity adc_receiver is
 
     --input
     data_fifo_input_i    : in std_logic_vector(32 * N - 1 downto 0);
-    valid_fifo_input_i   : in std_logic_vector(N - 1 downto 0);
+    valid_fifo_input_i   : in std_logic;
     --output
     clk_260_mhz_o        : out std_logic;
+    clk_455_mhz_o        : out std_logic;
     data_adc_o           : out std_logic_vector((N * RES_ADC - 1) downto 0);
-    valid_adc_o          : out std_logic_vector((N - 1) downto 0)
+    valid_adc_o          : out std_logic
   );
 end adc_receiver;
 
 architecture arch of adc_receiver is
 
   --Binary counter declaration
-  component c_counter_binary
-    port (
-      CLK  : in std_logic;
-      CE   : in std_logic;
-      SCLR : in std_logic;
-      Q    : out std_logic_vector(13 downto 0)
-    );
-  end component;
+  -- component c_counter_binary
+  --   port (
+  --     CLK  : in std_logic;
+  --     CE   : in std_logic;
+  --     SCLR : in std_logic;
+  --     Q    : out std_logic_vector(13 downto 0)
+  --   );
+  -- end component;
 
   component clk_wiz_preproc
     port (-- Clock in ports
@@ -126,16 +127,16 @@ architecture arch of adc_receiver is
   --End to be removed
   --Band and channel processing signals
 
-  signal data_fifo_input : std_logic_vector(32 * N - 1 downto 0);
-  signal valid_fifo_input : std_logic_vector((N - 1) downto 0);
+  signal data_fifo_input_sync : std_logic_vector(32 * N - 1 downto 0);
+  signal valid_fifo_input_sync : std_logic_vector(0 downto 0);
 
   signal frame_to_idelay, frame_to_iddr : std_logic;
   signal frame_delayed_from_iddr, frame_delayed_to_deser : std_logic;
 
-  signal counter_ce_v : std_logic_vector((N - 1) downto 0);
-  signal debug_counter : std_logic_vector(13 downto 0);
-  signal debug_counter_ce : std_logic;
-  signal zerosN : std_logic_vector((N - 1) downto 0) := (others => '0');
+  -- signal counter_ce_v : std_logic_vector((N - 1) downto 0);
+  -- signal debug_counter : std_logic_vector(13 downto 0);
+  -- signal debug_counter_ce : std_logic;
+  -- signal zerosN : std_logic_vector((N - 1) downto 0) := (others => '0');
 
   signal valid_from_pulse_sync : std_logic_vector((N - 1) downto 0);
 
@@ -149,54 +150,57 @@ architecture arch of adc_receiver is
   signal fifo_overflow : std_logic_vector((N - 1) downto 0);
 
   -- synchronize signals from debug control
-  signal debug_enable_sync : std_logic;
-  signal debug_control_sync : std_logic_vector((N * 4 - 1) downto 0);
-  constant debug_control_width : integer := (N * 4);
-  signal debug_w2w1_sync : std_logic_vector((28 * N - 1) downto 0);
-  constant debug_w2w1_width : integer := (28 * N);
-
+  -- signal debug_enable_sync : std_logic;
+  -- signal debug_control_sync : std_logic_vector((N * 4 - 1) downto 0);
+  -- constant debug_control_width : integer := (N * 4);
+  -- signal debug_w2w1_sync : std_logic_vector((28 * N - 1) downto 0);
+  -- constant debug_w2w1_width : integer := (28 * N);
+  signal async_rst_n : std_logic;
+  signal valid_fifo_input_as_vector : std_logic_vector(0 downto 0);
 begin
-  -- Instantiate synchronizers for debug signals
-  debug_control_sync_inst : entity work.quasistatic_sync
-    generic map(
-      DATA_WIDTH => debug_control_width
-    )
-    port map(
-      src_data_i  => debug_control_i,
-      sys_clk_i   => clk_260_mhz,
-      sync_data_o => debug_control_sync
-    );
+  async_rst_n <= not(async_rst_i);
+  valid_fifo_input_as_vector(0) <= valid_fifo_input_i;
+  -- -- Instantiate synchronizers for debug signals
+  -- debug_control_sync_inst : entity work.quasistatic_sync
+  --   generic map(
+  --     DATA_WIDTH => debug_control_width
+  --   )
+  --   port map(
+  --     src_data_i  => debug_control_i,
+  --     sys_clk_i   => clk_260_mhz,
+  --     sync_data_o => debug_control_sync
+  --   );
 
-  debug_w2w1_sync_inst : entity work.quasistatic_sync
-    generic map(
-      DATA_WIDTH => debug_w2w1_width
-    )
-    port map(
-      src_data_i  => debug_w2w1_i,
-      sys_clk_i   => clk_260_mhz,
-      sync_data_o => debug_w2w1_sync
-    );
+  -- debug_w2w1_sync_inst : entity work.quasistatic_sync
+  --   generic map(
+  --     DATA_WIDTH => debug_w2w1_width
+  --   )
+  --   port map(
+  --     src_data_i  => debug_w2w1_i,
+  --     sys_clk_i   => clk_260_mhz,
+  --     sync_data_o => debug_w2w1_sync
+  --   );
 
-  debug_enable_sync_inst : entity work.level_sync
-    port map(
-      dest_clk_i => clk_260_mhz,
-      dest_rst_i => async_rst_i,
-      level_i    => debug_enable_i,
-      level_o    => debug_enable_sync
-    );
+  -- debug_enable_sync_inst : entity work.level_sync
+  --   port map(
+  --     dest_clk_i => clk_260_mhz,
+  --     dest_rst_i => async_rst_i,
+  --     level_i    => debug_enable_i,
+  --     level_o    => debug_enable_sync
+  --   );
 
-  ---- BINARY COUNTER
-  -- instantiate binary counter for debugging purposes
-  binary_counter : c_counter_binary
-  port map(
-    CLK  => clk_260_mhz,
-    CE   => debug_counter_ce,
-    SCLR => async_rst_i,
-    Q    => debug_counter
-  );
-  --drive debug_counter_ce
-  debug_counter_ce <= '1' when (counter_ce_v > zerosN) else
-    '0';
+  -- ---- BINARY COUNTER
+  -- -- instantiate binary counter for debugging purposes
+  -- binary_counter : c_counter_binary
+  -- port map(
+  --   CLK  => clk_260_mhz,
+  --   CE   => debug_counter_ce,
+  --   SCLR => async_rst_i,
+  --   Q    => debug_counter
+  -- );
+  -- --drive debug_counter_ce
+  -- debug_counter_ce <= '1' when (counter_ce_v > zerosN) else
+  -- '0';
 
   ---- CLOCK RECEPTION
 
@@ -302,13 +306,28 @@ begin
       data_to_des_FE <= data_from_IDDR_FE;
     end if;
   end process;
-  register_fifo_input_proc : process (clk_to_logic)
-  begin
-    if rising_edge(clk_to_logic) then
-      data_fifo_input <= data_fifo_input_i;
-      valid_fifo_input <= valid_fifo_input_i;
-    end if;
-  end process;
+
+  data_fifo_input_sync_inst : entity work.cdc_two_ff_sync(rtl)
+    generic map(
+      SIZE => 32 * N
+    )
+    port map(
+      clk_i    => clk_260_mhz,
+      rst_ni   => async_rst_n,
+      data_in  => data_fifo_input_i,
+      data_out => data_fifo_input_sync
+    );
+
+  valid_fifo_input_sync_inst : entity work.cdc_two_ff_sync(rtl)
+    generic map(
+      SIZE => 1
+    )
+    port map(
+      clk_i    => clk_260_mhz,
+      rst_ni   => async_rst_n,
+      data_in  => valid_fifo_input_as_vector,
+      data_out => valid_fifo_input_sync
+    );
   -- Generate IBUFDS, IDELAYs, IDDR, deserializer, downsampler for ADC data inputs
   ADC_data : for i in 0 to (N - 1) generate
 
@@ -371,53 +390,29 @@ begin
         data_o    => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
         d_valid_o => valid_from_deser(i)
       );
-    --instantiate pulse_sync
-    pulse_sync_data : entity work.pulse_sync(arch)
-      port map(
-        src_clk_i  => clk_to_logic,
-        src_rst_i  => async_rst_i,
-        dest_clk_i => clk_260_mhz,
-        dest_rst_i => async_rst_i,
-        pulse_i    => valid_from_deser(i),
-        pulse_o    => valid_from_pulse_sync(i)
-      );
-
-    --instantiate sampler_with_ce
-    sampler_data : entity work.sampler_with_ce(arch)
-      generic map(
-        N => 14
-      )
-      port map(
-        clk        => clk_260_mhz,
-        rst_i      => async_rst_i,
-        ce         => valid_from_pulse_sync(i),
-        din        => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
-        dout       => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
-        dout_valid => valid_from_deser_slow(i)
-      );
 
     --instantiate debug control
-    deb_control_data : entity work.debug_control(arch)
-      generic map(
-        RES_ADC => RES_ADC
-      )
-      port map(
-        clock_i         => clk_260_mhz,
-        rst_i           => async_rst_i,
-        enable_i        => debug_enable_sync,
-        control_i       => debug_control_sync(((4 * (i + 1)) - 1) downto (4 * i)),
-        usr_w2w1_i      => debug_w2w1_sync(((28 * (i + 1)) - 1) downto (28 * i)),
-        --data_i     => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
-        data_i          => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
-        --valid_i    => valid_from_deser(i),
-        valid_i         => valid_from_deser_slow(i),
+    -- deb_control_data : entity work.debug_control(arch)
+    --   generic map(
+    --     RES_ADC => RES_ADC
+    --   )
+    --   port map(
+    --     clock_i         => clk_260_mhz,
+    --     rst_i           => async_rst_i,
+    --     enable_i        => debug_enable_sync,
+    --     control_i       => debug_control_sync(((4 * (i + 1)) - 1) downto (4 * i)),
+    --     usr_w2w1_i      => debug_w2w1_sync(((28 * (i + 1)) - 1) downto (28 * i)),
+    --     --data_i     => data_from_deser((14 * (i + 1) - 1) downto (14 * i)),
+    --     data_i          => data_from_deser_slow((14 * (i + 1) - 1) downto (14 * i)),
+    --     --valid_i    => valid_from_deser(i),
+    --     valid_i         => valid_from_deser_slow(i),
 
-        counter_count_i => debug_counter,
-        counter_ce_o    => counter_ce_v(i),
+    --     counter_count_i => debug_counter,
+    --     counter_ce_o    => counter_ce_v(i),
 
-        data_o          => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
-        valid_o         => valid_from_debug(i)
-      );
+    --     data_o          => data_from_debug((14 * (i + 1) - 1) downto (14 * i)),
+    --     valid_o         => valid_from_debug(i)
+    --   );
 
     --instantiate FIFO
     fifo_inst : fifo_generator
@@ -425,8 +420,8 @@ begin
       rst           => fifo_rst_i,
       wr_clk        => clk_260_mhz,
       rd_clk        => fpga_clk_i,
-      din           => data_fifo_input((32 * (i + 1) - 1) downto (32 * i)),
-      wr_en         => valid_fifo_input(i),
+      din           => data_fifo_input_sync((32 * (i + 1) - 1) downto (32 * i)),
+      wr_en         => valid_fifo_input_sync(0),
       rd_en         => fifo_rd_en_i(i),
       dout          => fifo_out_o(i).data_out,
       full          => fifo_full(i),
@@ -470,6 +465,7 @@ begin
   end generate ADC_data;
 
   clk_260_mhz_o <= clk_260_mhz;
-  data_adc_o <= data_from_debug;
-  valid_adc_o <= valid_from_debug;
+  clk_455_mhz_o <= clk_to_logic;
+  data_adc_o <= data_from_deser;
+  valid_adc_o <= valid_from_deser(0);
 end arch; -- arch
