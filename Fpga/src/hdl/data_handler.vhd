@@ -26,14 +26,32 @@ entity data_handler is
     --preprocessing signals
     fifo_input_mux_sel_i   : in std_logic_vector(2 downto 0);
     data_source_sel_i      : in std_logic_vector(1 downto 0);
+
     ch_1_freq_i            : in std_logic_vector(31 downto 0);
     ch_1_freq_valid_i      : in std_logic;
+    ch_1_sign_i            : in std_logic;
+    ch_1_sign_valid_i      : in std_logic;
+
     ch_2_freq_i            : in std_logic_vector(31 downto 0);
     ch_2_freq_valid_i      : in std_logic;
+    ch_2_sign_i            : in std_logic;
+    ch_2_sign_valid_i      : in std_logic;
+
     ch_3_freq_i            : in std_logic_vector(31 downto 0);
     ch_3_freq_valid_i      : in std_logic;
+    ch_3_sign_i            : in std_logic;
+    ch_3_sign_valid_i      : in std_logic;
+
     ch_4_freq_i            : in std_logic_vector(31 downto 0);
     ch_4_freq_valid_i      : in std_logic;
+    ch_4_sign_i            : in std_logic;
+    ch_4_sign_valid_i      : in std_logic;
+
+    ch_5_freq_i            : in std_logic_vector(31 downto 0);
+    ch_5_freq_valid_i      : in std_logic;
+    ch_5_sign_i            : in std_logic;
+    ch_5_sign_valid_i      : in std_logic;
+
     local_osc_freq_i       : in std_logic_vector(31 downto 0);
     local_osc_freq_valid_i : in std_logic;
     --output
@@ -88,14 +106,32 @@ architecture arch of data_handler is
 
   signal fifo_input_mux_sel_sync : std_logic_vector(2 downto 0);
   signal data_source_sel_sync : std_logic_vector(1 downto 0);
+
   signal ch_1_freq_sync : std_logic_vector(31 downto 0);
   signal ch_1_freq_valid_sync : std_logic;
+  signal ch_1_sign_sync : std_logic;
+  signal ch_1_sign_valid_sync : std_logic;
+
   signal ch_2_freq_sync : std_logic_vector(31 downto 0);
   signal ch_2_freq_valid_sync : std_logic;
+  signal ch_2_sign_sync : std_logic;
+  signal ch_2_sign_valid_sync : std_logic;
+
   signal ch_3_freq_sync : std_logic_vector(31 downto 0);
   signal ch_3_freq_valid_sync : std_logic;
+  signal ch_3_sign_sync : std_logic;
+  signal ch_3_sign_valid_sync : std_logic;
+
   signal ch_4_freq_sync : std_logic_vector(31 downto 0);
   signal ch_4_freq_valid_sync : std_logic;
+  signal ch_4_sign_sync : std_logic;
+  signal ch_4_sign_valid_sync : std_logic;
+
+  signal ch_5_freq_sync : std_logic_vector(31 downto 0);
+  signal ch_5_freq_valid_sync : std_logic;
+  signal ch_5_sign_sync : std_logic;
+  signal ch_5_sign_valid_sync : std_logic;
+
   signal local_osc_freq_sync : std_logic_vector(31 downto 0);
   signal local_osc_freq_valid_sync : std_logic;
 
@@ -127,6 +163,17 @@ architecture arch of data_handler is
   signal data_channel_mixer_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
   signal valid_channel_mixer_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
 
+  signal ch_1_sign_vec : std_logic_vector(0 downto 0);
+  signal ch_1_sign_vec_sync : std_logic_vector(0 downto 0);
+  signal ch_2_sign_vec : std_logic_vector(0 downto 0);
+  signal ch_2_sign_vec_sync : std_logic_vector(0 downto 0);
+  signal ch_3_sign_vec : std_logic_vector(0 downto 0);
+  signal ch_3_sign_vec_sync : std_logic_vector(0 downto 0);
+  signal ch_4_sign_vec : std_logic_vector(0 downto 0);
+  signal ch_4_sign_vec_sync : std_logic_vector(0 downto 0);
+  signal ch_5_sign_vec : std_logic_vector(0 downto 0);
+  signal ch_5_sign_vec_sync : std_logic_vector(0 downto 0);
+
   -- synchronize signals from write_side of FIFO
   signal fifo_full : std_logic_vector((N1 + N2 - 1) downto 0);
   signal fifo_wr_rst_bsy : std_logic_vector((N1 + N2 - 1) downto 0);
@@ -134,6 +181,17 @@ architecture arch of data_handler is
   signal fifo_overflow : std_logic_vector((N1 + N2 - 1) downto 0);
 
 begin
+
+  ch_1_sign_vec(0) <= ch_1_sign_i;
+  ch_2_sign_vec(0) <= ch_2_sign_i;
+  ch_3_sign_vec(0) <= ch_3_sign_i;
+  ch_4_sign_vec(0) <= ch_4_sign_i;
+  ch_5_sign_vec(0) <= ch_5_sign_i;
+  ch_1_sign_sync <= ch_1_sign_vec_sync(0);
+  ch_2_sign_sync <= ch_2_sign_vec_sync(0);
+  ch_3_sign_sync <= ch_3_sign_vec_sync(0);
+  ch_4_sign_sync <= ch_4_sign_vec_sync(0);
+  ch_5_sign_sync <= ch_5_sign_vec_sync(0);
 
   --Begin signals sync
   pulse_sync_data : entity work.pulse_sync(arch)
@@ -179,6 +237,21 @@ begin
       dst_data_o  => ch_1_freq_sync,
       dst_valid_o => ch_1_freq_valid_sync
     );
+
+  ch_1_sign_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 1
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_1_sign_vec,
+      src_valid_i => ch_1_sign_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_1_sign_vec_sync,
+      dst_valid_o => ch_1_sign_valid_sync
+    );
+
   ch_2_freq_sync_inst : entity work.vector_valid_sync
     generic map(
       DATA_WIDTH => 32
@@ -192,6 +265,21 @@ begin
       dst_data_o  => ch_2_freq_sync,
       dst_valid_o => ch_2_freq_valid_sync
     );
+
+  ch_2_sign_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 1
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_2_sign_vec,
+      src_valid_i => ch_2_sign_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_2_sign_vec_sync,
+      dst_valid_o => ch_2_sign_valid_sync
+    );
+
   ch_3_freq_sync_inst : entity work.vector_valid_sync
     generic map(
       DATA_WIDTH => 32
@@ -205,6 +293,21 @@ begin
       dst_data_o  => ch_3_freq_sync,
       dst_valid_o => ch_3_freq_valid_sync
     );
+
+  ch_3_sign_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 1
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_3_sign_vec,
+      src_valid_i => ch_3_sign_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_3_sign_vec_sync,
+      dst_valid_o => ch_3_sign_valid_sync
+    );
+
   ch_4_freq_sync_inst : entity work.vector_valid_sync
     generic map(
       DATA_WIDTH => 32
@@ -218,6 +321,49 @@ begin
       dst_data_o  => ch_4_freq_sync,
       dst_valid_o => ch_4_freq_valid_sync
     );
+
+  ch_4_sign_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 1
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_4_sign_vec,
+      src_valid_i => ch_4_sign_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_4_sign_vec_sync,
+      dst_valid_o => ch_4_sign_valid_sync
+    );
+
+  ch_5_freq_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 32
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_5_freq_i,
+      src_valid_i => ch_5_freq_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_5_freq_sync,
+      dst_valid_o => ch_5_freq_valid_sync
+    );
+
+  ch_5_sign_sync_inst : entity work.vector_valid_sync
+    generic map(
+      DATA_WIDTH => 1
+    )
+    port map(
+      src_clk_i   => fpga_clk_i,
+      src_rst_i   => async_rst_i,
+      src_data_i  => ch_5_sign_vec,
+      src_valid_i => ch_5_sign_valid_i,
+      dst_clk_i   => sys_clk_i,
+      dst_data_o  => ch_5_sign_vec_sync,
+      dst_valid_o => ch_5_sign_valid_sync
+    );
+
   local_osc_freq_sync_inst : entity work.vector_valid_sync
     generic map(
       DATA_WIDTH => 32
@@ -326,12 +472,24 @@ begin
       data_source_sel_i       => data_source_sel_sync,
       ch_1_freq_i             => ch_1_freq_sync,
       ch_1_freq_valid_i       => ch_1_freq_valid_sync,
+      ch_1_sign_i             => ch_1_sign_sync,
+      ch_1_sign_valid_i       => ch_1_sign_valid_sync,
       ch_2_freq_i             => ch_2_freq_sync,
       ch_2_freq_valid_i       => ch_2_freq_valid_sync,
+      ch_2_sign_i             => ch_2_sign_sync,
+      ch_2_sign_valid_i       => ch_2_sign_valid_sync,
       ch_3_freq_i             => ch_3_freq_sync,
       ch_3_freq_valid_i       => ch_3_freq_valid_sync,
+      ch_3_sign_i             => ch_3_sign_sync,
+      ch_3_sign_valid_i       => ch_3_sign_valid_sync,
       ch_4_freq_i             => ch_4_freq_sync,
       ch_4_freq_valid_i       => ch_4_freq_valid_sync,
+      ch_4_sign_i             => ch_4_sign_sync,
+      ch_4_sign_valid_i       => ch_4_sign_valid_sync,
+      ch_5_freq_i             => ch_5_freq_sync,
+      ch_5_freq_valid_i       => ch_5_freq_valid_sync,
+      ch_5_sign_i             => ch_5_sign_sync,
+      ch_5_sign_valid_i       => ch_5_sign_valid_sync,
       local_osc_freq_i        => local_osc_freq_sync,
       local_osc_freq_valid_i  => local_osc_freq_valid_sync,
       data_ch_filter_o        => data_ch_filter_from_preproc,

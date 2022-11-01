@@ -154,7 +154,7 @@ begin
       s_axi4l_control_rready  => axi4l_control_rready,
 
       --AXI interface for preprocessing regs
-      s_axi4l_preproc_awaddr  => axi4l_preproc_awaddr(4 downto 0),
+      s_axi4l_preproc_awaddr  => axi4l_preproc_awaddr(5 downto 0),
       s_axi4l_preproc_awprot  => axi4l_preproc_awprot,
       s_axi4l_preproc_awvalid => axi4l_preproc_awvalid,
       s_axi4l_preproc_awready => axi4l_preproc_awready,
@@ -165,7 +165,7 @@ begin
       s_axi4l_preproc_bresp   => axi4l_preproc_bresp,
       s_axi4l_preproc_bvalid  => axi4l_preproc_bvalid,
       s_axi4l_preproc_bready  => axi4l_preproc_bready,
-      s_axi4l_preproc_araddr  => axi4l_preproc_araddr(4 downto 0),
+      s_axi4l_preproc_araddr  => axi4l_preproc_araddr(5 downto 0),
       s_axi4l_preproc_arprot  => axi4l_preproc_arprot,
       s_axi4l_preproc_arvalid => axi4l_preproc_arvalid,
       s_axi4l_preproc_arready => axi4l_preproc_arready,

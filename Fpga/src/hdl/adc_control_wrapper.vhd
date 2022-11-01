@@ -60,7 +60,7 @@ entity adc_control_wrapper is
     s_axi4l_control_rready  : in std_logic;
 
     --AXI interface for preprocessing regs
-    s_axi4l_preproc_awaddr  : in std_logic_vector(5 - 1 downto 0);
+    s_axi4l_preproc_awaddr  : in std_logic_vector(6 - 1 downto 0);
     s_axi4l_preproc_awprot  : in std_logic_vector(2 downto 0);
     s_axi4l_preproc_awvalid : in std_logic;
     s_axi4l_preproc_awready : out std_logic;
@@ -71,7 +71,7 @@ entity adc_control_wrapper is
     s_axi4l_preproc_bresp   : out std_logic_vector(1 downto 0);
     s_axi4l_preproc_bvalid  : out std_logic;
     s_axi4l_preproc_bready  : in std_logic;
-    s_axi4l_preproc_araddr  : in std_logic_vector(5 - 1 downto 0);
+    s_axi4l_preproc_araddr  : in std_logic_vector(6 - 1 downto 0);
     s_axi4l_preproc_arprot  : in std_logic_vector(2 downto 0);
     s_axi4l_preproc_arvalid : in std_logic;
     s_axi4l_preproc_arready : out std_logic;
@@ -165,14 +165,32 @@ architecture arch of adc_control_wrapper is
   --preprocessing signals
   signal fifo_input_mux_sel : std_logic_vector(2 downto 0);
   signal data_source_sel : std_logic_vector(1 downto 0) := (others => '0');
+
   signal ch_1_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_1_valid : std_logic := '0';
+  signal ch_1_sign : std_logic := '0';
+  signal ch_1_sign_valid : std_logic := '0';
+
   signal ch_2_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_2_valid : std_logic := '0';
+  signal ch_2_sign : std_logic := '0';
+  signal ch_2_sign_valid : std_logic := '0';
+
   signal ch_3_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_3_valid : std_logic := '0';
+  signal ch_3_sign : std_logic := '0';
+  signal ch_3_sign_valid : std_logic := '0';
+
   signal ch_4_freq : std_logic_vector(31 downto 0) := (others => '0');
   signal ch_4_valid : std_logic := '0';
+  signal ch_4_sign : std_logic := '0';
+  signal ch_4_sign_valid : std_logic := '0';
+
+  signal ch_5_freq : std_logic_vector(31 downto 0) := (others => '0');
+  signal ch_5_valid : std_logic := '0';
+  signal ch_5_sign : std_logic := '0';
+  signal ch_5_sign_valid : std_logic := '0';
+
   signal local_osc : std_logic_vector(31 downto 0) := (others => '0');
   signal local_osc_valid : std_logic := '0';
 
@@ -216,8 +234,7 @@ begin
       ext_trigger_i   => ext_trigger_i
     );
 
-  -- Preprocessing registers
-  preprocessing_registers_inst : entity work.eight_regs_block(arch_imp)
+  preprocessing_registers_inst : entity work.axi_16_reg_block(arch_imp)
     generic map(
       CORE_CONTROL => USER_CORE_ID_VER
     )
@@ -248,12 +265,20 @@ begin
 
       ch_1_freq_data       => ch_1_freq,
       ch_1_freq_valid      => ch_1_valid,
+      ch_1_freq_sign       => ch_1_sign,
+      ch_1_freq_sign_valid => ch_1_sign_valid,
       ch_2_freq_data       => ch_2_freq,
       ch_2_freq_valid      => ch_2_valid,
+      ch_2_freq_sign       => ch_2_sign,
+      ch_2_freq_sign_valid => ch_2_sign_valid,
       ch_3_freq_data       => ch_3_freq,
       ch_3_freq_valid      => ch_3_valid,
+      ch_3_freq_sign       => ch_3_sign,
+      ch_3_freq_sign_valid => ch_3_sign_valid,
       ch_4_freq_data       => ch_4_freq,
       ch_4_freq_valid      => ch_4_valid,
+      ch_4_freq_sign       => ch_4_sign,
+      ch_4_freq_sign_valid => ch_4_sign_valid,
       local_osc_data       => local_osc,
       local_osc_valid      => local_osc_valid
     );
@@ -374,12 +399,29 @@ begin
       data_source_sel_i      => data_source_sel,
       ch_1_freq_i            => ch_1_freq,
       ch_1_freq_valid_i      => ch_1_valid,
+      ch_1_sign_i            => ch_1_sign,
+      ch_1_sign_valid_i      => ch_1_sign_valid,
+
       ch_2_freq_i            => ch_2_freq,
       ch_2_freq_valid_i      => ch_2_valid,
+      ch_2_sign_i            => ch_2_sign,
+      ch_2_sign_valid_i      => ch_2_sign_valid,
+
       ch_3_freq_i            => ch_3_freq,
       ch_3_freq_valid_i      => ch_3_valid,
+      ch_3_sign_i            => ch_3_sign,
+      ch_3_sign_valid_i      => ch_3_sign_valid,
+
       ch_4_freq_i            => ch_4_freq,
       ch_4_freq_valid_i      => ch_4_valid,
+      ch_4_sign_i            => ch_4_sign,
+      ch_4_sign_valid_i      => ch_4_sign_valid,
+
+      ch_5_freq_i            => ch_5_freq,
+      ch_5_freq_valid_i      => ch_5_valid,
+      ch_5_sign_i            => ch_5_sign,
+      ch_5_sign_valid_i      => ch_5_sign_valid,
+
       local_osc_freq_i       => local_osc,
       local_osc_freq_valid_i => local_osc_valid,
 

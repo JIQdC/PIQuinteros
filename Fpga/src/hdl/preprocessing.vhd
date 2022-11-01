@@ -19,12 +19,29 @@ entity preprocessing is
     data_source_sel_i       : in std_logic_vector(1 downto 0);
     ch_1_freq_i             : in std_logic_vector(31 downto 0);
     ch_1_freq_valid_i       : in std_logic;
+    ch_1_sign_i             : in std_logic;
+    ch_1_sign_valid_i       : in std_logic;
+
     ch_2_freq_i             : in std_logic_vector(31 downto 0);
     ch_2_freq_valid_i       : in std_logic;
+    ch_2_sign_i             : in std_logic;
+    ch_2_sign_valid_i       : in std_logic;
+
     ch_3_freq_i             : in std_logic_vector(31 downto 0);
     ch_3_freq_valid_i       : in std_logic;
+    ch_3_sign_i             : in std_logic;
+    ch_3_sign_valid_i       : in std_logic;
+
     ch_4_freq_i             : in std_logic_vector(31 downto 0);
     ch_4_freq_valid_i       : in std_logic;
+    ch_4_sign_i             : in std_logic;
+    ch_4_sign_valid_i       : in std_logic;
+
+    ch_5_freq_i             : in std_logic_vector(31 downto 0);
+    ch_5_freq_valid_i       : in std_logic;
+    ch_5_sign_i             : in std_logic;
+    ch_5_sign_valid_i       : in std_logic;
+
     local_osc_freq_i        : in std_logic_vector(31 downto 0);
     local_osc_freq_valid_i  : in std_logic;
 
@@ -76,9 +93,11 @@ architecture arch of preprocessing is
     port (
       adc_clk_0              : in std_logic;
       adc_rst_ni_0           : in std_logic;
-      m_axis_tdata_0         : out std_logic_vector (31 downto 0);
       s_axis_config_tdata_0  : in std_logic_vector (31 downto 0);
-      s_axis_config_tvalid_0 : in std_logic
+      s_axis_config_tvalid_0 : in std_logic;
+      config_sign_data_0     : in std_logic;
+      config_sign_valid_0    : in std_logic;
+      m_axis_tdata_out_0     : out std_logic_vector (31 downto 0)
     );
   end component ch_oscillator_bd;
 
@@ -164,70 +183,72 @@ begin
     s_axis_freq_config_tvalid => local_osc_freq_valid_i
   );
 
-  ch_oscillator_bd_i : ch_oscillator_bd
-  port map(
-    adc_clk_0              => sys_clk_i,
-    adc_rst_ni_0           => async_rst_n,
-    m_axis_tdata_0         => ch_osc_data,
-    s_axis_config_tdata_0  => ch_1_freq_i,
-    s_axis_config_tvalid_0 => ch_1_freq_valid_i
-  );
-
-  Channels_loop : for i in 0 to NUM_CHANNELS - 1 generate
-    --band processing
-    band_processing_bd_i : band_processing_bd
+  ch_oscillator_bd_i : component ch_oscillator_bd
     port map(
-      adc_clk_0          => sys_clk_i,
-      adc_rst_ni_0       => async_rst_n,
-      band_mixer_data_o  => band_mixer_data(32 * (i + 1) - 1 downto 32 * i),
-      band_mixer_valid_o => band_mixer_valid(i),
-      band_osc_in        => data_band_sel_osc,
-      data_mux_in        => m_axis_tdata_mux(16 * (i + 1) - 1 downto 16 * i),
-      data_out           => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
-      valid_mux_in       => m_axis_tvalid_mux(i),
-      valid_out          => band_filter_valid(i)
+      adc_clk_0              => sys_clk_i,
+      adc_rst_ni_0           => async_rst_n,
+      config_sign_data_0     => ch_1_sign_i,
+      config_sign_valid_0    => ch_1_sign_valid_i,
+      m_axis_tdata_out_0     => ch_osc_data,
+      s_axis_config_tdata_0  => ch_1_freq_i,
+      s_axis_config_tvalid_0 => ch_1_freq_valid_i
     );
 
-    -- register ch_osc_data
-    process (sys_clk_i)
-    begin
-      if rising_edge(sys_clk_i) then
-        ch_osc_out_ffs((32 * (i + 1) - 1) downto (32 * i)) <= ch_osc_data;
-      end if;
-    end process;
+    Channels_loop : for i in 0 to NUM_CHANNELS - 1 generate
+      --band processing
+      band_processing_bd_i : band_processing_bd
+      port map(
+        adc_clk_0          => sys_clk_i,
+        adc_rst_ni_0       => async_rst_n,
+        band_mixer_data_o  => band_mixer_data(32 * (i + 1) - 1 downto 32 * i),
+        band_mixer_valid_o => band_mixer_valid(i),
+        band_osc_in        => data_band_sel_osc,
+        data_mux_in        => m_axis_tdata_mux(16 * (i + 1) - 1 downto 16 * i),
+        data_out           => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
+        valid_mux_in       => m_axis_tvalid_mux(i),
+        valid_out          => band_filter_valid(i)
+      );
 
-    ch_mixer_i : ch_mixer
-    port map(
-      aclk               => sys_clk_i,
-      aresetn            => async_rst_n,
-      s_axis_a_tvalid    => band_filter_valid(i),
-      s_axis_a_tdata     => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
-      s_axis_b_tvalid    => band_filter_valid(i),
-      s_axis_b_tdata     => ch_osc_out_ffs(32 * (i + 1) - 1 downto 32 * i),
-      m_axis_dout_tvalid => ch_mixer_valid(i),
-      m_axis_dout_tdata  => ch_mixer_data(32 * (i + 1) - 1 downto 32 * i)
-    );
+      -- register ch_osc_data
+      process (sys_clk_i)
+      begin
+        if rising_edge(sys_clk_i) then
+          ch_osc_out_ffs((32 * (i + 1) - 1) downto (32 * i)) <= ch_osc_data;
+        end if;
+      end process;
 
-    ch_filter_bd_i : ch_filter_bd
-    port map(
-      adc_clk_0       => sys_clk_i,
-      data_in_0       => ch_mixer_data(32 * (i + 1) - 1 downto 32 * i),
-      valid_in_0      => ch_mixer_valid(i),
-      axis_out_tdata  => ch_filter_data(32 * (i + 1) - 1 downto 32 * i),
-      axis_out_tvalid => ch_filter_valid(i)
-    );
-  end generate Channels_loop;
+      ch_mixer_i : ch_mixer
+      port map(
+        aclk               => sys_clk_i,
+        aresetn            => async_rst_n,
+        s_axis_a_tvalid    => band_filter_valid(i),
+        s_axis_a_tdata     => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
+        s_axis_b_tvalid    => band_filter_valid(i),
+        s_axis_b_tdata     => ch_osc_out_ffs(32 * (i + 1) - 1 downto 32 * i),
+        m_axis_dout_tvalid => ch_mixer_valid(i),
+        m_axis_dout_tdata  => ch_mixer_data(32 * (i + 1) - 1 downto 32 * i)
+      );
 
-  --map output signals
-  data_ch_filter_o <= ch_filter_data;
-  valid_ch_filter_o <= ch_filter_valid;
-  data_mux_data_source_o <= m_axis_tdata_mux;
-  valid_mux_data_source_o <= m_axis_tvalid_mux;
-  data_band_mixer_o <= band_mixer_data;
-  valid_band_mixer_o <= band_mixer_valid;
-  data_band_filter_o <= band_filter_data;
-  valid_band_filter_o <= band_filter_valid;
-  data_channel_mixer_o <= ch_mixer_data;
-  valid_channel_mixer_o <= ch_mixer_valid;
+      ch_filter_bd_i : ch_filter_bd
+      port map(
+        adc_clk_0       => sys_clk_i,
+        data_in_0       => ch_mixer_data(32 * (i + 1) - 1 downto 32 * i),
+        valid_in_0      => ch_mixer_valid(i),
+        axis_out_tdata  => ch_filter_data(32 * (i + 1) - 1 downto 32 * i),
+        axis_out_tvalid => ch_filter_valid(i)
+      );
+    end generate Channels_loop;
 
-end architecture arch;
+    --map output signals
+    data_ch_filter_o <= ch_filter_data;
+    valid_ch_filter_o <= ch_filter_valid;
+    data_mux_data_source_o <= m_axis_tdata_mux;
+    valid_mux_data_source_o <= m_axis_tvalid_mux;
+    data_band_mixer_o <= band_mixer_data;
+    valid_band_mixer_o <= band_mixer_valid;
+    data_band_filter_o <= band_filter_data;
+    valid_band_filter_o <= band_filter_valid;
+    data_channel_mixer_o <= ch_mixer_data;
+    valid_channel_mixer_o <= ch_mixer_valid;
+
+  end architecture arch;
