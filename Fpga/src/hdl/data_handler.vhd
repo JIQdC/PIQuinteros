@@ -54,6 +54,8 @@ entity data_handler is
 
     local_osc_freq_i       : in std_logic_vector(31 downto 0);
     local_osc_freq_valid_i : in std_logic;
+
+    beam_selector_i        : in std_logic_vector(2 downto 0);
     --output
     fifo_rst_i             : in std_logic;
     fifo_rd_en_i           : in std_logic_vector((N1 + N2 - 1) downto 0);
@@ -135,6 +137,8 @@ architecture arch of data_handler is
   signal local_osc_freq_sync : std_logic_vector(31 downto 0);
   signal local_osc_freq_valid_sync : std_logic;
 
+  signal beam_selector_sync : std_logic_vector(2 downto 0);
+
   --debug signals
   signal counter_ce_v : std_logic_vector(((N1 + N2) - 1) downto 0);
   signal debug_counter : std_logic_vector(13 downto 0);
@@ -152,16 +156,16 @@ architecture arch of data_handler is
   signal valid_from_debug : std_logic_vector(N1 + N2 - 1 downto 0);
 
   --signals from preproc
-  signal data_ch_filter_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
-  signal valid_ch_filter_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
+  signal data_ch_filter_from_preproc : std_logic_vector(32 * 5 * (N1 + N2) - 1 downto 0);
+  signal valid_ch_filter_from_preproc : std_logic_vector(5 * (N1 + N2) - 1 downto 0);
   signal data_mux_data_source_from_preproc : std_logic_vector(16 * (N1 + N2) - 1 downto 0);
   signal valid_mux_data_source_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
   signal data_band_mixer_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
   signal valid_band_mixer_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
   signal data_band_filter_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
   signal valid_band_filter_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
-  signal data_channel_mixer_from_preproc : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
-  signal valid_channel_mixer_from_preproc : std_logic_vector(N1 + N2 - 1 downto 0);
+  signal data_channel_mixer_from_preproc : std_logic_vector(32 * 5 * (N1 + N2) - 1 downto 0);
+  signal valid_channel_mixer_from_preproc : std_logic_vector(5 * (N1 + N2) - 1 downto 0);
 
   signal ch_1_sign_vec : std_logic_vector(0 downto 0);
   signal ch_1_sign_vec_sync : std_logic_vector(0 downto 0);
@@ -173,6 +177,9 @@ architecture arch of data_handler is
   signal ch_4_sign_vec_sync : std_logic_vector(0 downto 0);
   signal ch_5_sign_vec : std_logic_vector(0 downto 0);
   signal ch_5_sign_vec_sync : std_logic_vector(0 downto 0);
+
+  signal beam_from_mux_data : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
+  signal valid_beam_from_mux_data : std_logic_vector(N1 + N2 - 1 downto 0);
 
   -- synchronize signals from write_side of FIFO
   signal fifo_full : std_logic_vector((N1 + N2 - 1) downto 0);
@@ -378,6 +385,16 @@ begin
       dst_valid_o => local_osc_freq_valid_sync
     );
 
+  beam_select_sync_inst : entity work.quasistatic_sync
+    generic map(
+      DATA_WIDTH => 3
+    )
+    port map(
+      src_data_i  => beam_selector_i,
+      sys_clk_i   => sys_clk_i,
+      sync_data_o => beam_selector_sync
+    );
+
   -- Instantiate synchronizers for debug signals
   debug_control_sync_inst : entity work.quasistatic_sync
     generic map(
@@ -503,6 +520,18 @@ begin
       data_channel_mixer_o    => data_channel_mixer_from_preproc,
       valid_channel_mixer_o   => valid_channel_mixer_from_preproc
     );
+
+  --beam sel mux
+  beam_sel_mux_inst : entity work.beam_sel_mux(rtl)
+    port map(
+      sys_clk_i    => sys_clk_i,
+      async_rst_i  => async_rst_i,
+      control_i    => beam_selector_sync,
+      beams_data_i => data_ch_filter_from_preproc,
+      beam_valid_i => valid_ch_filter_from_preproc,
+      beam_data_o  => beam_from_mux_data,
+      beam_valid_o => valid_beam_from_mux_data
+    );
   --Change Mux to take the whole vector and remove debug counter postproc
   fifo_input_mux_inst : entity work.fifo_input_data_mux
     generic map(
@@ -515,8 +544,8 @@ begin
       -- Mux control
       data_mux_sel_i               => fifo_input_mux_sel_sync,
       -- Data from preprocessing logic
-      data_preproc_i               => data_ch_filter_from_preproc,
-      data_preproc_valid_i         => valid_ch_filter_from_preproc,
+      data_preproc_i               => beam_from_mux_data,
+      data_preproc_valid_i         => valid_beam_from_mux_data,
       -- Raw data from deserializer
       data_raw_i                   => data_from_debug,
       data_raw_valid_i             => valid_from_debug,
@@ -530,8 +559,8 @@ begin
       data_band_filter_i           => data_band_filter_from_preproc,
       data_band_filter_valid_i     => valid_band_filter_from_preproc,
       -- Channel mixer
-      data_channel_mixer_i         => data_channel_mixer_from_preproc,
-      data_channel_mixer_valid_i   => valid_channel_mixer_from_preproc,
+      data_channel_mixer_i         => (others => '0'),
+      data_channel_mixer_valid_i   => (others => '0'),
       -- Output data
       data_o                       => data_joined_output,
       data_valid_o                 => valid_joined_output

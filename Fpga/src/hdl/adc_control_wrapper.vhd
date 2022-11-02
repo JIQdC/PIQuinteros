@@ -194,6 +194,8 @@ architecture arch of adc_control_wrapper is
   signal local_osc : std_logic_vector(31 downto 0) := (others => '0');
   signal local_osc_valid : std_logic := '0';
 
+  signal beam_selector : std_logic_vector(2 downto 0) := (others => '0');
+
 begin
 
   data_control_inst : entity work.data_control(rtl)
@@ -280,7 +282,8 @@ begin
       ch_4_freq_sign       => ch_4_sign,
       ch_4_freq_sign_valid => ch_4_sign_valid,
       local_osc_data       => local_osc,
-      local_osc_valid      => local_osc_valid
+      local_osc_valid      => local_osc_valid,
+      beam_selector        => beam_selector
     );
 
   --CRC block
@@ -424,6 +427,8 @@ begin
 
       local_osc_freq_i       => local_osc,
       local_osc_freq_valid_i => local_osc_valid,
+
+      beam_selector_i        => beam_selector,
 
       --output
       fifo_rst_i             => fifo_rst,
