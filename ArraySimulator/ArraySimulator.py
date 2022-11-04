@@ -32,6 +32,7 @@ array=rectArray()                   #creo un objeto tipo array rectangular
 array.createArray(d,N,M)            #cargo sus coordenadas
 tau=array.calcTimeDelay(theta,phi)  #calculo los retardos y los almaceno en un vector
 
+print(tau*1e12)
 """ #opcional: grafico el array para ver que esté bien ubicado
 plt.figure(1)
 for i in range(0,np.size(array.pos[0,:,0])):

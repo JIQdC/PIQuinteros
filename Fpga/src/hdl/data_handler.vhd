@@ -178,6 +178,8 @@ architecture arch of data_handler is
   signal ch_5_sign_vec : std_logic_vector(0 downto 0);
   signal ch_5_sign_vec_sync : std_logic_vector(0 downto 0);
 
+  signal beam_mixer_from_mux_data : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
+  signal beam_mixer_from_mux_valid : std_logic_vector(N1 + N2 - 1 downto 0);
   signal beam_from_mux_data : std_logic_vector(32 * (N1 + N2) - 1 downto 0);
   signal valid_beam_from_mux_data : std_logic_vector(N1 + N2 - 1 downto 0);
 
@@ -521,6 +523,17 @@ begin
       valid_channel_mixer_o   => valid_channel_mixer_from_preproc
     );
 
+  beam_mixer_sel_mux_inst : entity work.beam_sel_mux(rtl)
+    port map(
+      sys_clk_i    => sys_clk_i,
+      async_rst_i  => async_rst_i,
+      control_i    => beam_selector_sync,
+      beams_data_i => data_channel_mixer_from_preproc,
+      beam_valid_i => valid_channel_mixer_from_preproc,
+      beam_data_o  => beam_mixer_from_mux_data,
+      beam_valid_o => beam_mixer_from_mux_valid
+    );
+
   --beam sel mux
   beam_sel_mux_inst : entity work.beam_sel_mux(rtl)
     port map(
@@ -559,8 +572,8 @@ begin
       data_band_filter_i           => data_band_filter_from_preproc,
       data_band_filter_valid_i     => valid_band_filter_from_preproc,
       -- Channel mixer
-      data_channel_mixer_i         => (others => '0'),
-      data_channel_mixer_valid_i   => (others => '0'),
+      data_channel_mixer_i         => beam_mixer_from_mux_data,
+      data_channel_mixer_valid_i   => beam_mixer_from_mux_valid,
       -- Output data
       data_o                       => data_joined_output,
       data_valid_o                 => valid_joined_output

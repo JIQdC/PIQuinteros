@@ -123,18 +123,17 @@ architecture arch of preprocessing is
       axis_out_tvalid : out std_logic
     );
   end component ch_filter_bd;
-
   component beam_handler_bd is
     port (
       sys_clk_i           : in std_logic;
       arst_ni             : in std_logic;
-      beams_data_i_0      : in std_logic_vector (159 downto 0);
-      s_axis_tdata        : in std_logic_vector (31 downto 0);
-      s_axis_tvalid       : in std_logic;
-      m_axis_tdata_mixer  : out std_logic_vector (159 downto 0);
-      m_axis_tvalid_mixer : out std_logic_vector (4 downto 0);
-      m_axis_tdata        : out std_logic_vector (159 downto 0);
-      m_axis_tvalid       : out std_logic_vector (4 downto 0)
+      beams_data_in       : in std_logic_vector (159 downto 0);
+      band_data_in        : in std_logic_vector (31 downto 0);
+      band_valid_in       : in std_logic;
+      beam_filter_data_o  : out std_logic_vector (159 downto 0);
+      beam_filter_valid_o : out std_logic_vector (4 downto 0);
+      beam_mixers_data_o  : out std_logic_vector (159 downto 0);
+      beam_mixers_valid_o : out std_logic_vector (4 downto 0)
     );
   end component beam_handler_bd;
   --reset n signal
@@ -159,16 +158,16 @@ architecture arch of preprocessing is
   -- signal ch_osc_out_ffs : std_logic_vector(32 * NUM_CHANNELS - 1 downto 0);
 
   --channel mixer signals
-  signal ch_mixer_data : std_logic_vector(32 * NUM_CHANNELS * 5 - 1 downto 0);
-  signal ch_mixer_valid : std_logic_vector(NUM_CHANNELS * 5 - 1 downto 0);
+  signal beam_mixer_data : std_logic_vector(32 * NUM_CHANNELS * 5 - 1 downto 0);
+  signal beam_mixer_valid : std_logic_vector(NUM_CHANNELS * 5 - 1 downto 0);
 
   --channel filter signals
-  signal ch_filter_data : std_logic_vector(32 * NUM_CHANNELS * 5 - 1 downto 0);
-  signal ch_filter_valid : std_logic_vector(NUM_CHANNELS * 5 - 1 downto 0);
+  signal beam_filter_data : std_logic_vector(32 * NUM_CHANNELS * 5 - 1 downto 0);
+  signal beam_filter_valid : std_logic_vector(NUM_CHANNELS * 5 - 1 downto 0);
 
   --beams signals
   signal beams_data : std_logic_vector(32 * 5 - 1 downto 0);
-  signal beams_data_ffs : std_logic_vector(32 * NUM_CHANNELS * 5 - 1 downto 0);
+
   signal beam_osc_sign_vec : std_logic_vector(5 - 1 downto 0);
   signal beam_osc_sign_valid_vec : std_logic_vector(5 - 1 downto 0);
   signal beam_freq_vec : std_logic_vector(32 * 5 - 1 downto 0);
@@ -219,17 +218,18 @@ begin
       valid_mux_in       => m_axis_tvalid_mux(i),
       valid_out          => band_filter_valid(i)
     );
+
     beam_handler_bd_i : component beam_handler_bd
       port map(
         sys_clk_i           => sys_clk_i,
         arst_ni             => async_rst_n,
-        beams_data_i_0      => beams_data,
-        s_axis_tdata        => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
-        s_axis_tvalid       => band_filter_valid(i),
-        m_axis_tdata_mixer  => ch_mixer_data(32 * 5 * (i + 1) - 1 downto 32 * 5 * i),
-        m_axis_tvalid_mixer => ch_mixer_valid(5 * (i + 1) - 1 downto 5 * i),
-        m_axis_tdata        => ch_filter_data(32 * 5 * (i + 1) - 1 downto 32 * 5 * i),
-        m_axis_tvalid       => ch_filter_valid(5 * (i + 1) - 1 downto 5 * i)
+        beams_data_in       => beams_data,
+        band_data_in        => band_filter_data(32 * (i + 1) - 1 downto 32 * i),
+        band_valid_in       => band_filter_valid(i),
+        beam_mixers_data_o  => beam_mixer_data(32 * 5 * (i + 1) - 1 downto 32 * 5 * i),
+        beam_mixers_valid_o => beam_mixer_valid(5 * (i + 1) - 1 downto 5 * i),
+        beam_filter_data_o  => beam_filter_data(32 * 5 * (i + 1) - 1 downto 32 * 5 * i),
+        beam_filter_valid_o => beam_filter_valid(5 * (i + 1) - 1 downto 5 * i)
       );
 
       -- register ch_osc_data
@@ -281,15 +281,15 @@ begin
     beam_freq_valid_vec(4) <= ch_5_freq_valid_i;
 
     --map output signals
-    data_ch_filter_o <= ch_filter_data;
-    valid_ch_filter_o <= ch_filter_valid;
+    data_ch_filter_o <= beam_filter_data;
+    valid_ch_filter_o <= beam_filter_valid;
     data_mux_data_source_o <= m_axis_tdata_mux;
     valid_mux_data_source_o <= m_axis_tvalid_mux;
     data_band_mixer_o <= band_mixer_data;
     valid_band_mixer_o <= band_mixer_valid;
     data_band_filter_o <= band_filter_data;
     valid_band_filter_o <= band_filter_valid;
-    data_channel_mixer_o <= ch_mixer_data;
-    valid_channel_mixer_o <= ch_mixer_valid;
+    data_channel_mixer_o <= beam_mixer_data;
+    valid_channel_mixer_o <= beam_mixer_valid;
 
   end architecture arch;
