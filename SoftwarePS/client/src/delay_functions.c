@@ -148,14 +148,17 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
     memset(acqPack, 0, sizeof(AcqPack_t));
 
     //map memory spaces to read FIFO flags and data
-    Multi_MemPtr_t* mPtr_flags, * mPtr_data, * mPtr_progFull;
-    uint32_t flags_addr, data_addr, progFull_addr;
+    Multi_MemPtr_t* mPtr_flags, * mPtr_data, * mPtr_progFull, * mPtr_crc;
+    uint32_t flags_addr, data_addr, progFull_addr, crc_addr;
     flags_addr = DATA_BASE_ADDR+FIFOFLAGS_OFF+4*adc_ch;
     data_addr = DATA_BASE_ADDR+FIFODATA_OFF+4*adc_ch;
     progFull_addr = DATA_BASE_ADDR+PROGFULL_OFF;
+    crc_addr = DATA_BASE_ADDR+CRC_OFF;
     mPtr_flags = multi_minit(&flags_addr, 1);
     mPtr_data = multi_minit(&data_addr, 1);
     mPtr_progFull = multi_minit(&progFull_addr, 1);
+    mPtr_crc = multi_minit(&crc_addr, 1);
+
 
     //reset FIFO and debug modules
     async_reset(10);
@@ -169,7 +172,7 @@ int computeBadSamples(uint8_t adc_ch, uint16_t cal_diff)
 
 
     //acquire
-    acquire_data(acqPack, mPtr_flags, mPtr_data, mPtr_progFull);
+    acquire_data(acqPack, mPtr_flags, mPtr_data, mPtr_progFull, mPtr_crc);
 
 
     //disable FIFO input and debug output

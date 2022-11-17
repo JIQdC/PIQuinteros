@@ -22,7 +22,7 @@ Acq_Thread_t* AcqThreadInit(Client_t* client)
     acqTh->running = 0;
 
     //map memory spaces to read FIFO flags and data
-    uint32_t flags_addr[16], data_addr[16], progfull_addr;
+    uint32_t flags_addr[16], data_addr[16], progfull_addr, crc_addr;
     int i;
     for (i = 0; i < 16; i++)
     {
@@ -30,10 +30,13 @@ Acq_Thread_t* AcqThreadInit(Client_t* client)
         data_addr[i] = DATA_BASE_ADDR + FIFODATA_OFF + 4 * i;
     }
     progfull_addr = DATA_BASE_ADDR + PROGFULL_OFF;
+    crc_addr = DATA_BASE_ADDR + CRC_OFF;
 
     acqTh->multiPtr_flags = multi_minit(flags_addr, 16);
     acqTh->multiPtr_data = multi_minit(data_addr, 16);
     acqTh->multiPtr_progfull = multi_minit(&progfull_addr, 1);
+    acqTh->multiPtr_crc = multi_minit(&crc_addr, 1);
+
 
     return acqTh;
 }
@@ -105,7 +108,7 @@ static void* acqTh_threadFunc(void* ctx)
         {
             acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
             acqPackHeaderFill(&acqPack->header, acqTh->client->params);
-            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
+            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull, acqTh->multiPtr_crc);
             Tx_QueuePut(acqTh->client->txQ, acqPack);
         }
         //notify client
@@ -126,7 +129,7 @@ static void* acqTh_threadFunc(void* ctx)
         {
             acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
             acqPackHeaderFill(&acqPack->header, acqTh->client->params);
-            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
+            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull, acqTh->multiPtr_crc);
             Tx_QueuePut(acqTh->client->txQ, acqPack);
         }
     }
@@ -137,7 +140,7 @@ static void* acqTh_threadFunc(void* ctx)
         {
             acqPack = Rx_Queue_Acquire(acqTh->client->rxQ);
             acqPackHeaderFill(&acqPack->header, acqTh->client->params);
-            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull);
+            acquire_data(acqPack, acqTh->multiPtr_flags, acqTh->multiPtr_data, acqTh->multiPtr_progfull, acqTh->multiPtr_crc);
             Tx_QueuePut(acqTh->client->txQ, acqPack);
         }
     }

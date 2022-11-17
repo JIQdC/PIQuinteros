@@ -36,6 +36,7 @@ typedef struct
     Multi_MemPtr_t* multiPtr_flags;
     Multi_MemPtr_t* multiPtr_data;
     Multi_MemPtr_t* multiPtr_progfull;
+    Multi_MemPtr_t* multiPtr_crc;
 } Acq_Thread_t;
 
 typedef struct

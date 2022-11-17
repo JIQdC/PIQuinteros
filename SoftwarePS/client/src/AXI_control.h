@@ -52,6 +52,8 @@ Comments:
 #define FIFOFLAGS_OFF       (0x60<<2)
 #define FIFODATA_OFF        (0x80<<2)
 
+#define CRC_OFF             (0x90<<2)
+
 #define USRAUX_OFF          (0xFF<<2)
 
 //pin control module register addresses`
@@ -153,6 +155,6 @@ Multi_MemPtr_t* multi_minit(uint32_t* addr, uint8_t mem_num);
 void multi_mdestroy(Multi_MemPtr_t* multiPtr);
 
 // fills an AcqPack_t with external data from Acquisition System
-void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull);
+void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull, Multi_MemPtr_t* multiPtr_crc);
 
 #endif /* SRC_AXI_CONTROL_H_ */

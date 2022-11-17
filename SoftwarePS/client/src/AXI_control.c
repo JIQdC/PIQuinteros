@@ -294,7 +294,7 @@ void multi_mdestroy(Multi_MemPtr_t* multiPtr)
 }
 
 // fills an AcqPack_t with external data from Acquisition System
-void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull)
+void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemPtr_t* multiPtr_data, Multi_MemPtr_t* multiPtr_progFull, Multi_MemPtr_t* multiPtr_crc)
 {
     int i, j = 0;
     uint32_t flags;
@@ -328,7 +328,7 @@ void acquire_data(AcqPack_t* acqPack, Multi_MemPtr_t* multiPtr_flags, Multi_MemP
         acqPack->data[i][j].data = *((volatile uint32_t*)(multiPtr_data->ptr[j] + multiPtr_data->align_offset[j]));
     }
     //apagar y leer crc
-
+    acqPack->crc = *((volatile uint32_t*)(multiPtr_crc->ptr[0] + multiPtr_crc->align_offset[0]));
     //read FIFO flags register to see what happened during capture.
 
     //timestamp

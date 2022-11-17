@@ -25,7 +25,7 @@ entity data_control is
   generic (
     -- Core ID and version
     USER_CORE_ID_VER : std_logic_vector(31 downto 0) := X"00020003";
-    N                : integer                       := 1;     --number of ADC channels
+    N                : integer                       := 1;           --number of ADC channels
     FIFO_EMPTY_VAL   : std_logic_vector(31 downto 0) := X"0000_0DEF" --output value when attempting to read from empty FIFO
   );
   port (
@@ -115,7 +115,6 @@ architecture rtl of data_control is
   signal fifo_rd_en : std_logic_vector((16 - 1) downto 0) := (others => '0');
   signal fifo_data_out_r, fifo_flags_r : std_logic_vector(16 * 32 - 1 downto 0) := (others => '0');
   signal fifo_progfull_r : std_logic_vector(32 - 1 downto 0) := (others => '0');
-
   -- Register outputs
   signal async_rst_r, fifo_rst_r : std_logic_vector(32 - 1 downto 0) := (others => '0');
   signal debug_control_r, debug_w2w1_r : std_logic_vector(16 * 32 - 1 downto 0) := (others => '0');
@@ -127,6 +126,12 @@ architecture rtl of data_control is
   signal ext_trigger_r, ext_trigger_en_r : std_logic_vector(32 - 1 downto 0) := (others => '0');
   -- Debug enable aux signal
   signal debug_enable_aux : std_logic := '0';
+
+  --CRC signals
+  signal crc_o : std_logic_vector(32 - 1 downto 0) := (others => '0');
+  signal crc_data : std_logic_vector(32 - 1 downto 0) := (others => '0');
+  signal crc_en : std_logic;
+  signal crc_rst_n : std_logic;
 
   -- Width of S_AXI address bus
   constant C_S_AXI_ADDR_WIDTH : integer := 10;
@@ -634,6 +639,9 @@ begin
       -- FIFO read_en default value
       fifo_rd_en <= (others => '0');
 
+      crc_en <= '0';
+      crc_rst_n <= '1';
+
       if (S_AXI_ARESETN = '0') then
         axi_rdata <= (others => '0');
       elsif (slv_reg_rden = '1') then
@@ -821,6 +829,8 @@ begin
             if (fifo_out(0).empty = '0') then
               axi_rdata <= fifo_data_out_r(31 downto 0);
               fifo_rd_en(0) <= '1';
+              crc_data <= fifo_data_out_r(31 downto 0);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -829,6 +839,8 @@ begin
             if (fifo_out(1).empty = '0') then
               axi_rdata <= fifo_data_out_r(63 downto 32);
               fifo_rd_en(1) <= '1';
+              crc_data <= fifo_data_out_r(63 downto 32);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -837,6 +849,8 @@ begin
             if (fifo_out(2).empty = '0') then
               axi_rdata <= fifo_data_out_r(95 downto 64);
               fifo_rd_en(2) <= '1';
+              crc_data <= fifo_data_out_r(95 downto 64);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -845,6 +859,8 @@ begin
             if (fifo_out(3).empty = '0') then
               axi_rdata <= fifo_data_out_r(127 downto 96);
               fifo_rd_en(3) <= '1';
+              crc_data <= fifo_data_out_r(127 downto 96);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -853,6 +869,8 @@ begin
             if (fifo_out(4).empty = '0') then
               axi_rdata <= fifo_data_out_r(159 downto 128);
               fifo_rd_en(4) <= '1';
+              crc_data <= fifo_data_out_r(159 downto 128);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -861,6 +879,8 @@ begin
             if (fifo_out(5).empty = '0') then
               axi_rdata <= fifo_data_out_r(191 downto 160);
               fifo_rd_en(5) <= '1';
+              crc_data <= fifo_data_out_r(191 downto 160);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -869,6 +889,8 @@ begin
             if (fifo_out(6).empty = '0') then
               axi_rdata <= fifo_data_out_r(223 downto 192);
               fifo_rd_en(6) <= '1';
+              crc_data <= fifo_data_out_r(223 downto 192);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -877,6 +899,8 @@ begin
             if (fifo_out(7).empty = '0') then
               axi_rdata <= fifo_data_out_r(255 downto 224);
               fifo_rd_en(7) <= '1';
+              crc_data <= fifo_data_out_r(255 downto 224);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -885,6 +909,8 @@ begin
             if (fifo_out(8).empty = '0') then
               axi_rdata <= fifo_data_out_r(287 downto 256);
               fifo_rd_en(8) <= '1';
+              crc_data <= fifo_data_out_r(287 downto 256);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -893,6 +919,8 @@ begin
             if (fifo_out(9).empty = '0') then
               axi_rdata <= fifo_data_out_r(319 downto 288);
               fifo_rd_en(9) <= '1';
+              crc_data <= fifo_data_out_r(319 downto 288);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -901,6 +929,8 @@ begin
             if (fifo_out(10).empty = '0') then
               axi_rdata <= fifo_data_out_r(351 downto 320);
               fifo_rd_en(10) <= '1';
+              crc_data <= fifo_data_out_r(351 downto 320);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -909,6 +939,8 @@ begin
             if (fifo_out(11).empty = '0') then
               axi_rdata <= fifo_data_out_r(383 downto 352);
               fifo_rd_en(11) <= '1';
+              crc_data <= fifo_data_out_r(383 downto 352);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -917,6 +949,8 @@ begin
             if (fifo_out(12).empty = '0') then
               axi_rdata <= fifo_data_out_r(415 downto 384);
               fifo_rd_en(12) <= '1';
+              crc_data <= fifo_data_out_r(415 downto 384);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -925,6 +959,8 @@ begin
             if (fifo_out(13).empty = '0') then
               axi_rdata <= fifo_data_out_r(447 downto 416);
               fifo_rd_en(13) <= '1';
+              crc_data <= fifo_data_out_r(447 downto 416);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -933,6 +969,8 @@ begin
             if (fifo_out(14).empty = '0') then
               axi_rdata <= fifo_data_out_r(479 downto 448);
               fifo_rd_en(14) <= '1';
+              crc_data <= fifo_data_out_r(479 downto 448);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
@@ -941,9 +979,15 @@ begin
             if (fifo_out(15).empty = '0') then
               axi_rdata <= fifo_data_out_r(511 downto 480);
               fifo_rd_en(15) <= '1';
+              crc_data <= fifo_data_out_r(511 downto 480);
+              crc_en <= '1';
             else
               axi_rdata <= FIFO_EMPTY_VAL;
             end if;
+
+          when x"90" =>
+            axi_rdata <= crc_o(31 downto 0);
+            crc_rst_n <= '0';
 
             --usr aux
           when x"FF" =>
@@ -1008,4 +1052,13 @@ begin
 
   end generate inout_reg_map;
 
+  crc_32_inst : entity work.crc_32(imp_crc)
+    port map(
+      clk      => S_AXI_ACLK,
+      rstn_in  => S_AXI_ARESETN,
+      srstn_in => crc_rst_n,
+      data_in  => crc_data,
+      crc_en   => crc_en,
+      crc_out  => crc_o
+    );
 end rtl;

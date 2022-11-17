@@ -21,6 +21,10 @@ entity fifo_input_data_mux is
     -- Raw data from deserializer
     data_raw_i                   : in std_logic_vector(RES_ADC * NUM_CHANNELS - 1 downto 0);
     data_raw_valid_i             : in std_logic_vector(NUM_CHANNELS - 1 downto 0);
+
+    -- Postproc counter
+    postproc_counter_i           : in std_logic_vector(32 - 1 downto 0);
+
     -- Data source mux
     data_mux_data_source_i       : in std_logic_vector(16 * NUM_CHANNELS - 1 downto 0);
     data_mux_data_source_valid_i : in std_logic_vector(NUM_CHANNELS - 1 downto 0);
@@ -66,7 +70,13 @@ begin
           data_o <= data_preproc_i;
           data_valid_o <= '1';
         end if;
-          --Falta el caso "010"
+        when "010" => --postproc counter
+        if (data_preproc_valid_i(0) = '1') then
+          for i in 0 to NUM_CHANNELS - 1 loop
+            data_o(32 * (i + 1) - 1 downto 32 * i) <= postproc_counter_i;
+          end loop;
+          data_valid_o <= '1';
+        end if;
         when "011" => -- raw data. Group by two to fit in FIFO input
           if (data_raw_valid_i(0) = '1')then
             for i in 0 to NUM_CHANNELS - 1 loop

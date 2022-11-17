@@ -89,17 +89,17 @@ architecture arch of preprocessing is
     );
   end component band_processing_bd;
 
-  component ch_oscillator_bd is
+  component beam_osc_bd is
     port (
-      adc_clk_0              : in std_logic;
-      adc_rst_ni_0           : in std_logic;
-      s_axis_config_tdata_0  : in std_logic_vector (31 downto 0);
-      s_axis_config_tvalid_0 : in std_logic;
-      config_sign_data_0     : in std_logic;
-      config_sign_valid_0    : in std_logic;
-      m_axis_tdata_out_0     : out std_logic_vector (31 downto 0)
+      adc_clk_0 : in STD_LOGIC;
+      adc_rst_ni_0 : in STD_LOGIC;
+      config_sign_data_0 : in STD_LOGIC;
+      config_sign_valid_0 : in STD_LOGIC;
+      m_axis_tdata_out_0 : out STD_LOGIC_VECTOR ( 31 downto 0 );
+      s_axis_config_tdata_0 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+      s_axis_config_tvalid_0 : in STD_LOGIC
     );
-  end component ch_oscillator_bd;
+    end component beam_osc_bd;
 
   component ch_mixer
     port (
@@ -244,7 +244,7 @@ begin
 
     loop_5_beam_osc : for i in 0 to 4 generate
       --channel oscillator
-      ch_oscillator_bd_i : ch_oscillator_bd
+      beam_osc_bd_i : beam_osc_bd
       port map(
         adc_clk_0              => sys_clk_i,
         adc_rst_ni_0           => async_rst_n,

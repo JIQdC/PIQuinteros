@@ -75,6 +75,15 @@ architecture arch of data_handler is
     );
   end component;
 
+  COMPONENT counter_32_bits
+  PORT (
+    CLK : IN STD_LOGIC;
+    CE : IN STD_LOGIC;
+    SCLR : IN STD_LOGIC;
+    Q : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+  );
+  END COMPONENT;
+
   --FIFO generator declaration
   component fifo_generator
     port (
@@ -150,6 +159,8 @@ architecture arch of data_handler is
   constant debug_control_width : integer := ((N1 + N2) * 4);
   signal debug_w2w1_sync : std_logic_vector((28 * (N1 + N2) - 1) downto 0);
   constant debug_w2w1_width : integer := (28 * (N1 + N2));
+
+  signal postproc_counter : std_logic_vector(31 downto 0);
 
   --debug output
   signal data_from_debug : std_logic_vector(14 * (N1 + N2) - 1 downto 0);
@@ -545,7 +556,15 @@ begin
       beam_data_o  => beam_from_mux_data,
       beam_valid_o => valid_beam_from_mux_data
     );
-  --Change Mux to take the whole vector and remove debug counter postproc
+
+  postproc_counter_inst : counter_32_bits
+    PORT MAP (
+      CLK => sys_clk_i,
+      CE => valid_beam_from_mux_data(0),
+      SCLR => async_rst_i,
+      Q => postproc_counter
+    );
+
   fifo_input_mux_inst : entity work.fifo_input_data_mux
     generic map(
       NUM_CHANNELS => N1 + N2,
@@ -562,6 +581,8 @@ begin
       -- Raw data from deserializer
       data_raw_i                   => data_from_debug,
       data_raw_valid_i             => valid_from_debug,
+      -- Postproc counter
+      postproc_counter_i           => postproc_counter,
       -- Data source mux
       data_mux_data_source_i       => data_mux_data_source_from_preproc,
       data_mux_data_source_valid_i => valid_mux_data_source_from_preproc,
@@ -578,6 +599,8 @@ begin
       data_o                       => data_joined_output,
       data_valid_o                 => valid_joined_output
     );
+
+
 
   --instantiate FIFO
   fifo_loop : for i in 0 to (N1 + N2 - 1) generate

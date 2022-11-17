@@ -16,14 +16,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity crc is
+entity crc_32 is
   port (
-    data_in                   : in std_logic_vector (31 downto 0);
-    crc_en, rst, srst_in, clk : in std_logic;
-    crc_out                   : out std_logic_vector (31 downto 0));
-end crc;
+    data_in                        : in std_logic_vector (31 downto 0);
+    crc_en, rstn_in, srstn_in, clk : in std_logic;
+    crc_out                        : out std_logic_vector (31 downto 0));
+end crc_32;
 
-architecture imp_crc of crc is
+architecture imp_crc of crc_32 is
   signal lfsr_q : std_logic_vector (31 downto 0);
   signal lfsr_c : std_logic_vector (31 downto 0);
 begin
@@ -61,11 +61,11 @@ begin
   lfsr_c(29) <= lfsr_q(3) xor lfsr_q(6) xor lfsr_q(7) xor lfsr_q(9) xor lfsr_q(13) xor lfsr_q(21) xor lfsr_q(22) xor lfsr_q(23) xor lfsr_q(25) xor lfsr_q(26) xor lfsr_q(27) xor lfsr_q(28) xor lfsr_q(29) xor lfsr_q(31) xor data_in(3) xor data_in(6) xor data_in(7) xor data_in(9) xor data_in(13) xor data_in(21) xor data_in(22) xor data_in(23) xor data_in(25) xor data_in(26) xor data_in(27) xor data_in(28) xor data_in(29) xor data_in(31);
   lfsr_c(30) <= lfsr_q(4) xor lfsr_q(7) xor lfsr_q(8) xor lfsr_q(10) xor lfsr_q(14) xor lfsr_q(22) xor lfsr_q(23) xor lfsr_q(24) xor lfsr_q(26) xor lfsr_q(27) xor lfsr_q(28) xor lfsr_q(29) xor lfsr_q(30) xor data_in(4) xor data_in(7) xor data_in(8) xor data_in(10) xor data_in(14) xor data_in(22) xor data_in(23) xor data_in(24) xor data_in(26) xor data_in(27) xor data_in(28) xor data_in(29) xor data_in(30);
   lfsr_c(31) <= lfsr_q(5) xor lfsr_q(8) xor lfsr_q(9) xor lfsr_q(11) xor lfsr_q(15) xor lfsr_q(23) xor lfsr_q(24) xor lfsr_q(25) xor lfsr_q(27) xor lfsr_q(28) xor lfsr_q(29) xor lfsr_q(30) xor lfsr_q(31) xor data_in(5) xor data_in(8) xor data_in(9) xor data_in(11) xor data_in(15) xor data_in(23) xor data_in(24) xor data_in(25) xor data_in(27) xor data_in(28) xor data_in(29) xor data_in(30) xor data_in(31);
-  process (clk, rst) begin
-    if (rst = '1') then
+  process (clk, rstn_in) begin
+    if (rstn_in = '0') then
       lfsr_q <= b"11111111111111111111111111111111";
     elsif (clk'EVENT and clk = '1') then
-      if (srst_in = '1') then
+      if (srstn_in = '0') then
         lfsr_q <= b"11111111111111111111111111111111";
       elsif (crc_en = '1') then
         lfsr_q <= lfsr_c;

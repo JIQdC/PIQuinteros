@@ -18,7 +18,7 @@ Comments:
 #include <time.h>
 
 //PACK SIZE MUST BE EQUAL TO PROG_FULL LEVEL/2 IN FIFO
-#define CHDATA_SIZE 21
+#define CHDATA_SIZE 1000
 
 //MTU = 1500, 1500 - UDP header - IP header = 1472
 //AcqPack_Header_t size = 88
@@ -79,6 +79,8 @@ typedef struct __attribute__((packed))
     //fifo_data_t data[16][CHDATA_SIZE];
     //Queremos 16 columnas, una por canal
     fifo_data_t data[CHDATA_SIZE][16];
+    //include crc-32
+    uint32_t crc;
 }AcqPack_t;
 
 // human readable print of FIFO flags structure
